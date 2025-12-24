@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtual HPLC – Experiment 1</title>
+
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+
+<body>
+  <header>
+    <h1>Virtual HPLC Laboratory</h1>
+    <p>Experiment 1: Identification of Parts & Working Sequence</p>
+  </header>
+
+  <main>
+    <!-- PART IDENTIFICATION -->
+    <section class="card">
+      <h2>Part A: Identify HPLC Components</h2>
+      <p>Select the correct name for each component.</p>
+
+      <div id="parts-container"></div>
+    </section>
+
+    <!-- SEQUENCE ARRANGEMENT -->
+    <section class="card">
+      <h2>Part B: Arrange Working Sequence</h2>
+      <p>Arrange components in the order they operate during analysis.</p>
+
+      <div id="sequence-area"></div>
+      <button id="checkSequence">Check Sequence</button>
+      <p id="sequenceResult"></p>
+    </section>
+
+    <!-- OBSERVATION -->
+    <section class="card hidden" id="observation">
+      <h2>Observation & Conclusion</h2>
+      <p id="observationText"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Educational simulation – Not a real instrument</p>
+  </footer>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
