@@ -1,0 +1,40 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #f4f6f8;
+  color: #222;
+  text-align: center;
+  padding: 1rem;
+}
+
+h1 {
+  color: #0a3d62;
+}
+
+.subtitle {
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.instrument-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.instrument-card {
+  background: #fff;
+  padding: 1.2rem;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  text-decoration: none;
+  color: inherit;
+}
+
+.instrument-card.active:active {
+  transform: scale(0.97);
+}
+
+.instrument-card.disabled {
+  opacity: 0.4;
+}
