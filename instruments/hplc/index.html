@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HPLC Simulator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="../../css/global.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h1>HPLC Simulator</h1>
+
+<!-- CONTROL PANEL -->
+<div class="instrument-card">
+  <h3>Pump</h3>
+  <label>Flow Rate (mL/min)</label><br>
+  <input id="flow" type="range" min="0.5" max="2" step="0.1" value="1">
+  <span id="flowVal">1.0</span><br><br>
+
+  <button id="pumpBtn">Pump OFF</button>
+  <button id="injectBtn" disabled>Inject Sample</button>
+</div>
+
+<!-- GRAPH -->
+<canvas id="graphCanvas" height="220"></canvas>
+
+<script type="module" src="./hplc.ui.js"></script>
+</body>
+</html>
