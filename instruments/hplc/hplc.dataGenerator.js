@@ -1,36 +1,26 @@
-export function generateHPLCData(state) {
-  let data = [];
+export function generateHPLCFrame(state) {
+  const t = state.runtime.time;
+
+  let signal = Math.random() * 0.02; // baseline noise
 
   const baseRT = 2.0;
   const flow = state.flow;
   const strength = state.mobilePhase.strength;
-  const columnFactor = state.column.factor;
-  const efficiency = state.column.efficiency;
+  const colFactor = state.column.factor;
+  const eff = state.column.efficiency;
 
-  // Pre-calculate RTs for each component
-  const peaks = state.sample.components.map(comp => {
+  state.sample.components.forEach(comp => {
     const rt =
       baseRT +
-      (comp.hydrophobicity * columnFactor) /
+      (comp.hydrophobicity * colFactor) /
       (strength * flow);
 
-    const width = 0.15 / efficiency;
-    const height = comp.response;
+    const width = 0.15 / eff;
 
-    return { rt, width, height };
+    signal +=
+      comp.response *
+      Math.exp(-Math.pow(t - rt, 2) / width);
   });
 
-  for (let t = 0; t <= 12; t += 0.05) {
-    let signal = Math.random() * 0.02; // baseline noise
-
-    peaks.forEach(p => {
-      signal +=
-        p.height *
-        Math.exp(-Math.pow(t - p.rt, 2) / p.width);
-    });
-
-    data.push({ x: t, y: signal });
-  }
-
-  return data;
+  return { x: t, y: signal };
 }
