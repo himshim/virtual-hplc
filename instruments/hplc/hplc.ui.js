@@ -2,7 +2,8 @@ import { hplcState } from "./hplc.state.js";
 import {
   runHPLC,
   updatePressure,
-  updateMobilePhase
+  updateMobilePhase,
+  updateColumn
 } from "./hplc.logic.js";
 
 import {
@@ -18,6 +19,10 @@ const injectBtn = document.getElementById("injectBtn");
 
 const solventB = document.getElementById("solventB");
 const solventBVal = document.getElementById("solventBVal");
+
+const columnType = document.getElementById("columnType");
+const columnLength = document.getElementById("columnLength");
+const columnLengthVal = document.getElementById("columnLengthVal");
 
 const pressureDisplay = document.getElementById("pressureDisplay");
 
@@ -35,11 +40,21 @@ solventB.oninput = () => {
   updateAll();
 };
 
+columnType.onchange = () => {
+  hplcState.column.type = columnType.value;
+  updateAll();
+};
+
+columnLength.oninput = () => {
+  hplcState.column.length = Number(columnLength.value);
+  columnLengthVal.textContent = `${columnLength.value} mm`;
+  updateAll();
+};
+
 pumpBtn.onclick = () => {
   hplcState.pumpOn = !hplcState.pumpOn;
   pumpBtn.textContent = hplcState.pumpOn ? "Pump ON" : "Pump OFF";
   injectBtn.disabled = !hplcState.pumpOn;
-
   hplcState.pumpOn ? startFlowAnimation() : stopFlowAnimation();
 };
 
@@ -51,6 +66,7 @@ injectBtn.onclick = () => {
 
 function updateAll() {
   updateMobilePhase(hplcState);
+  updateColumn(hplcState);
   updatePressure(hplcState);
 
   pressureDisplay.textContent =
