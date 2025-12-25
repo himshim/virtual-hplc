@@ -1,6 +1,6 @@
 /* ==================================================
    STABLE REAL-TIME HPLC SIMULATOR
-   STEP B: READ-ONLY DIAGRAM SYNC
+   STEP C: INJECTOR + DEAD VOLUME (VOID TIME)
    ================================================== */
 
 let chart;
@@ -8,18 +8,22 @@ let timer = null;
 let time = 0;
 const MAX_TIME = 10;
 
+/* --- METHOD PARAMETERS --- */
 let flowRate = 1.0;
 let organicPercent = 40;
 let hydrophobicity = 0.55;
 
-const VOID_TIME = 1.0;
-const COLUMN_FACTOR = 1.0;
+/* --- PHYSICAL CONSTANTS --- */
+const VOID_TIME = 1.0;      // t0 (min) – dead volume
+const COLUMN_FACTOR = 1.0; // column chemistry
 
+/* --- PEAK STATE --- */
 let injecting = false;
+let injectionTime = null;
 let peakRT = null;
 let peakWidth = 0.25;
 
-/* DOM */
+/* --- DOM --- */
 const statusEl = document.getElementById("status");
 const pumpBtn = document.getElementById("pumpBtn");
 const injectBtn = document.getElementById("injectBtn");
@@ -31,29 +35,47 @@ const organicInput = document.getElementById("organicInput");
 const organicVal = document.getElementById("organicVal");
 const compoundSelect = document.getElementById("compoundSelect");
 
-/* Diagram elements (loaded later) */
+/* --- DIAGRAM ELEMENTS --- */
 let flowDot, injectorBox;
 
-/* INIT GRAPH */
+/* -------- INIT GRAPH -------- */
 function initGraph() {
   const ctx = document.getElementById("graphCanvas").getContext("2d");
+
   chart = new Chart(ctx, {
     type: "line",
-    data: { datasets: [{ data: [], borderColor: "#1565c0", pointRadius: 0 }] },
-    options: { animation: false, scales: { x: { type: "linear", min: 0, max: MAX_TIME } } }
+    data: {
+      datasets: [{
+        label: "HPLC Chromatogram",
+        data: [],
+        borderColor: "#1565c0",
+        borderWidth: 2,
+        pointRadius: 0
+      }]
+    },
+    options: {
+      animation: false,
+      responsive: true,
+      scales: {
+        x: { type: "linear", min: 0, max: MAX_TIME, title: { display: true, text: "Time (min)" } },
+        y: { min: -0.1, max: 1.5, title: { display: true, text: "Response (AU)" } }
+      }
+    }
   });
 }
 
-/* RT CALC */
+/* -------- RT CALCULATION -------- */
 function calculateRT() {
   const elutionStrength = 0.3 + (organicPercent / 100) * 0.7;
-  return Math.min(
-    VOID_TIME + (hydrophobicity * COLUMN_FACTOR) / (flowRate * elutionStrength),
-    MAX_TIME - 1
-  );
+
+  const retention =
+    (hydrophobicity * COLUMN_FACTOR) /
+    (flowRate * elutionStrength);
+
+  return VOID_TIME + retention;
 }
 
-/* BASELINE LOOP */
+/* -------- RUN LOOP -------- */
 function startRun() {
   stopRun();
   resetGraph();
@@ -61,29 +83,49 @@ function startRun() {
 
   timer = setInterval(() => {
     time += 0.05;
+
+    /* Baseline noise */
     let signal = (Math.random() - 0.5) * 0.02;
 
-    if (injecting && peakRT !== null) {
-      signal += Math.exp(-Math.pow(time - peakRT, 2) / (2 * peakWidth * peakWidth));
+    /* Peak cannot appear before VOID_TIME */
+    if (
+      injecting &&
+      injectionTime !== null &&
+      time >= injectionTime &&
+      peakRT !== null
+    ) {
+      const peak =
+        Math.exp(
+          -Math.pow(time - peakRT, 2) /
+          (2 * Math.pow(peakWidth, 2))
+        );
+      signal += peak;
     }
 
     chart.data.datasets[0].data.push({ x: time, y: signal });
     chart.update("none");
+
     if (time >= MAX_TIME) stopRun();
   }, 100);
 }
 
-/* INJECT */
+/* -------- INJECT SAMPLE -------- */
 function injectSample() {
   resetGraph();
   injecting = true;
+
+  /* Injection happens NOW (injector event) */
+  injectionTime = VOID_TIME;
   peakRT = calculateRT();
-  rtDisplay.textContent = `Estimated RT: ${peakRT.toFixed(2)} min`;
+
+  rtDisplay.textContent =
+    `Estimated RT: ${peakRT.toFixed(2)} min (t₀ = ${VOID_TIME} min)`;
+
   flashInjector();
   startRun();
 }
 
-/* HELPERS */
+/* -------- HELPERS -------- */
 function resetGraph() {
   stopRun();
   time = 0;
@@ -96,10 +138,9 @@ function stopRun() {
   animateFlow(false);
 }
 
-/* DIAGRAM ANIMATION */
+/* -------- DIAGRAM EFFECTS -------- */
 function animateFlow(on) {
-  if (!flowDot) return;
-  flowDot.style.opacity = on ? 1 : 0;
+  if (flowDot) flowDot.style.opacity = on ? 1 : 0;
 }
 
 function flashInjector() {
@@ -108,7 +149,7 @@ function flashInjector() {
   setTimeout(() => injectorBox.style.fill = "#f5f5f5", 600);
 }
 
-/* CONTROLS */
+/* -------- CONTROL EVENTS -------- */
 flowInput.oninput = () => {
   flowRate = Number(flowInput.value);
   flowVal.textContent = flowRate.toFixed(1);
@@ -126,11 +167,14 @@ compoundSelect.onchange = () => {
   rtDisplay.textContent = `Estimated RT: ${calculateRT().toFixed(2)} min`;
 };
 
+/* -------- BUTTONS -------- */
 pumpBtn.onclick = () => {
   const running = pumpBtn.textContent.includes("STOP");
+
   pumpBtn.textContent = running ? "Pump START" : "Pump STOP";
   injectBtn.disabled = running;
   statusEl.textContent = running ? "Status: IDLE" : "Status: MOBILE PHASE RUNNING";
+
   running ? stopRun() : startRun();
 };
 
@@ -139,12 +183,12 @@ injectBtn.onclick = () => {
   injectSample();
 };
 
-/* WAIT FOR SVG */
+/* -------- WAIT FOR SVG -------- */
 setTimeout(() => {
   flowDot = document.getElementById("flowDot");
   injectorBox = document.getElementById("injectorBox");
 }, 500);
 
-/* START */
+/* -------- STARTUP -------- */
 initGraph();
 rtDisplay.textContent = `Estimated RT: ${calculateRT().toFixed(2)} min`;
