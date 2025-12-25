@@ -1,11 +1,10 @@
-import { hplcState } from "./hplc.state.js";
-import { samples } from "./samples.js";
-
+import { hplcState, HPLC_STATES } from "./hplc.state.js";
 import {
-  runHPLC,
   updatePressure,
   updateMobilePhase,
-  updateColumn
+  updateColumn,
+  tickEquilibration,
+  startRun
 } from "./hplc.logic.js";
 
 import {
@@ -14,27 +13,21 @@ import {
   injectSampleAnimation
 } from "./hplc.animation.js";
 
-const flow = document.getElementById("flow");
-const flowVal = document.getElementById("flowVal");
+import { samples } from "./samples.js";
+
+const statusEl = document.getElementById("status");
 const pumpBtn = document.getElementById("pumpBtn");
 const injectBtn = document.getElementById("injectBtn");
-
-const solventB = document.getElementById("solventB");
-const solventBVal = document.getElementById("solventBVal");
-
-const columnType = document.getElementById("columnType");
-const columnLength = document.getElementById("columnLength");
-const columnLengthVal = document.getElementById("columnLengthVal");
-
-const sampleSelect = document.getElementById("sampleSelect");
-
 const pressureDisplay = document.getElementById("pressureDisplay");
 
-/* ---------- Controls ---------- */
+const flow = document.getElementById("flow");
+const solventB = document.getElementById("solventB");
+const columnType = document.getElementById("columnType");
+const sampleSelect = document.getElementById("sampleSelect");
 
+/* -------- Controls -------- */
 flow.oninput = () => {
   hplcState.flow = Number(flow.value);
-  flowVal.textContent = flow.value;
   updateAll();
 };
 
@@ -42,18 +35,11 @@ solventB.oninput = () => {
   const b = Number(solventB.value);
   hplcState.mobilePhase.solventB.percent = b;
   hplcState.mobilePhase.solventA.percent = 100 - b;
-  solventBVal.textContent = `${b}% ACN`;
   updateAll();
 };
 
 columnType.onchange = () => {
   hplcState.column.type = columnType.value;
-  updateAll();
-};
-
-columnLength.oninput = () => {
-  hplcState.column.length = Number(columnLength.value);
-  columnLengthVal.textContent = `${columnLength.value} mm`;
   updateAll();
 };
 
@@ -64,22 +50,43 @@ sampleSelect.onchange = () => {
 pumpBtn.onclick = () => {
   hplcState.pumpOn = !hplcState.pumpOn;
   pumpBtn.textContent = hplcState.pumpOn ? "Pump ON" : "Pump OFF";
-  injectBtn.disabled = !hplcState.pumpOn;
-  hplcState.pumpOn ? startFlowAnimation() : stopFlowAnimation();
+
+  if (hplcState.pumpOn) {
+    startFlowAnimation();
+    hplcState.systemState = HPLC_STATES.EQUILIBRATING;
+    hplcState.equilibration.timeLeft = 5;
+  } else {
+    stopFlowAnimation();
+    hplcState.systemState = HPLC_STATES.IDLE;
+  }
 };
 
 injectBtn.onclick = () => {
-  hplcState.injected = true;
+  if (hplcState.systemState !== HPLC_STATES.READY) return;
   injectSampleAnimation();
-  runHPLC(hplcState);
+  startRun(hplcState);
 };
 
-/* ---------- Update Logic ---------- */
+/* -------- State Loop -------- */
+setInterval(() => {
+  if (hplcState.systemState === HPLC_STATES.EQUILIBRATING) {
+    tickEquilibration(hplcState);
+  }
+  updateUI();
+}, 1000);
 
 function updateAll() {
   updateMobilePhase(hplcState);
   updateColumn(hplcState);
   updatePressure(hplcState);
+}
+
+function updateUI() {
+  statusEl.textContent =
+    `Status: ${hplcState.systemState}`;
+
+  injectBtn.disabled =
+    hplcState.systemState !== HPLC_STATES.READY;
 
   pressureDisplay.textContent =
     `Pressure: ${hplcState.pressure.toFixed(0)} bar`;
