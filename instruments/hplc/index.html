@@ -19,6 +19,21 @@
 </div>
 
 <div class="instrument-card">
+  <h3>Column</h3>
+
+  <label>Column Type</label><br>
+  <select id="columnType">
+    <option value="C18">C18</option>
+    <option value="C8">C8</option>
+    <option value="Silica">Silica</option>
+  </select><br><br>
+
+  <label>Column Length</label><br>
+  <input id="columnLength" type="range" min="50" max="250" step="10" value="150">
+  <span id="columnLengthVal">150 mm</span>
+</div>
+
+<div class="instrument-card">
   <h3>Mobile Phase</h3>
 
   <label>Organic Solvent (ACN %)</label><br>
