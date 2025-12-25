@@ -14,7 +14,6 @@ export const hplcState = {
 
   pumpOn: false,
   flow: 1.0,
-  injected: false,
 
   column: {
     type: "C18",
@@ -30,6 +29,11 @@ export const hplcState = {
     solventB: { name: "Acetonitrile", percent: 40, viscosity: 0.4 },
     strength: 0.6,
     viscosity: 0.76
+  },
+
+  detector: {
+    wavelength: 254,
+    sensitivity: 1.0
   },
 
   sample: samples.mixture_pc,
