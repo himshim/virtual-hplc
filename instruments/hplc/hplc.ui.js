@@ -1,4 +1,6 @@
 import { hplcState } from "./hplc.state.js";
+import { samples } from "./samples.js";
+
 import {
   runHPLC,
   updatePressure,
@@ -24,7 +26,11 @@ const columnType = document.getElementById("columnType");
 const columnLength = document.getElementById("columnLength");
 const columnLengthVal = document.getElementById("columnLengthVal");
 
+const sampleSelect = document.getElementById("sampleSelect");
+
 const pressureDisplay = document.getElementById("pressureDisplay");
+
+/* ---------- Controls ---------- */
 
 flow.oninput = () => {
   hplcState.flow = Number(flow.value);
@@ -51,6 +57,10 @@ columnLength.oninput = () => {
   updateAll();
 };
 
+sampleSelect.onchange = () => {
+  hplcState.sample = samples[sampleSelect.value];
+};
+
 pumpBtn.onclick = () => {
   hplcState.pumpOn = !hplcState.pumpOn;
   pumpBtn.textContent = hplcState.pumpOn ? "Pump ON" : "Pump OFF";
@@ -63,6 +73,8 @@ injectBtn.onclick = () => {
   injectSampleAnimation();
   runHPLC(hplcState);
 };
+
+/* ---------- Update Logic ---------- */
 
 function updateAll() {
   updateMobilePhase(hplcState);
