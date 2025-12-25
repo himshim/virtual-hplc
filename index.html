@@ -2,118 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>HPLC Simulator</title>
+  <title>Virtual Analytical Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Global styles -->
-  <link rel="stylesheet" href="../../css/global.css" />
-
-  <!-- Chart.js (used by Pharmagraph-style graph engine) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="./css/global.css" />
 
   <style>
-    /* Page-specific layout helpers */
-    .hplc-container {
+    /* Landing-page specific styling */
+    .lab-container {
       max-width: 1000px;
       margin: auto;
-    }
-
-    .diagram-wrapper {
-      background: #ffffff;
-      border-radius: 14px;
       padding: 1rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      margin-bottom: 1rem;
+      text-align: center;
     }
 
-    .control-wrapper {
+    .instrument-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.2rem;
+      margin-top: 2rem;
+    }
+
+    .instrument-card {
       background: #ffffff;
-      border-radius: 14px;
-      padding: 1rem;
+      border-radius: 16px;
+      padding: 1.4rem;
       box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      margin-bottom: 1rem;
-      text-align: left;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .control-wrapper button {
-      margin-right: 0.5rem;
-      margin-top: 0.5rem;
+    .instrument-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    }
+
+    .instrument-card.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .instrument-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #0a3d62;
+    }
+
+    .instrument-desc {
+      font-size: 0.95rem;
+      color: #555;
+      margin-top: 0.4rem;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>HPLC Simulator</h1>
-  <p class="subtitle">Diagrammatic simulation with virtual controls</p>
+  <div class="lab-container">
+    <h1>Virtual Analytical Lab</h1>
+    <p class="subtitle">
+      Select the instrument you want to use
+    </p>
 
-  <div class="hplc-container">
+    <!-- ============================= -->
+    <!-- INSTRUMENT SELECTION GRID -->
+    <!-- ============================= -->
+    <div class="instrument-grid">
 
-    <!-- ===================== -->
-    <!-- HPLC DIAGRAM SECTION -->
-    <!-- ===================== -->
-    <div class="diagram-wrapper">
-      <h3>HPLC Flow Diagram</h3>
+      <!-- HPLC -->
+      <a
+        class="instrument-card"
+        href="./instruments/hplc/index.html"
+      >
+        <div class="instrument-title">HPLC</div>
+        <div class="instrument-desc">
+          High Performance Liquid Chromatography
+        </div>
+      </a>
 
-      <!-- SVG will be injected here -->
-      <div id="diagramContainer">
-        <p>Loading HPLC diagram…</p>
+      <!-- UV -->
+      <div class="instrument-card disabled">
+        <div class="instrument-title">UV–Visible</div>
+        <div class="instrument-desc">
+          Coming soon
+        </div>
       </div>
+
+      <!-- GC -->
+      <div class="instrument-card disabled">
+        <div class="instrument-title">Gas Chromatography</div>
+        <div class="instrument-desc">
+          Coming soon
+        </div>
+      </div>
+
     </div>
-
-    <!-- ===================== -->
-    <!-- CONTROL PANEL SECTION -->
-    <!-- ===================== -->
-    <div class="control-wrapper">
-      <h3>Pump Control</h3>
-
-      <label for="flow">Flow Rate (mL/min)</label><br>
-      <input
-        id="flow"
-        type="range"
-        min="0.5"
-        max="2.0"
-        step="0.1"
-        value="1.0"
-      />
-      <span id="flowVal">1.0</span>
-
-      <br><br>
-
-      <button id="pumpBtn">Pump OFF</button>
-      <button id="injectBtn" disabled>Inject Sample</button>
-    </div>
-
-    <!-- ===================== -->
-    <!-- GRAPH SECTION -->
-    <!-- ===================== -->
-    <div class="diagram-wrapper">
-      <h3>Chromatogram</h3>
-      <canvas id="graphCanvas" height="220"></canvas>
-    </div>
-
   </div>
-
-  <!-- ===================== -->
-  <!-- LOAD SVG DIAGRAM FILE -->
-  <!-- ===================== -->
-  <script>
-    fetch("./hplc.diagram.svg")
-      .then(response => response.text())
-      .then(svgContent => {
-        document.getElementById("diagramContainer").innerHTML = svgContent;
-      })
-      .catch(err => {
-        document.getElementById("diagramContainer").innerHTML =
-          "<p style='color:red'>Failed to load HPLC diagram</p>";
-        console.error(err);
-      });
-  </script>
-
-  <!-- ===================== -->
-  <!-- HPLC UI + LOGIC -->
-  <!-- ===================== -->
-  <script type="module" src="./hplc.ui.js"></script>
 
 </body>
 </html>
