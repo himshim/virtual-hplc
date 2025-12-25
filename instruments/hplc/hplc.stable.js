@@ -1,6 +1,6 @@
 /* ==================================================
    STABLE REAL-TIME HPLC SIMULATOR
-   STEP C: INJECTOR + DEAD VOLUME (VOID TIME)
+   STEP D: DETECTOR SENSITIVITY & BASELINE NOISE
    ================================================== */
 
 let chart;
@@ -12,10 +12,11 @@ const MAX_TIME = 10;
 let flowRate = 1.0;
 let organicPercent = 40;
 let hydrophobicity = 0.55;
+let sensitivity = 1.0;
 
 /* --- PHYSICAL CONSTANTS --- */
-const VOID_TIME = 1.0;      // t0 (min) – dead volume
-const COLUMN_FACTOR = 1.0; // column chemistry
+const VOID_TIME = 1.0;
+const COLUMN_FACTOR = 1.0;
 
 /* --- PEAK STATE --- */
 let injecting = false;
@@ -34,6 +35,9 @@ const flowVal = document.getElementById("flowVal");
 const organicInput = document.getElementById("organicInput");
 const organicVal = document.getElementById("organicVal");
 const compoundSelect = document.getElementById("compoundSelect");
+
+const sensitivityInput = document.getElementById("sensitivityInput");
+const sensitivityVal = document.getElementById("sensitivityVal");
 
 /* --- DIAGRAM ELEMENTS --- */
 let flowDot, injectorBox;
@@ -58,7 +62,7 @@ function initGraph() {
       responsive: true,
       scales: {
         x: { type: "linear", min: 0, max: MAX_TIME, title: { display: true, text: "Time (min)" } },
-        y: { min: -0.1, max: 1.5, title: { display: true, text: "Response (AU)" } }
+        y: { min: -0.3, max: 3.0, title: { display: true, text: "Response (AU)" } }
       }
     }
   });
@@ -67,12 +71,7 @@ function initGraph() {
 /* -------- RT CALCULATION -------- */
 function calculateRT() {
   const elutionStrength = 0.3 + (organicPercent / 100) * 0.7;
-
-  const retention =
-    (hydrophobicity * COLUMN_FACTOR) /
-    (flowRate * elutionStrength);
-
-  return VOID_TIME + retention;
+  return VOID_TIME + (hydrophobicity * COLUMN_FACTOR) / (flowRate * elutionStrength);
 }
 
 /* -------- RUN LOOP -------- */
@@ -84,10 +83,10 @@ function startRun() {
   timer = setInterval(() => {
     time += 0.05;
 
-    /* Baseline noise */
-    let signal = (Math.random() - 0.5) * 0.02;
+    /* Baseline noise scales with sensitivity */
+    let noise = (Math.random() - 0.5) * 0.02 * sensitivity;
+    let signal = noise;
 
-    /* Peak cannot appear before VOID_TIME */
     if (
       injecting &&
       injectionTime !== null &&
@@ -99,7 +98,9 @@ function startRun() {
           -Math.pow(time - peakRT, 2) /
           (2 * Math.pow(peakWidth, 2))
         );
-      signal += peak;
+
+      /* Peak height scales with sensitivity */
+      signal += peak * sensitivity;
     }
 
     chart.data.datasets[0].data.push({ x: time, y: signal });
@@ -109,12 +110,11 @@ function startRun() {
   }, 100);
 }
 
-/* -------- INJECT SAMPLE -------- */
+/* -------- INJECT -------- */
 function injectSample() {
   resetGraph();
   injecting = true;
 
-  /* Injection happens NOW (injector event) */
   injectionTime = VOID_TIME;
   peakRT = calculateRT();
 
@@ -167,6 +167,11 @@ compoundSelect.onchange = () => {
   rtDisplay.textContent = `Estimated RT: ${calculateRT().toFixed(2)} min`;
 };
 
+sensitivityInput.oninput = () => {
+  sensitivity = Number(sensitivityInput.value);
+  sensitivityVal.textContent = sensitivity.toFixed(1);
+};
+
 /* -------- BUTTONS -------- */
 pumpBtn.onclick = () => {
   const running = pumpBtn.textContent.includes("STOP");
@@ -191,4 +196,5 @@ setTimeout(() => {
 
 /* -------- STARTUP -------- */
 initGraph();
+sensitivityVal.textContent = sensitivity.toFixed(1);
 rtDisplay.textContent = `Estimated RT: ${calculateRT().toFixed(2)} min`;
