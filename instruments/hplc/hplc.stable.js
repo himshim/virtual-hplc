@@ -1,6 +1,6 @@
 /* ==========================================
    STABLE REAL-TIME HPLC GRAPH
-   STEP 2: TRUE PEAK ELUTION OVER TIME
+   STEP 1: REAL RT CALCULATION
    ========================================== */
 
 /* -------- GLOBAL STATE -------- */
@@ -11,7 +11,27 @@ const MAX_TIME = 10; // minutes
 
 let injecting = false;
 let peakRT = null;
-let peakWidth = 0.15;
+let peakWidth = 0.25;
+
+/* --- HPLC METHOD PARAMETERS (SIMPLIFIED) --- */
+let flowRate = 1.0;        // mL/min
+let organicPercent = 40;   // %B
+let columnType = "C18";    // fixed for now
+
+/* --- CHEMISTRY CONSTANTS --- */
+const VOID_TIME = 1.0; // min
+
+const COLUMN_FACTORS = {
+  C18: 1.0,
+  C8: 0.7,
+  Silica: 1.3
+};
+
+/* Example compound (STEP 3 will add mixtures) */
+const COMPOUND = {
+  name: "Caffeine",
+  hydrophobicity: 0.55
+};
 
 /* -------- DOM -------- */
 const statusEl = document.getElementById("status");
@@ -54,6 +74,21 @@ function initGraph() {
   });
 }
 
+/* -------- RT CALCULATION (REALISTIC) -------- */
+function calculateRT() {
+  const columnFactor = COLUMN_FACTORS[columnType];
+
+  /* Elution strength increases with % organic */
+  const elutionStrength = 0.3 + (organicPercent / 100) * 0.7;
+
+  const rt =
+    VOID_TIME +
+    (COMPOUND.hydrophobicity * columnFactor) /
+    (flowRate * elutionStrength);
+
+  return Math.min(rt, MAX_TIME - 1);
+}
+
 /* -------- BASELINE + RUN LOOP -------- */
 function startBaselineAndRun() {
   stopRun();
@@ -65,14 +100,13 @@ function startBaselineAndRun() {
     /* Baseline noise */
     let signal = (Math.random() - 0.5) * 0.02;
 
-    /* True peak elution (Gaussian over time) */
+    /* True peak elution */
     if (injecting && peakRT !== null) {
       const peak =
         Math.exp(
           -Math.pow(time - peakRT, 2) /
           (2 * Math.pow(peakWidth, 2))
         );
-
       signal += peak;
     }
 
@@ -87,9 +121,7 @@ function injectSample() {
   resetGraph();
   injecting = true;
 
-  /* For now, fixed RT (STEP 1 will calculate this) */
-  peakRT = 4.2;
-  peakWidth = 0.25;
+  peakRT = calculateRT();
 
   rtDisplay.textContent =
     `Estimated RT: ${peakRT.toFixed(2)} min`;
