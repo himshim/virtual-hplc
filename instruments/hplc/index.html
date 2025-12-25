@@ -2,10 +2,12 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>HPLC Simulator</title>
+  <title>HPLC Simulator (Stable)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="../../css/global.css">
+
+  <!-- Chart.js MUST be global -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -14,83 +16,17 @@
 <h1>HPLC Simulator</h1>
 <p id="status">Status: IDLE</p>
 
-<!-- ================== DIAGRAM ================== -->
 <div class="instrument-card">
-  <h3>HPLC Flow Diagram</h3>
-  <div id="diagramContainer">Loading diagram…</div>
-</div>
-
-<!-- ================== SAMPLE ================== -->
-<div class="instrument-card">
-  <h3>Sample</h3>
-  <select id="sampleSelect">
-    <option value="mixture_pc">Paracetamol + Caffeine</option>
-    <option value="caffeine">Caffeine</option>
-    <option value="paracetamol">Paracetamol</option>
-    <option value="mixture_icp">Ibuprofen + Caffeine + Paracetamol</option>
-  </select>
-</div>
-
-<!-- ================== COLUMN ================== -->
-<div class="instrument-card">
-  <h3>Column</h3>
-  <select id="columnType">
-    <option value="C18">C18</option>
-    <option value="C8">C8</option>
-    <option value="Silica">Silica</option>
-  </select>
-</div>
-
-<!-- ================== MOBILE PHASE ================== -->
-<div class="instrument-card">
-  <h3>Mobile Phase (%B)</h3>
-  <input id="solventB" type="range" min="10" max="90" step="5" value="40">
-</div>
-
-<!-- ================== DETECTOR ================== -->
-<div class="instrument-card">
-  <h3>Detector (UV)</h3>
-
-  <label>Wavelength (nm)</label><br>
-  <input id="wavelength" type="range" min="200" max="300" value="254">
-  <span id="wavelengthVal">254 nm</span><br><br>
-
-  <label>Sensitivity (AUFS)</label><br>
-  <input id="sensitivity" type="range" min="0.5" max="5" step="0.5" value="1">
-  <span id="sensitivityVal">1.0</span>
-</div>
-
-<!-- ================== PUMP ================== -->
-<div class="instrument-card">
-  <h3>Pump</h3>
-  <input id="flow" type="range" min="0.5" max="2.5" step="0.1" value="1">
-  <br><br>
-  <button id="pumpBtn">Pump OFF</button>
+  <button id="pumpBtn">Pump START</button>
   <button id="injectBtn" disabled>Inject Sample</button>
-  <p id="pressureDisplay">Pressure: 0 bar</p>
 </div>
 
-<p id="rtDisplay"></p>
+<p id="rtDisplay">Estimated RT: —</p>
 
-<!-- ================== GRAPH ================== -->
-<canvas id="graphCanvas" height="220"></canvas>
+<canvas id="graphCanvas" height="250"></canvas>
 
-<!-- ================== SVG LOAD (CRITICAL) ================== -->
-<script>
-fetch("./hplc.diagram.svg")
-  .then(r => r.text())
-  .then(svg => {
-    document.getElementById("diagramContainer").innerHTML = svg;
-  })
-  .catch(err => {
-    document.getElementById("diagramContainer").innerHTML =
-      "<p style='color:red'>Diagram failed to load</p>";
-    console.error(err);
-  });
-</script>
-
-<!-- ================== MAIN LOGIC ================== -->
-<script type="module" src="./hplc.ui.js"></script>
+<!-- SINGLE SCRIPT, NO MODULES -->
+<script src="./hplc.stable.js"></script>
 
 </body>
 </html>
