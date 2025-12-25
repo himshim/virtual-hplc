@@ -1,45 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Virtual Analytical Lab</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./css/global.css">
+  <meta charset="UTF-8" />
+  <title>HPLC Simulator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Global styles -->
+  <link rel="stylesheet" href="../../css/global.css" />
+
+  <!-- Chart.js (used by Pharmagraph-style graph engine) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* Page-specific layout helpers */
+    .hplc-container {
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .diagram-wrapper {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      margin-bottom: 1rem;
+    }
+
+    .control-wrapper {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+
+    .control-wrapper button {
+      margin-right: 0.5rem;
+      margin-top: 0.5rem;
+    }
+  </style>
 </head>
+
 <body>
 
-<h1>Virtual Analytical Lab</h1>
-<p class="subtitle">Select the instrument you want to use</p>
+  <h1>HPLC Simulator</h1>
+  <p class="subtitle">Diagrammatic simulation with virtual controls</p>
 
-<div class="instrument-grid">
-  <a class="instrument-card active"
-     href="./instruments/hplc/index.html">
-    <h2>HPLC</h2>
-    <p>High Performance Liquid Chromatography</p>
-  </a>
+  <div class="hplc-container">
 
-  <div class="instrument-card disabled">
-    <h2>UV–Visible</h2>
-    <p>Coming Soon</p>
+    <!-- ===================== -->
+    <!-- HPLC DIAGRAM SECTION -->
+    <!-- ===================== -->
+    <div class="diagram-wrapper">
+      <h3>HPLC Flow Diagram</h3>
+
+      <!-- SVG will be injected here -->
+      <div id="diagramContainer">
+        <p>Loading HPLC diagram…</p>
+      </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- CONTROL PANEL SECTION -->
+    <!-- ===================== -->
+    <div class="control-wrapper">
+      <h3>Pump Control</h3>
+
+      <label for="flow">Flow Rate (mL/min)</label><br>
+      <input
+        id="flow"
+        type="range"
+        min="0.5"
+        max="2.0"
+        step="0.1"
+        value="1.0"
+      />
+      <span id="flowVal">1.0</span>
+
+      <br><br>
+
+      <button id="pumpBtn">Pump OFF</button>
+      <button id="injectBtn" disabled>Inject Sample</button>
+    </div>
+
+    <!-- ===================== -->
+    <!-- GRAPH SECTION -->
+    <!-- ===================== -->
+    <div class="diagram-wrapper">
+      <h3>Chromatogram</h3>
+      <canvas id="graphCanvas" height="220"></canvas>
+    </div>
+
   </div>
 
-  <div class="instrument-card disabled">
-    <h2>GC</h2>
-    <p>Coming Soon</p>
-  </div>
-</div>
+  <!-- ===================== -->
+  <!-- LOAD SVG DIAGRAM FILE -->
+  <!-- ===================== -->
+  <script>
+    fetch("./hplc.diagram.svg")
+      .then(response => response.text())
+      .then(svgContent => {
+        document.getElementById("diagramContainer").innerHTML = svgContent;
+      })
+      .catch(err => {
+        document.getElementById("diagramContainer").innerHTML =
+          "<p style='color:red'>Failed to load HPLC diagram</p>";
+        console.error(err);
+      });
+  </script>
 
-</body>
-</html>    <section class="card hidden" id="observation">
-      <h2>Observation & Conclusion</h2>
-      <p id="observationText"></p>
-    </section>
-  </main>
+  <!-- ===================== -->
+  <!-- HPLC UI + LOGIC -->
+  <!-- ===================== -->
+  <script type="module" src="./hplc.ui.js"></script>
 
-  <footer>
-    <p>Educational simulation – Not a real instrument</p>
-  </footer>
-
-  <script type="module" src="./js/app.js"></script>
 </body>
 </html>
