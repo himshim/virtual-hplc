@@ -10,9 +10,10 @@
 
 <body>
 
-<header class="hero">
-  <h1>HPLC Simulator & Solution Chemistry Lab</h1>
-  <p>Interactive reversed-phase HPLC virtual instrument with Solution Chemistry Engine (pH, pKa Ionization & Buffers)</p>
+<header class="hero" style="position:relative;">
+  <h1>HPLC Simulator & Method Development Lab</h1>
+  <p>Mobile-Responsive Virtual HPLC Instrument with Entity Platform & Solution Chemistry Engine</p>
+  <button id="guidedDemoBtn" style="position:absolute; right:20px; top:20px; padding:8px 16px; background:#ffd54f; color:#000; font-weight:bold; border:none; border-radius:20px; cursor:pointer;">⚡ 60s Guided Demo</button>
 </header>
 
 <main class="instrument-grid">
@@ -38,27 +39,27 @@
   <div class="instrument-card area-controls">
     <h2 style="margin-top:0">Method Parameters</h2>
 
-    <label for="flowInput">Flow Rate &nbsp;<span class="param-val" id="flowVal">1.0</span> mL/min</label>
+    <label for="flowInput">Flow Rate &nbsp;<span class="param-val" id="flowVal">1.0</span> mL/min <span id="infoFlow">ⓘ</span></label>
     <input id="flowInput" type="range" min="0.5" max="5.0" step="0.1" value="1.0">
 
     <br><br>
 
-    <label for="organicInput">Mobile Phase %B &nbsp;<span class="param-val" id="organicVal">40%</span></label>
+    <label for="organicInput">Mobile Phase %B &nbsp;<span class="param-val" id="organicVal">40%</span> <span id="infoOrganic">ⓘ</span></label>
     <input id="organicInput" type="range" min="10" max="90" step="5" value="40">
 
     <br><br>
 
-    <label for="tempInput">Column Temperature &nbsp;<span class="param-val" id="tempVal">25°C</span></label>
+    <label for="tempInput">Column Temperature &nbsp;<span class="param-val" id="tempVal">25°C</span> <span id="infoTemp">ⓘ</span></label>
     <input id="tempInput" type="range" min="25" max="60" step="5" value="25">
 
     <br><br>
 
-    <label for="phInput">Mobile Phase pH &nbsp;<span class="param-val" id="phVal">pH 7.0</span></label>
+    <label for="phInput">Mobile Phase pH &nbsp;<span class="param-val" id="phVal">pH 7.0</span> <span id="infoPh">ⓘ</span></label>
     <input id="phInput" type="range" min="2.0" max="8.0" step="0.1" value="7.0">
 
     <br><br>
 
-    <label for="bufferSelect">Buffer System Entity</label><br>
+    <label for="bufferSelect">Buffer System Entity <span id="infoBuffer">ⓘ</span></label><br>
     <select id="bufferSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
       <option value="phosphate_buffer" selected>Phosphate Buffer (pH 2.0–8.0, UV 200nm)</option>
       <option value="acetate_buffer">Acetate Buffer (pH 3.8–5.8, UV 210nm, LC-MS)</option>
@@ -67,7 +68,7 @@
 
     <br><br>
 
-    <label for="wavelengthInput">UV Wavelength (λ) &nbsp;<span class="param-val" id="wavelengthVal">254 nm</span></label>
+    <label for="wavelengthInput">UV Wavelength (λ) &nbsp;<span class="param-val" id="wavelengthVal">254 nm</span> <span id="infoWavelength">ⓘ</span></label>
     <input id="wavelengthInput" type="range" min="200" max="400" step="2" value="254">
 
     <br><br>
@@ -77,13 +78,9 @@
 
     <br><br>
 
-    <label for="compoundSelect">Sample Compound</label><br>
+    <label for="compoundSelect">Sample Browser (Registry Driven)</label><br>
     <select id="compoundSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
-      <option value="paracetamol">Paracetamol (Weak Acid, pKa 9.5)</option>
-      <option value="caffeine">Caffeine (Neutral, pKa 14.0)</option>
-      <option value="aspirin">Aspirin (Weak Acid, pKa 3.5)</option>
-      <option value="ibuprofen">Ibuprofen (Weak Acid, pKa 4.4)</option>
-      <option value="mixture" selected>── Mixture (all four) ──</option>
+      <!-- Auto-populated by SampleBrowserComponent -->
     </select>
 
     <br><br>
@@ -152,10 +149,12 @@
   import { GraphView } from './ui/graph.js';
   import { ControlsView } from './ui/controls.js';
   import { DisplayView } from './ui/display.js';
-  import { MethodLabCardView } from './ui/methodLabCard.js';
   import { CompareView } from './ui/compareView.js';
   import { HistoryView } from './ui/historyView.js';
   import { SpectrumView } from './ui/spectrumView.js';
+  import { SampleBrowserComponent } from '../../ui/components/SampleBrowser.js';
+  import { ReportCardComponent } from '../../ui/components/ReportCard.js';
+  import { globalModal } from '../../ui/components/Modal.js';
   import { getMethodExercise } from './engine/methodProfiles.js';
 
   async function injectDiagramSVG() {
@@ -178,13 +177,24 @@
     const graphView = new GraphView("graphCanvas");
     const controlsView = new ControlsView(controller);
     const displayView = new DisplayView();
-    const labCardView = new MethodLabCardView("methodLabContainer");
     const compareView = new CompareView("compareContainer");
     const historyView = new HistoryView("historyContainer");
     const spectrumView = new SpectrumView("spectrumCanvas");
+    const sampleBrowser = new SampleBrowserComponent("compoundSelect");
+    const reportCard = new ReportCardComponent("methodLabContainer");
 
-    labCardView.render(null, getMethodExercise(controller.exerciseProfileId));
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
+
+    // 60s Guided Demo Button Handler
+    const demoBtn = document.getElementById("guidedDemoBtn");
+    if (demoBtn) {
+      demoBtn.onclick = () => {
+        globalModal.show(
+          "⚡ 60-Second Guided HPLC Demo",
+          "Welcome to Virtual HPLC Simulator!<br><br>1. Click <strong>▶ Pump START</strong> to pressurize the system.<br>2. Click <strong>Inject Sample</strong> to run the chromatogram.<br>3. Watch real-time peak separation and view your Method Evaluation Report!<br><br>Ready?"
+        );
+      };
+    }
 
     controller.eventBus.on("statusChanged", ({ newState }) => {
       displayView.setStatus(newState);
@@ -197,10 +207,6 @@
 
     controller.eventBus.on("wavelengthChanged", ({ wavelengthNm }) => {
       spectrumView.renderSpectrum(controller.simState.sampleKey, wavelengthNm);
-    });
-
-    controller.eventBus.on("exerciseChanged", ({ exerciseProfileId }) => {
-      labCardView.render(null, getMethodExercise(exerciseProfileId));
     });
 
     controller.eventBus.on("runStarted", () => {
@@ -221,7 +227,7 @@
 
     controller.eventBus.on("runCompleted", ({ runResult, exerciseProfile, methodComparison, methodHistory }) => {
       displayView.renderPeakTable(runResult);
-      labCardView.render(runResult, exerciseProfile);
+      reportCard.render(runResult, exerciseProfile);
       compareView.render(methodComparison);
       historyView.render(methodHistory);
     });
@@ -229,6 +235,7 @@
     const compoundSelect = document.getElementById("compoundSelect");
     if (compoundSelect) {
       compoundSelect.addEventListener("change", (e) => {
+        controller.setSampleKey(e.target.value);
         spectrumView.renderSpectrum(e.target.value, controller.simState.wavelengthNm);
       });
     }

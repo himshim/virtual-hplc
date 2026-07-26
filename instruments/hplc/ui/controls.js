@@ -1,5 +1,7 @@
+import { globalModal } from '../../ui/components/Modal.js';
+
 /**
- * controls.js - DOM Inputs & User Action Bindings
+ * controls.js - DOM Inputs, User Action Bindings & Educational Tooltips ⓘ
  */
 export class ControlsView {
   constructor(controller) {
@@ -27,6 +29,7 @@ export class ControlsView {
     this.injectBtn = document.getElementById("injectBtn");
 
     this.bindEvents();
+    this.bindTooltips();
   }
 
   bindEvents() {
@@ -124,6 +127,43 @@ export class ControlsView {
         this.controller.injectSample();
       };
     }
+  }
+
+  bindTooltips() {
+    const tooltipMap = {
+      infoFlow: {
+        title: "ⓘ Flow Rate (mL/min)",
+        body: "<strong>What is this?</strong> Speed at which mobile phase solvent is pumped through the column.<br><strong>What happens?</strong> Higher flow rate speeds up analysis (shorter run time) but increases system backpressure ($P \\propto F$).<br><strong>Lab Note:</strong> Standard $4.6\\text{ mm}$ columns operate at $1.0 - 1.5\\text{ mL/min}$."
+      },
+      infoOrganic: {
+        title: "ⓘ Mobile Phase %B (Organic Solvent)",
+        body: "<strong>What is this?</strong> Percentage of strong organic solvent (Methanol/Acetonitrile) in mobile phase.<br><strong>What happens?</strong> Higher %B reduces solute retention on hydrophobic C18 column ($t_R \\downarrow$).<br><strong>Lab Note:</strong> 10% change in %B typically shifts retention by $2\\times - 3\\times$."
+      },
+      infoTemp: {
+        title: "ⓘ Column Temperature (°C)",
+        body: "<strong>What is this?</strong> Thermostatic column oven temperature.<br><strong>What happens?</strong> Higher temperature lowers mobile phase viscosity, reducing system backpressure by ~28% @ 50°C while slightly accelerating elution.<br><strong>Lab Note:</strong> Used to manage high backpressure without sacrificing flow rate."
+      },
+      infoPh: {
+        title: "ⓘ Mobile Phase pH",
+        body: "<strong>What is this?</strong> Acidity/alkalinity of mobile phase aqueous buffer.<br><strong>What happens?</strong> Alters ionization state of weak acids and bases. Ionized species ($\text{COO}^-$) are hydrophilic and elute much faster.<br><strong>Lab Note:</strong> Maintain $\\text{pH} = \\text{p}K_a \\pm 2$ for robust un-ionized or fully ionized method control."
+      },
+      infoBuffer: {
+        title: "ⓘ Buffer System Entity",
+        body: "<strong>What is this?</strong> Weak acid/conjugate base solution maintaining constant mobile phase pH.<br><strong>What happens?</strong> Prevents pH drift during sample injection.<br><strong>Lab Note:</strong> Ensure selected pH falls within buffer's effective buffering range ($\text{p}K_a \\pm 1.0$)."
+      },
+      infoWavelength: {
+        title: "ⓘ UV Wavelength λ (nm)",
+        body: "<strong>What is this?</strong> Optical wavelength of UV/Vis detector cell.<br><strong>What happens?</strong> Peak height depends on analyte extinction coefficient $\\epsilon(\\lambda)$ at selected wavelength according to Beer-Lambert Law.<br><strong>Lab Note:</strong> Set $\\lambda = \\lambda_{\\max}$ for maximum sensitivity or selective detection."
+      }
+    };
+
+    Object.keys(tooltipMap).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.cursor = "pointer";
+        el.onclick = () => globalModal.show(tooltipMap[id].title, tooltipMap[id].body);
+      }
+    });
   }
 
   updateControlsForState(state) {
