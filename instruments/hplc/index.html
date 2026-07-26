@@ -216,6 +216,9 @@
 
   <!-- TAB 5: LEARN & SCHEMATIC -->
   <div id="tab-learn" class="tab-panel">
+    <!-- Scientific Validation Suite Dashboard Card -->
+    <div id="validation-dashboard-container" style="margin-bottom: 20px;"></div>
+
     <div class="instrument-card">
       <h2 style="margin-top:0; color:var(--brand-primary);">HPLC Flow Schematic</h2>
       <div id="diagramContainer" style="overflow-x:auto;">Loading diagram…</div>
@@ -241,6 +244,7 @@
   import { SpectrumView } from './ui/spectrumView.js';
   import { SampleBrowserComponent } from '../../ui/components/SampleBrowser.js';
   import { ReportCardComponent } from '../../ui/components/ReportCard.js';
+  import { ValidationDashboard } from '../../ui/components/ValidationDashboard.js';
   import { globalModal } from '../../ui/components/Modal.js';
 
   async function injectDiagramSVG() {
@@ -267,10 +271,12 @@
     const historyView = new HistoryView("historyContainer");
     const spectrumView = new SpectrumView("spectrumCanvas");
     
-    // P3 Registry-Driven Sample Card Browser
+    // P3 Registry-Driven Sample Card Browser & Validation Dashboard
     const sampleBrowser = new SampleBrowserComponent("compoundSelect", "sampleGridContainer");
     const reportCard = new ReportCardComponent("methodLabContainer");
+    const validationDashboard = new ValidationDashboard("validation-dashboard-container");
 
+    validationDashboard.render();
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
 
     // Sync Beginner quick sample dropdown with primary compoundSelect
