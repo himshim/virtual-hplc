@@ -937,5 +937,29 @@
     <div id="drawerBody" class="drawer-body"></div>
   </aside>
 
+  <!-- Sprint U5: Persistent Context Sticky Telemetry & Live PiP Card -->
+  <div id="stickyTelemetryPip" class="sticky-telemetry-pip" role="region" aria-label="Sticky Telemetry Summary">
+    <div class="sticky-pip-item">
+      <span id="pipStateVal" style="color:#38bdf8; font-weight:700;">🟢 READY</span>
+    </div>
+    <span class="sticky-pip-divider">|</span>
+    <div class="sticky-pip-item">
+      <span>⏱</span> <span id="pipTimerVal">0.00 min</span>
+    </div>
+    <span class="sticky-pip-divider">|</span>
+    <div class="sticky-pip-item">
+      <span>🔵</span> <span id="pipPressureVal">0.0 bar</span>
+    </div>
+  </div>
+
+  <!-- Live Chromatogram Picture-in-Picture Mini Card -->
+  <div id="liveChromatogramPip" class="live-chromatogram-pip" role="button" aria-label="Return to full chromatogram">
+    <div class="pip-header">
+      <span>📈 Live Chromatogram</span>
+      <span id="pipAcqStatus" style="font-size:0.68rem; color:#34d399;">RUNNING</span>
+    </div>
+    <canvas id="pipSparklineCanvas" class="pip-sparkline" width="200" height="48"></canvas>
+  </div>
+
 </body>
 </html>

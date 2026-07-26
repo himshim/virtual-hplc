@@ -18,6 +18,7 @@ export class UiCoordinator {
     this.bindEvents();
     this.bindWhyModal();
     this.bindFloatingDockAndDrawers();
+    this.bindStickyObserverAndPip();
   }
 
   /** Centralized Event Subscriptions */
@@ -38,12 +39,16 @@ export class UiCoordinator {
       if (this.views.runTimeline)  this._updateTimelinePhase(newState);
       this._updateCdsStateVal(newState);
       this._updateStepHighlight(newState);
+      const pipState = document.getElementById('pipStateVal');
+      if (pipState) pipState.textContent = `● ${newState}`;
     });
 
     bus.on(HPLC_EVENTS.PRESSURE_CHANGED, ({ pressure }) => {
       if (this.views.displayView)  this.views.displayView.setPressure(pressure);
       if (this.views.statusBar)    this.views.statusBar.update({ pressureBar: pressure });
       this._updateCdsPressureVal(pressure);
+      const pipP = document.getElementById('pipPressureVal');
+      if (pipP) pipP.textContent = `${pressure.toFixed(1)} bar`;
     });
 
     bus.on(HPLC_EVENTS.WAVELENGTH_CHANGED, ({ wavelengthNm }) => {
@@ -68,6 +73,7 @@ export class UiCoordinator {
       if (this.views.narrator)                this.views.narrator.clear();
       if (this.views.methodReplay)            this.views.methodReplay.reset();
 
+      this.pipDataPoints = [];
       this._updateStepHighlight('RUNNING');
 
       if (expectedAnalytes && expectedAnalytes.length && this.views.interactiveChromatogram) {
@@ -86,16 +92,21 @@ export class UiCoordinator {
 
     bus.on(HPLC_EVENTS.TICK, ({ time, signal, pressure, phase }) => {
       if (this.views.displayView) this.views.displayView.setTimeDisplay(time);
+      const pipTimer = document.getElementById('pipTimerVal');
+      if (pipTimer) pipTimer.textContent = `${time.toFixed(2)} min`;
 
       const state = this.controller.getState();
       if (state === 'PRIMING' || state === 'EQUILIBRATING' || state === 'READY' || state === 'RUNNING') {
         if (this.views.graphView) this.views.graphView.addPoint(time, signal);
 
-        if (state === 'RUNNING' && this.views.runTimeline) {
-          if (time < 0.3)      this.views.runTimeline.setPhase('prime');
-          else if (time < 0.8) this.views.runTimeline.setPhase('equilibrate');
-          else if (time < 1.5) this.views.runTimeline.setPhase('inject');
-          else                 this.views.runTimeline.setPhase('separation');
+        if (state === 'RUNNING') {
+          this._updatePipSparkline(time, signal);
+          if (this.views.runTimeline) {
+            if (time < 0.3)      this.views.runTimeline.setPhase('prime');
+            else if (time < 0.8) this.views.runTimeline.setPhase('equilibrate');
+            else if (time < 1.5) this.views.runTimeline.setPhase('inject');
+            else                 this.views.runTimeline.setPhase('separation');
+          }
         }
       }
     });
@@ -315,5 +326,75 @@ export class UiCoordinator {
 
     backdrop.classList.add('active');
     drawer.classList.add('active');
+  }
+
+  /** Sprint U5: Persistent Context Sticky Telemetry & Live PiP Card */
+  bindStickyObserverAndPip() {
+    this.pipDataPoints = [];
+    const heroStrip = document.getElementById('cds-telemetry-strip');
+    const heroGraph = document.getElementById('graphCanvas');
+    const stickyPip = document.getElementById('stickyTelemetryPip');
+    const livePip = document.getElementById('liveChromatogramPip');
+
+    if (heroStrip && stickyPip && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) {
+            stickyPip.classList.add('visible');
+          } else {
+            stickyPip.classList.remove('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+      observer.observe(heroStrip);
+    }
+
+    if (heroGraph && livePip && 'IntersectionObserver' in window) {
+      const graphObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const isRunning = this.controller.getState() === 'RUNNING';
+          if (!entry.isIntersecting && isRunning) {
+            livePip.classList.add('visible');
+          } else {
+            livePip.classList.remove('visible');
+          }
+        });
+      }, { threshold: 0.2 });
+      graphObserver.observe(heroGraph);
+    }
+
+    if (livePip) {
+      livePip.addEventListener('click', () => {
+        const graph = document.getElementById('graphCanvas');
+        if (graph) graph.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+  }
+
+  /** Render real-time mini sparkline trace inside PiP Canvas */
+  _updatePipSparkline(time, signal) {
+    if (!this.pipDataPoints) this.pipDataPoints = [];
+    this.pipDataPoints.push({ time, signal });
+    if (this.pipDataPoints.length > 150) this.pipDataPoints.shift();
+
+    const canvas = document.getElementById('pipSparklineCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+
+    const maxSig = Math.max(10, ...this.pipDataPoints.map(p => p.signal));
+    this.pipDataPoints.forEach((pt, idx) => {
+      const x = (idx / (this.pipDataPoints.length - 1 || 1)) * w;
+      const y = h - (pt.signal / maxSig) * (h - 6) - 3;
+      if (idx === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
   }
 }
