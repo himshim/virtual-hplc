@@ -398,6 +398,7 @@
   import { EducationalNarrator } from './ui/EducationalNarrator.js';
   // v1.x Method Replay
   import { MethodReplay } from './ui/MethodReplay.js';
+  import { HPLC_EVENTS } from './controller/HplcEvents.js';
 
   async function injectDiagramSVG() {
     const container = document.getElementById("diagramContainer");
@@ -545,7 +546,7 @@
       };
     }
 
-    controller.eventBus.on("baselineStabilized", () => {
+    controller.eventBus.on(HPLC_EVENTS.BASELINE_STABILIZED, () => {
       const acqLabel = document.getElementById("acqPhaseLabel");
       if (acqLabel) acqLabel.textContent = "🟢 READY FOR INJECTION";
       if (_beginnerAutoInjectPending && controller.getState() === 'READY') {
@@ -588,7 +589,7 @@
       };
     }
 
-    controller.eventBus.on("statusChanged", ({ newState }) => {
+    controller.eventBus.on(HPLC_EVENTS.STATUS_CHANGED, ({ newState }) => {
       displayView.setStatus(newState);
       controlsView.updateControlsForState(newState);
       statusBar.update({ status: newState });
@@ -655,24 +656,24 @@
       }
     });
 
-    controller.eventBus.on("pressureChanged", ({ pressure }) => {
+    controller.eventBus.on(HPLC_EVENTS.PRESSURE_CHANGED, ({ pressure }) => {
       displayView.setPressure(pressure);
       statusBar.update({ pressureBar: pressure });
       const cdsP = document.getElementById("cdsPressureVal");
       if (cdsP) cdsP.textContent = `${pressure.toFixed(1)} bar`;
     });
 
-    controller.eventBus.on("wavelengthChanged", ({ wavelengthNm }) => {
+    controller.eventBus.on(HPLC_EVENTS.WAVELENGTH_CHANGED, ({ wavelengthNm }) => {
       spectrumView.renderSpectrum(controller.simState.sampleKey, wavelengthNm);
     });
 
-    controller.eventBus.on("injectingStarted", () => {
+    controller.eventBus.on(HPLC_EVENTS.INJECTING_STARTED, () => {
       runTimeline.setPhase('inject');
       const acqLabel = document.getElementById("acqPhaseLabel");
       if (acqLabel) acqLabel.textContent = "💉 INJECTING SAMPLE (Valve turning...)";
     });
 
-    controller.eventBus.on("runStarted", ({ expectedAnalytes }) => {
+    controller.eventBus.on(HPLC_EVENTS.RUN_STARTED, ({ expectedAnalytes }) => {
       graphView.reset();
       displayView.renderPeakTable(null);
       runTimeline.setPhase('separation');
@@ -681,7 +682,6 @@
       narrator.clear();
       methodReplay.reset();
 
-      // Render faint live retention target markers on chromatogram
       if (expectedAnalytes && expectedAnalytes.length) {
         interactiveChromatogram.setExpectedMarkers(expectedAnalytes);
       }
@@ -690,18 +690,17 @@
       if (ghost) ghost.classList.add("hidden");
     });
 
-    controller.eventBus.on("peakDetectedLive", ({ compound }) => {
+    controller.eventBus.on(HPLC_EVENTS.PEAK_DETECTED_LIVE, ({ compound }) => {
       interactiveChromatogram.markLiveDetected(compound);
     });
 
-    controller.eventBus.on("tick", ({ time, signal, pressure, phase }) => {
+    controller.eventBus.on(HPLC_EVENTS.TICK, ({ time, signal, pressure, phase }) => {
       displayView.setTimeDisplay(time);
 
       const state = controller.getState();
       if (state === 'PRIMING' || state === 'EQUILIBRATING' || state === 'READY' || state === 'RUNNING') {
         graphView.addPoint(time, signal);
 
-        // Timeline phase sync during RUNNING
         if (state === 'RUNNING') {
           if (time < 0.3)      runTimeline.setPhase('prime');
           else if (time < 0.8) runTimeline.setPhase('equilibrate');
@@ -711,11 +710,11 @@
       }
     });
 
-    controller.eventBus.on("warningRaised", ({ warnings }) => {
+    controller.eventBus.on(HPLC_EVENTS.WARNING_RAISED, ({ warnings }) => {
       displayView.setWarnings(warnings);
     });
 
-    controller.eventBus.on("runCompleted", ({ runResult, exerciseProfile, methodComparison, methodHistory }) => {
+    controller.eventBus.on(HPLC_EVENTS.RUN_COMPLETED, ({ runResult, exerciseProfile, methodComparison, methodHistory }) => {
       displayView.renderPeakTable(runResult);
       reportCard.render(runResult, exerciseProfile);
       compareView.render(methodComparison);
