@@ -908,5 +908,34 @@
     </div>
   </div>
 
+  <!-- Sprint E3: Context-Aware Floating Action Dock (Progressive Disclosure) -->
+  <div id="floatingQuickDock" class="floating-quick-dock" role="toolbar" aria-label="Quick Action Shortcuts">
+    <button id="fabMethodBtn" class="fab-btn" aria-label="Open Method Tuning Drawer">
+      <span>⚙️</span><span class="fab-label">Method</span>
+    </button>
+    <button id="fabSampleBtn" class="fab-btn" aria-label="Open Sample Selection Drawer">
+      <span>🧪</span><span class="fab-label">Sample</span>
+    </button>
+    <button id="fabWhyBtn" class="fab-btn" aria-label="Open Educational Explanation">
+      <span>❓</span><span class="fab-label">Why?</span>
+    </button>
+    <button id="fabNotebookBtn" class="fab-btn highlight" aria-label="Open Experiment Notebook Drawer">
+      <span>📝</span><span class="fab-label">Notebook</span>
+    </button>
+  </div>
+
+  <!-- Sprint E3: Slide-Over Off-Canvas Drawer -->
+  <div id="drawerBackdrop" class="drawer-backdrop" aria-hidden="true"></div>
+  <aside id="slideOverDrawer" class="slide-over-drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <div class="drawer-header">
+      <h3 id="drawerTitle" class="drawer-title">
+        <span id="drawerIcon">📝</span>
+        <span id="drawerTitleText">Experiment Notebook</span>
+      </h3>
+      <button id="closeDrawerBtn" class="drawer-close-btn" aria-label="Close drawer">✕</button>
+    </div>
+    <div id="drawerBody" class="drawer-body"></div>
+  </aside>
+
 </body>
 </html>

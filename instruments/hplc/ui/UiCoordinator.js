@@ -17,6 +17,7 @@ export class UiCoordinator {
     this.views = views;
     this.bindEvents();
     this.bindWhyModal();
+    this.bindFloatingDockAndDrawers();
   }
 
   /** Centralized Event Subscriptions */
@@ -240,5 +241,79 @@ export class UiCoordinator {
     }
 
     overlay.style.display = 'flex';
+  }
+
+  /** Sprint E3: Bind Floating Quick Action Dock & Off-Canvas Drawers */
+  bindFloatingDockAndDrawers() {
+    const fabMethod = document.getElementById('fabMethodBtn');
+    const fabSample = document.getElementById('fabSampleBtn');
+    const fabWhy = document.getElementById('fabWhyBtn');
+    const fabNotebook = document.getElementById('fabNotebookBtn');
+    const drawer = document.getElementById('slideOverDrawer');
+    const backdrop = document.getElementById('drawerBackdrop');
+    const closeBtn = document.getElementById('closeDrawerBtn');
+
+    if (fabMethod) {
+      fabMethod.addEventListener('click', () => {
+        const methodTab = document.getElementById('tabBtn-method');
+        if (methodTab) methodTab.click();
+      });
+    }
+
+    if (fabSample) {
+      fabSample.addEventListener('click', () => {
+        const sampleTab = document.getElementById('tabBtn-sample');
+        if (sampleTab) sampleTab.click();
+      });
+    }
+
+    if (fabWhy) {
+      fabWhy.addEventListener('click', () => {
+        this.showWhyModal('flowRate');
+      });
+    }
+
+    if (fabNotebook) {
+      fabNotebook.addEventListener('click', () => {
+        const notebookContainer = document.getElementById('experiment-notebook-container');
+        if (notebookContainer) {
+          this.openDrawer('Experiment Notebook', '📝', notebookContainer);
+        } else {
+          const resultsTab = document.getElementById('tabBtn-results');
+          if (resultsTab) resultsTab.click();
+        }
+      });
+    }
+
+    const closeDrawer = () => {
+      if (drawer) drawer.classList.remove('active');
+      if (backdrop) backdrop.classList.remove('active');
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    if (backdrop) backdrop.addEventListener('click', closeDrawer);
+  }
+
+  openDrawer(title, icon, contentElement) {
+    const drawer = document.getElementById('slideOverDrawer');
+    const backdrop = document.getElementById('drawerBackdrop');
+    const titleText = document.getElementById('drawerTitleText');
+    const iconEl = document.getElementById('drawerIcon');
+    const drawerBody = document.getElementById('drawerBody');
+
+    if (!drawer || !backdrop || !drawerBody) return;
+
+    if (titleText) titleText.textContent = title;
+    if (iconEl) iconEl.textContent = icon;
+
+    // Temporarily mount content inside drawer if needed
+    drawerBody.innerHTML = '';
+    if (contentElement) {
+      const clone = contentElement.cloneNode(true);
+      drawerBody.appendChild(clone);
+    }
+
+    backdrop.classList.add('active');
+    drawer.classList.add('active');
   }
 }
