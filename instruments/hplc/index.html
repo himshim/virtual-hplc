@@ -11,8 +11,8 @@
 <body>
 
 <header class="hero">
-  <h1>HPLC Simulator & Method Development Lab</h1>
-  <p>Interactive reversed-phase HPLC virtual instrument with Chemistry Entity Platform & UV Wavelength Selector</p>
+  <h1>HPLC Simulator & Solution Chemistry Lab</h1>
+  <p>Interactive reversed-phase HPLC virtual instrument with Solution Chemistry Engine (pH, pKa Ionization & Buffers)</p>
 </header>
 
 <main class="instrument-grid">
@@ -53,6 +53,20 @@
 
     <br><br>
 
+    <label for="phInput">Mobile Phase pH &nbsp;<span class="param-val" id="phVal">pH 7.0</span></label>
+    <input id="phInput" type="range" min="2.0" max="8.0" step="0.1" value="7.0">
+
+    <br><br>
+
+    <label for="bufferSelect">Buffer System Entity</label><br>
+    <select id="bufferSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
+      <option value="phosphate_buffer" selected>Phosphate Buffer (pH 2.0–8.0, UV 200nm)</option>
+      <option value="acetate_buffer">Acetate Buffer (pH 3.8–5.8, UV 210nm, LC-MS)</option>
+      <option value="formate_buffer">Formate Buffer (pH 2.8–4.8, UV 210nm, LC-MS)</option>
+    </select>
+
+    <br><br>
+
     <label for="wavelengthInput">UV Wavelength (λ) &nbsp;<span class="param-val" id="wavelengthVal">254 nm</span></label>
     <input id="wavelengthInput" type="range" min="200" max="400" step="2" value="254">
 
@@ -65,10 +79,10 @@
 
     <label for="compoundSelect">Sample Compound</label><br>
     <select id="compoundSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
-      <option value="paracetamol">Paracetamol</option>
-      <option value="caffeine">Caffeine</option>
-      <option value="aspirin">Aspirin</option>
-      <option value="ibuprofen">Ibuprofen</option>
+      <option value="paracetamol">Paracetamol (Weak Acid, pKa 9.5)</option>
+      <option value="caffeine">Caffeine (Neutral, pKa 14.0)</option>
+      <option value="aspirin">Aspirin (Weak Acid, pKa 3.5)</option>
+      <option value="ibuprofen">Ibuprofen (Weak Acid, pKa 4.4)</option>
       <option value="mixture" selected>── Mixture (all four) ──</option>
     </select>
 
@@ -169,11 +183,9 @@
     const historyView = new HistoryView("historyContainer");
     const spectrumView = new SpectrumView("spectrumCanvas");
 
-    // Render initial views
     labCardView.render(null, getMethodExercise(controller.exerciseProfileId));
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
 
-    // Event Subscriptions
     controller.eventBus.on("statusChanged", ({ newState }) => {
       displayView.setStatus(newState);
       controlsView.updateControlsForState(newState);
@@ -214,7 +226,6 @@
       historyView.render(methodHistory);
     });
 
-    // Handle compound selector changes to update spectrum canvas
     const compoundSelect = document.getElementById("compoundSelect");
     if (compoundSelect) {
       compoundSelect.addEventListener("change", (e) => {
@@ -222,7 +233,6 @@
       });
     }
 
-    // Initialize instrument
     controller.init();
   });
 </script>

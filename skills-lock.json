@@ -7,11 +7,23 @@
       "skillPath": "analytical-chemistry/SKILL.md",
       "computedHash": "fb4d94e0777885e5b511c0f2920ba6c9cb91297d7b1c8b7a385ed1aa345ece08"
     },
+    "caveman": {
+      "source": "juliusbrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/caveman/SKILL.md",
+      "computedHash": "723fb2a8bec1156c0f0b5bf020cc739ed09702b7726ec6377480038871339f6e"
+    },
     "chemistry-skills": {
       "source": "wentorai/research-plugins",
       "sourceType": "github",
       "skillPath": "skills/domains/chemistry/SKILL.md",
       "computedHash": "4061cfa184ce4ca08cc919beac65ac9b5b627a29b54a4616e2cfe10423415db7"
+    },
+    "ponytail": {
+      "source": "dietrichgebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail/SKILL.md",
+      "computedHash": "9e8d05cbbaf6dc38f0cffc924c09b3cbe76d94ba4ba0d09bde803da2f8c6b5a0"
     }
   }
 }

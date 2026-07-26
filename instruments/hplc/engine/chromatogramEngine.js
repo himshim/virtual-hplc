@@ -1,16 +1,13 @@
-import { getDeadTime, getRetentionFactor, getRetentionTime } from './retention.js';
+import { getDeadTime, getRetentionTime, getObservedRetentionFactor } from './retention.js';
 import { getPeakSigma, getGaussianHeight } from './peak.js';
 import { getBaselineNoise } from './detector.js';
 import { UV_DETECTOR_PLUGIN } from '../../../chemistry/detectors/uvDetector.js';
 
 /**
  * Calculates instantaneous combined detector signal at time t for a given sample composition.
- * Querying Compound entities and UV Detector Plugin.
- * @param {number} t - Current time in minutes
- * @param {Object} sampleEntity - Mixture or Compound entity from Chemistry Registry
- * @param {Object} params - { flowRate, organicPercent, sensitivity, temperature, wavelengthNm }
+ * Querying Compound entities, Solution Chemistry Engine, and UV Detector Plugin.
  */
-export function synthesizeInstantSignal(t, sampleEntity, { flowRate, organicPercent, sensitivity, temperature = 25, wavelengthNm = 254 }) {
+export function synthesizeInstantSignal(t, sampleEntity, { flowRate, organicPercent, sensitivity, temperature = 25, wavelengthNm = 254, pH = 7.0, bufferEntity = null }) {
   const t0 = getDeadTime(flowRate);
   let totalPeakSignal = 0;
   const peakContributions = [];
@@ -23,9 +20,7 @@ export function synthesizeInstantSignal(t, sampleEntity, { flowRate, organicPerc
     const compound = compDef.compound;
     if (!compound || !compound.chromatography) continue;
 
-    const kw = compound.chromatography.kw;
-    const S = compound.chromatography.S;
-    const k = getRetentionFactor(kw, S, organicPercent, temperature);
+    const k = getObservedRetentionFactor(compound, organicPercent, temperature, pH, bufferEntity);
     const tR = getRetentionTime(t0, k);
     const sigma = getPeakSigma(tR, flowRate, temperature);
 
@@ -36,8 +31,6 @@ export function synthesizeInstantSignal(t, sampleEntity, { flowRate, organicPerc
     totalPeakSignal += peakVal;
     peakContributions.push({
       compound: compound.name,
-      kw,
-      S,
       tR,
       sigma,
       signal: peakVal

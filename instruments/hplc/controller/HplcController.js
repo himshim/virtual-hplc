@@ -1,6 +1,7 @@
 import { SimulationController } from '../../../core/SimulationController.js';
 import { globalEntityRegistry } from '../../../chemistry/registry/EntityRegistry.js';
 import { bootstrapChemistryRegistry } from '../../../chemistry/registry/bootstrapRegistry.js';
+import { SolutionChemistryEngine } from '../../../chemistry/engine/solutionChemistryEngine.js';
 import { UV_DETECTOR_PLUGIN } from '../../../chemistry/detectors/uvDetector.js';
 import { SimulationState } from '../models/SimulationState.js';
 import { Chromatogram } from '../models/Chromatogram.js';
@@ -9,7 +10,7 @@ import { Peak } from '../models/Peak.js';
 import { MethodHistory } from '../models/MethodHistory.js';
 import { MethodComparison } from '../models/MethodComparison.js';
 import { getSystemPressure } from '../engine/pressure.js';
-import { getDeadTime, getRetentionFactor, getRetentionTime } from '../engine/retention.js';
+import { getDeadTime, getRetentionTime, getObservedRetentionFactor } from '../engine/retention.js';
 import { getPeakSigma } from '../engine/peak.js';
 import { isDetectorSaturated } from '../engine/detector.js';
 import { synthesizeInstantSignal } from '../engine/chromatogramEngine.js';
@@ -39,12 +40,13 @@ export class HplcController extends SimulationController {
       speedMultiplier: DEFAULT_SPEED
     });
 
-    // Ensure central Chemistry Entity Registry is bootstrapped
     bootstrapChemistryRegistry();
 
     this.simState = new SimulationState();
     this.simState.temperature = 25;
-    this.simState.wavelengthNm = 254; // Default 254 nm UV wavelength
+    this.simState.wavelengthNm = 254;
+    this.simState.pH = 7.0; // Default neutral pH
+    this.simState.bufferKey = "phosphate_buffer";
 
     this.chromatogram = new Chromatogram();
     this.methodHistory = new MethodHistory();
@@ -55,7 +57,6 @@ export class HplcController extends SimulationController {
     this.updatePressure();
   }
 
-  // Implementation of Generic Instrument Interface
   initialize() {
     this.stateMachine.transitionTo('IDLE');
     this.eventBus.emit('instrumentInitialized', { instrumentId: 'HPLC' });
@@ -66,69 +67,48 @@ export class HplcController extends SimulationController {
     if (configParams.organicPercent) this.setOrganicPercent(configParams.organicPercent);
     if (configParams.temperature) this.setTemperature(configParams.temperature);
     if (configParams.wavelengthNm) this.setWavelength(configParams.wavelengthNm);
+    if (configParams.pH) this.setPh(configParams.pH);
+    if (configParams.bufferKey) this.setBufferKey(configParams.bufferKey);
     if (configParams.sampleKey) this.setSampleKey(configParams.sampleKey);
   }
 
-  run() {
-    return this.injectSample();
-  }
+  run() { return this.injectSample(); }
+  stop() { return this.stopPump(); }
+  evaluate(runResult) { return scoreMethodExercise(runResult, getMethodExercise(this.exerciseProfileId)); }
+  report(runResult) { return runResult; }
 
-  stop() {
-    return this.stopPump();
-  }
-
-  evaluate(runResult) {
-    const exerciseProfile = getMethodExercise(this.exerciseProfileId);
-    return scoreMethodExercise(runResult, exerciseProfile);
-  }
-
-  report(runResult) {
-    return runResult;
-  }
-
-  setFlowRate(flowRate) {
-    this.simState.flowRate = Number(flowRate);
-    this.updatePressure();
-  }
-
-  setOrganicPercent(organicPercent) {
-    this.simState.organicPercent = Number(organicPercent);
-    this.updatePressure();
-  }
-
-  setTemperature(tempCelsius) {
-    this.simState.temperature = Number(tempCelsius);
-    this.updatePressure();
-  }
-
+  setFlowRate(flowRate) { this.simState.flowRate = Number(flowRate); this.updatePressure(); }
+  setOrganicPercent(organicPercent) { this.simState.organicPercent = Number(organicPercent); this.updatePressure(); }
+  setTemperature(tempCelsius) { this.simState.temperature = Number(tempCelsius); this.updatePressure(); }
   setWavelength(wavelengthNm) {
     this.simState.wavelengthNm = Number(wavelengthNm);
     this.eventBus.emit('wavelengthChanged', { wavelengthNm: this.simState.wavelengthNm });
   }
 
-  setSensitivity(sensitivity) {
-    this.simState.sensitivity = Number(sensitivity);
+  setPh(pH) {
+    this.simState.pH = Number(pH);
+    this.eventBus.emit('phChanged', { pH: this.simState.pH });
   }
 
-  setSampleKey(sampleKey) {
-    this.simState.sampleKey = sampleKey;
+  setBufferKey(bufferKey) {
+    this.simState.bufferKey = bufferKey;
+    this.eventBus.emit('bufferChanged', { bufferKey });
   }
 
+  setSensitivity(sensitivity) { this.simState.sensitivity = Number(sensitivity); }
+  setSampleKey(sampleKey) { this.simState.sampleKey = sampleKey; }
   setCriteriaProfile(profileKey) {
     this.criteriaProfile = profileKey;
     this.eventBus.emit('criteriaChanged', { criteriaProfile: profileKey });
   }
-
   setExerciseProfile(exerciseId) {
     this.exerciseProfileId = exerciseId;
     this.eventBus.emit('exerciseChanged', { exerciseProfileId: exerciseId });
   }
 
   getSampleEntity() {
-    // Resolve mixture or single compound from global EntityRegistry
     const mix = globalEntityRegistry.getMixture(this.simState.sampleKey);
     if (mix) {
-      // Resolve components to Compound entities
       const resolvedComp = mix.components.map(c => ({
         compound: globalEntityRegistry.getCompound(c.compoundId),
         concentration: c.concentration,
@@ -136,21 +116,16 @@ export class HplcController extends SimulationController {
       })).filter(c => c.compound !== null);
       return { ...mix, components: resolvedComp };
     }
-
     const singleComp = globalEntityRegistry.getCompound(this.simState.sampleKey);
-    if (singleComp) {
-      return { name: singleComp.name, components: [{ compound: singleComp, concentration: 1.0 }] };
-    }
+    return singleComp ? { name: singleComp.name, components: [{ compound: singleComp, concentration: 1.0 }] } : null;
+  }
 
-    return null;
+  getBufferEntity() {
+    return globalEntityRegistry.get(this.simState.bufferKey);
   }
 
   updatePressure() {
-    const p = getSystemPressure(
-      this.simState.flowRate,
-      this.simState.organicPercent,
-      this.simState.temperature
-    );
+    const p = getSystemPressure(this.simState.flowRate, this.simState.organicPercent, this.simState.temperature);
     this.simState.pressure = p;
     this.eventBus.emit('pressureChanged', { pressure: p });
 
@@ -166,7 +141,6 @@ export class HplcController extends SimulationController {
   startPump() {
     const p = this.updatePressure();
     if (p > MAX_PRESSURE_BAR) return false;
-
     if (this.stateMachine.transitionTo('READY')) {
       this.clock.start();
       return true;
@@ -187,6 +161,7 @@ export class HplcController extends SimulationController {
     this.chromatogram.clear();
 
     const sampleEntity = this.getSampleEntity();
+    const bufferEntity = this.getBufferEntity();
     const t0 = getDeadTime(this.simState.flowRate);
     let maxTR = t0;
 
@@ -194,7 +169,7 @@ export class HplcController extends SimulationController {
       for (const compDef of sampleEntity.components) {
         const compound = compDef.compound;
         if (!compound || !compound.chromatography) continue;
-        const k = getRetentionFactor(compound.chromatography.kw, compound.chromatography.S, this.simState.organicPercent, this.simState.temperature);
+        const k = getObservedRetentionFactor(compound, this.simState.organicPercent, this.simState.temperature, this.simState.pH, bufferEntity);
         const tR = getRetentionTime(t0, k);
         if (tR > maxTR) maxTR = tR;
       }
@@ -219,14 +194,17 @@ export class HplcController extends SimulationController {
 
     if (state === 'RUNNING') {
       this.simState.time += deltaSimMin;
-
       const sampleEntity = this.getSampleEntity();
+      const bufferEntity = this.getBufferEntity();
+
       const synth = synthesizeInstantSignal(this.simState.time, sampleEntity, {
         flowRate: this.simState.flowRate,
         organicPercent: this.simState.organicPercent,
         sensitivity: this.simState.sensitivity,
         temperature: this.simState.temperature,
-        wavelengthNm: this.simState.wavelengthNm
+        wavelengthNm: this.simState.wavelengthNm,
+        pH: this.simState.pH,
+        bufferEntity
       });
 
       this.simState.detectorSignal = synth.signal;
@@ -243,31 +221,23 @@ export class HplcController extends SimulationController {
         pressure: this.simState.pressure
       });
 
-      if (DEBUG) {
-        console.log(`[Tick] t=${this.simState.time.toFixed(2)}m signal=${synth.signal.toFixed(3)}AU`);
-      }
-
       if (this.simState.time >= this.maxRunTimeMinutes) {
-        this.completeRun(sampleEntity);
+        this.completeRun(sampleEntity, bufferEntity);
       }
     } else {
-      this.eventBus.emit('tick', {
-        time: this.simState.time,
-        signal: 0,
-        pressure: this.simState.pressure
-      });
+      this.eventBus.emit('tick', { time: this.simState.time, signal: 0, pressure: this.simState.pressure });
     }
   }
 
-  completeRun(sampleEntity) {
+  completeRun(sampleEntity, bufferEntity) {
     const t0 = getDeadTime(this.simState.flowRate);
-
-    // 1. Create Peak instances querying UV Detector Plugin
     let peaks = [];
+    const educationalExplanations = [];
+
     if (sampleEntity && sampleEntity.components) {
       peaks = sampleEntity.components.map(compDef => {
         const compound = compDef.compound;
-        const k = getRetentionFactor(compound.chromatography.kw, compound.chromatography.S, this.simState.organicPercent, this.simState.temperature);
+        const k = getObservedRetentionFactor(compound, this.simState.organicPercent, this.simState.temperature, this.simState.pH, bufferEntity);
         const tR = getRetentionTime(t0, k);
         const sigma = getPeakSigma(tR, this.simState.flowRate, this.simState.temperature);
         const widths = calculatePeakWidths(sigma);
@@ -276,6 +246,11 @@ export class HplcController extends SimulationController {
           sensitivity: this.simState.sensitivity,
           concentration: compDef.concentration || 1.0
         });
+
+        // Solution chemistry evaluation & educational explanations
+        const solEval = SolutionChemistryEngine.evaluateSolution(compound, k, this.simState.pH, bufferEntity, this.simState.wavelengthNm);
+        if (solEval.explanation) educationalExplanations.push(solEval.explanation);
+        if (solEval.warnings) solEval.warnings.forEach(w => this.simState.addWarning(w));
 
         return new Peak({
           compound: compound.name,
@@ -291,15 +266,11 @@ export class HplcController extends SimulationController {
 
     peaks.sort((a, b) => a.tR - b.tR);
 
-    // 2. Evaluate System Suitability
     const systemSuitability = evaluateSystemSuitability(peaks, this.simState.flowRate, this.criteriaProfile);
-
-    // 3. Evaluate Method Development Exercise Profile Optimization & Scoring
     const exerciseProfile = getMethodExercise(this.exerciseProfileId);
     const exerciseScore = scoreMethodExercise({ maxPressure: this.simState.pressure, elapsedTime: this.simState.time, peaks }, exerciseProfile);
-    const bottleneckAnalysis = analyzeMethodBottlenecks({ maxPressure: this.simState.pressure, elapsedTime: this.simState.time, methodParams: { flowRate: this.simState.flowRate, organicPercent: this.simState.organicPercent, temperature: this.simState.temperature, wavelengthNm: this.simState.wavelengthNm }, peaks }, exerciseProfile);
+    const bottleneckAnalysis = analyzeMethodBottlenecks({ maxPressure: this.simState.pressure, elapsedTime: this.simState.time, methodParams: { flowRate: this.simState.flowRate, organicPercent: this.simState.organicPercent, temperature: this.simState.temperature, wavelengthNm: this.simState.wavelengthNm, pH: this.simState.pH }, peaks }, exerciseProfile);
 
-    // 4. Compile RunResult
     const runResult = new RunResult({
       sampleName: sampleEntity ? sampleEntity.name : this.simState.sampleKey,
       methodParams: {
@@ -307,6 +278,8 @@ export class HplcController extends SimulationController {
         organicPercent: this.simState.organicPercent,
         temperature: this.simState.temperature,
         wavelengthNm: this.simState.wavelengthNm,
+        pH: this.simState.pH,
+        bufferKey: this.simState.bufferKey,
         sensitivity: this.simState.sensitivity,
         speedMultiplier: this.clock.speedMultiplier,
         criteriaProfile: this.criteriaProfile,
@@ -316,12 +289,12 @@ export class HplcController extends SimulationController {
       elapsedTime: this.simState.time,
       maxPressure: this.simState.pressure,
       warnings: this.simState.warnings,
+      educationalExplanations: [...new Set(educationalExplanations)],
       systemSuitability,
       exerciseScore,
       bottleneckAnalysis
     });
 
-    // 5. Update Session Run History & Method Comparison
     const prevRun = this.methodHistory.getLastRun();
     this.methodHistory.addRun(runResult);
     const methodComparison = prevRun ? new MethodComparison(prevRun, runResult) : null;

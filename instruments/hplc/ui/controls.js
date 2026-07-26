@@ -14,6 +14,9 @@ export class ControlsView {
     this.tempVal = document.getElementById("tempVal");
     this.wavelengthInput = document.getElementById("wavelengthInput");
     this.wavelengthVal = document.getElementById("wavelengthVal");
+    this.phInput = document.getElementById("phInput");
+    this.phVal = document.getElementById("phVal");
+    this.bufferSelect = document.getElementById("bufferSelect");
     this.sensitivityInput = document.getElementById("sensitivityInput");
     this.sensitivityVal = document.getElementById("sensitivityVal");
     this.compoundSelect = document.getElementById("compoundSelect");
@@ -56,6 +59,20 @@ export class ControlsView {
         const val = e.target.value;
         if (this.wavelengthVal) this.wavelengthVal.textContent = `${val} nm`;
         this.controller.setWavelength(val);
+      };
+    }
+
+    if (this.phInput) {
+      this.phInput.oninput = (e) => {
+        const val = e.target.value;
+        if (this.phVal) this.phVal.textContent = `pH ${val}`;
+        this.controller.setPh(val);
+      };
+    }
+
+    if (this.bufferSelect) {
+      this.bufferSelect.onchange = (e) => {
+        this.controller.setBufferKey(e.target.value);
       };
     }
 
@@ -115,6 +132,8 @@ export class ControlsView {
     if (this.flowInput) this.flowInput.disabled = !isPumpOff;
     if (this.organicInput) this.organicInput.disabled = !isPumpOff;
     if (this.tempInput) this.tempInput.disabled = !isPumpOff;
+    if (this.phInput) this.phInput.disabled = (state === 'RUNNING');
+    if (this.bufferSelect) this.bufferSelect.disabled = (state === 'RUNNING');
     if (this.wavelengthInput) this.wavelengthInput.disabled = (state === 'RUNNING');
     if (this.compoundSelect) this.compoundSelect.disabled = (state === 'RUNNING');
     if (this.injectBtn) this.injectBtn.disabled = (state !== 'READY');
