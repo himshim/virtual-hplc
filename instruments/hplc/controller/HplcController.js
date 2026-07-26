@@ -19,6 +19,7 @@ import { getMethodExercise } from '../engine/methodProfiles.js';
 import { analyzeMethodBottlenecks } from '../engine/optimizationEngine.js';
 import { scoreMethodExercise } from '../engine/scoringEngine.js';
 import { PeakDetectionEngine } from '../engine/peakDetectionEngine.js';
+import { NoiseADCEngine } from '../engine/noiseADCEngine.js';
 import { MAX_PRESSURE_BAR, TICK_MS, DEFAULT_SPEED, DEBUG } from '../engine/constants.js';
 
 const HPLC_TRANSITION_RULES = {
@@ -235,11 +236,22 @@ export class HplcController extends SimulationController {
     let peaks = [];
     const educationalExplanations = [];
 
-    // 1. Digital ADC Signal Sampling
+    // 1. Raw Detector Signal Points
     const rawSamples = this.chromatogram.getPoints().map(p => ({ time: p.x, intensity: p.y }));
 
-    // 2. Pure Detector-Agnostic CDS Peak Detection Engine
-    const detectedPeaks = PeakDetectionEngine.detectPeaks(rawSamples);
+    // 2. Physical Baseline Noise & ADC Quantization Engine (Phase A)
+    const noiseEngine = new NoiseADCEngine();
+    const noisePatch = noiseEngine.process({
+      signalPoints: rawSamples,
+      noiseLevel: 0.0002,
+      adcBitDepth: 16,
+      fullScaleAU: 2.5,
+      seed: 42
+    });
+    const digitizedSamples = noisePatch.digitizedPoints;
+
+    // 3. Pure Detector-Agnostic CDS Peak Detection Engine
+    const detectedPeaks = PeakDetectionEngine.detectPeaks(digitizedSamples);
 
     // 3. Downstream Peak Identification & Solution Chemistry Evaluation
     const expectedAnalytes = [];
