@@ -112,6 +112,14 @@
 
   <!-- TAB 2: METHOD TUNING -->
   <div id="tab-method" class="tab-panel">
+    <!-- Beginner Lock Warning -->
+    <div id="beginnerMethodLockNotice" style="display:none; padding:16px; background:#fff8e1; border-left:4px solid #ffa000; border-radius:8px; margin-bottom:16px;">
+      <h3 style="margin:0 0 6px 0; color:#b78103;">🔒 Method Tuning Locked</h3>
+      <p style="margin:0; font-size:0.9rem; color:#555;">
+        Complete one experiment first, or switch to <strong>🟡 Standard</strong> mode in the header to adjust method parameters.
+      </p>
+    </div>
+
     <div class="instrument-card">
       <h2 style="margin-top:0; color:var(--brand-primary);">Method Parameters</h2>
 
@@ -154,19 +162,20 @@
     </div>
   </div>
 
-  <!-- TAB 3: SAMPLE & EXERCISE BROWSER -->
+  <!-- TAB 3: SAMPLE & EXERCISE BROWSER (P3 Registry Cards) -->
   <div id="tab-sample" class="tab-panel">
+    <!-- P3 Registry-Driven Sample Card Browser Container -->
     <div class="instrument-card">
-      <h2 style="margin-top:0; color:var(--brand-primary);">Sample & Exercise Selection</h2>
+      <h2 style="margin-top:0; color:var(--brand-primary);">Sample Catalog (Registry Driven)</h2>
+      <div id="sampleGridContainer"></div>
+    </div>
 
-      <label for="compoundSelect">Sample Browser (Registry Driven)</label><br>
-      <select id="compoundSelect" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
-        <!-- Auto-populated by SampleBrowserComponent -->
-      </select>
+    <!-- Hidden fallback select for legacy controller bindings -->
+    <select id="compoundSelect" style="display:none;"></select>
 
-      <br><br>
-
-      <label for="exerciseSelect">Method Development Exercise</label><br>
+    <div class="instrument-card">
+      <h3 style="margin-top:0; color:var(--brand-primary);">Method Development Exercise</h3>
+      <label for="exerciseSelect">Exercise Goal</label><br>
       <select id="exerciseSelect" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
         <option value="QC_ASSAY" selected>QC Assay Exercise (General Separation)</option>
         <option value="FAST_SCREENING">High Throughput Screening Exercise</option>
@@ -257,7 +266,9 @@
     const compareView = new CompareView("compareContainer");
     const historyView = new HistoryView("historyContainer");
     const spectrumView = new SpectrumView("spectrumCanvas");
-    const sampleBrowser = new SampleBrowserComponent("compoundSelect");
+    
+    // P3 Registry-Driven Sample Card Browser
+    const sampleBrowser = new SampleBrowserComponent("compoundSelect", "sampleGridContainer");
     const reportCard = new ReportCardComponent("methodLabContainer");
 
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
@@ -281,6 +292,7 @@
     const beginnerDockBox = document.getElementById("beginnerDockBox");
     const standardDockBox = document.getElementById("standardDockBox");
     const beginnerSampleBox = document.getElementById("beginnerSampleBox");
+    const beginnerMethodLockNotice = document.getElementById("beginnerMethodLockNotice");
     const ghostSubtext = document.getElementById("ghostSubtext");
 
     function setMode(mode) {
@@ -295,11 +307,13 @@
         if (beginnerDockBox) beginnerDockBox.style.display = "block";
         if (standardDockBox) standardDockBox.style.display = "none";
         if (beginnerSampleBox) beginnerSampleBox.style.display = "block";
+        if (beginnerMethodLockNotice) beginnerMethodLockNotice.style.display = "block";
         if (ghostSubtext) ghostSubtext.innerHTML = 'Tap <strong>▶ Run Experiment</strong> for 1-tap automated run!';
       } else {
         if (beginnerDockBox) beginnerDockBox.style.display = "none";
         if (standardDockBox) standardDockBox.style.display = "grid";
         if (beginnerSampleBox) beginnerSampleBox.style.display = "none";
+        if (beginnerMethodLockNotice) beginnerMethodLockNotice.style.display = "none";
         if (ghostSubtext) ghostSubtext.innerHTML = 'Press <strong>▶ Pump START</strong> then <strong>Inject Sample</strong>';
       }
     }
@@ -367,7 +381,6 @@
       displayView.setStatus(newState);
       controlsView.updateControlsForState(newState);
 
-      // Keep 1-Tap button text synced with state changes
       if (runExpBtn) {
         if (newState === 'RUNNING') {
           runExpBtn.textContent = "⏹ Stop Experiment";
@@ -391,7 +404,6 @@
       graphView.reset();
       displayView.renderPeakTable(null);
 
-      // Hide ghost chromatogram overlay when run starts
       const ghost = document.getElementById("ghostOverlay");
       if (ghost) ghost.classList.add("hidden");
     });
@@ -419,14 +431,14 @@
       if (resultsBtn) resultsBtn.disabled = false;
       if (badgeDot) badgeDot.style.display = "inline-block";
 
-      // Prompt student when first run completes in Beginner Mode
+      // Encouraging First Run Completion Modal
       if (currentMode === "beginner") {
         setTimeout(() => {
           globalModal.show(
-            "🎉 First Experiment Complete!",
-            "Great job! Your chromatogram run is finished.<br><br>Check out your <strong>Method Evaluation Report</strong> in the <strong>Results tab</strong> to see your score and optimization tips!"
+            "🎉 Great!",
+            "You completed your first experiment.<br><br>See how well your method performed in the Results tab!"
           );
-        }, 600);
+        }, 500);
       }
     });
 
