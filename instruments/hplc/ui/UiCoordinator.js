@@ -17,8 +17,6 @@ export class UiCoordinator {
   constructor(controller, views = {}) {
     this.controller = controller;
     this.views = views;
-    this._unsubscribeFn = null;
-
     this.bindEvents();
   }
 
@@ -26,11 +24,17 @@ export class UiCoordinator {
   bindEvents() {
     const bus = this.controller.eventBus;
 
+    bus.on(HPLC_EVENTS.PUMP_STARTED, () => {
+      if (this.views.graphView)   this.views.graphView.reset();
+      if (this.views.runTimeline) this.views.runTimeline.setPhase('prime');
+      this._setAcqPhaseLabel('⚡ PRIMING: Ramping pressure...');
+    });
+
     bus.on(HPLC_EVENTS.STATUS_CHANGED, ({ newState }) => {
-      if (this.views.displayView)            this.views.displayView.setStatus(newState);
-      if (this.views.controlsView)           this.views.controlsView.updateControlsForState(newState);
-      if (this.views.statusBar)              this.views.statusBar.update({ status: newState });
-      if (this.views.runTimeline)            this._updateTimelinePhase(newState);
+      if (this.views.displayView)  this.views.displayView.setStatus(newState);
+      if (this.views.controlsView) this.views.controlsView.updateControlsForState(newState);
+      if (this.views.statusBar)    this.views.statusBar.update({ status: newState });
+      if (this.views.runTimeline)  this._updateTimelinePhase(newState);
       this._updateCdsStateVal(newState);
       this._updateStepHighlight(newState);
     });
@@ -124,7 +128,6 @@ export class UiCoordinator {
         this.views.methodReplay.loadRun(replayPoints, runResult.peaks);
       }
 
-      // Unlock & Badge Results Tab
       const resultsBtn = document.getElementById('tabBtn-results');
       const badgeDot   = document.getElementById('resultsBadge');
       if (resultsBtn) resultsBtn.disabled = false;
@@ -171,7 +174,7 @@ export class UiCoordinator {
       const el = document.getElementById(`gstep-${i}`);
       if (!el) continue;
       el.classList.remove('active', 'complete');
-      if (i < activeNum)      el.classList.add('complete');
+      if (i < activeNum)        el.classList.add('complete');
       else if (i === activeNum) el.classList.add('active');
     }
   }
