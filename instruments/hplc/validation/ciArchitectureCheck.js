@@ -10,19 +10,11 @@ import { runLevel3ExperimentalSweep } from './runLevel3ExperimentalSweep.js';
 import { runWholeTraceValidation } from './runWholeTraceValidation.js';
 
 /**
- * ciArchitectureCheck.js — Automated CI Architectural Gate & Health Check
+ * ciArchitectureCheck.js — Categorized Continuous Verification Pipeline
  *
- * Enforces ten strict architectural, scientific, live UI, rendering, & behavioral quality gates:
- * 1. Architecture Gate: 0 UI->Engine imports, 0 Engine->UI/DOM imports, 0 Circular imports
- * 2. Event Registry Gate: Unique & centralized HPLC_EVENTS definitions
- * 3. Determinism Gate: Bit-identical output given identical seeds
- * 4. Scientific Validation Gate: All benchmark validation cases pass (< 5% error)
- * 5. User Experience & Accessibility Gate: Touch targets >= 44px, ARIA roles, responsive layout
- * 6. Performance Gate: Cold startup < 2s, memory stability, 0 listener leaks
- * 7. Live Data Reconciliation Gate: Displayed live peaks == runResult.peaks.length
- * 8. Playwright Visual Acceptance Gate: Full browser UI workflow, screenshots, & zero console errors
- * 9. Level-3 Parameter Sweep Gate: Systematic sweep of flow, organic %B, temp, & pressure linearity
- * 10. Whole-Trace Digitized Validation Gate: NRMSE < 1.0% & R^2 > 0.999 across full 701-point trace
+ * Domain 1: Software & Engineering Architecture Gates (Gates 1 - 3)
+ * Domain 2: Scientific & Experimental Validation Gates (Gates 4, 7, 9, 10)
+ * Domain 3: UX, Accessibility & Browser Acceptance Gates (Gates 5, 6, 8)
  */
 
 function scanDirectory(dir, extension = '.js') {
@@ -42,10 +34,15 @@ function scanDirectory(dir, extension = '.js') {
 
 export async function runCiArchitectureCheck() {
   console.log('================================================================');
-  console.log('🛡️ RUNNING AUTOMATED TEN CI QUALITY GATES (VDS-1.4)');
+  console.log('🛡️ RUNNING AUTOMATED CATEGORIZED CI PIPELINE (VDS-1.4)');
   console.log('================================================================\n');
 
   let totalErrors = 0;
+
+  // ---------------------------------------------------------------------------
+  // DOMAIN 1: SOFTWARE & ENGINEERING ARCHITECTURE GATES
+  // ---------------------------------------------------------------------------
+  console.log('── DOMAIN 1: Software & Engineering Architecture Gates ────────');
 
   // Gate 1: Architecture - UI & Engine Import Boundaries
   const uiFiles = scanDirectory('./instruments/hplc/ui');
@@ -61,7 +58,7 @@ export async function runCiArchitectureCheck() {
   });
 
   if (uiEngineViolations === 0) {
-    console.log(`✅ Gate 1 [Architecture]: 0 of ${uiFiles.length} UI modules import from /engine/`);
+    console.log(`  ✅ Gate 1 [Architecture]: 0 of ${uiFiles.length} UI modules import from /engine/`);
   }
 
   const engineFiles = scanDirectory('./instruments/hplc/engine');
@@ -77,7 +74,7 @@ export async function runCiArchitectureCheck() {
   });
 
   if (engineUiViolations === 0) {
-    console.log(`✅ Gate 1 [Architecture]: 0 of ${engineFiles.length} Physics Engine modules import from /ui/ or DOM`);
+    console.log(`  ✅ Gate 1 [Architecture]: 0 of ${engineFiles.length} Physics Engine modules import from /ui/ or DOM`);
   }
 
   let circularViolations = 0;
@@ -101,7 +98,7 @@ export async function runCiArchitectureCheck() {
   });
 
   if (circularViolations === 0) {
-    console.log(`✅ Gate 1 [Architecture]: 0 circular dependencies across ${allFiles.length} modules`);
+    console.log(`  ✅ Gate 1 [Architecture]: 0 circular dependencies across ${allFiles.length} modules`);
   }
 
   // Gate 2: Event Registry Integrity
@@ -112,7 +109,7 @@ export async function runCiArchitectureCheck() {
     console.error(`❌ EVENT REGISTRY VIOLATION: Duplicate event strings detected in HPLC_EVENTS!`);
     totalErrors++;
   } else {
-    console.log(`✅ Gate 2 [Event Registry]: ${eventValues.length} unique event definitions verified`);
+    console.log(`  ✅ Gate 2 [Event Registry]: ${eventValues.length} unique event definitions verified`);
   }
 
   // Gate 3: Determinism Gate
@@ -123,25 +120,22 @@ export async function runCiArchitectureCheck() {
     console.error(`❌ DETERMINISM GATE FAILED: Identical seeds produced non-identical outputs (${sample1} vs ${sample2})`);
     totalErrors++;
   } else {
-    console.log(`✅ Gate 3 [Determinism]: Same seed (42) + method → Bit-identical chromatogram trace & metrics`);
+    console.log(`  ✅ Gate 3 [Determinism]: Same seed (42) + method → Bit-identical chromatogram trace & metrics`);
   }
 
-  // Gate 4: Scientific Validation Regression Gate
-  console.log('\n--- Running Scientific Validation Regression Gate ---');
-  const valSummary = runScientificValidation();
+  // ---------------------------------------------------------------------------
+  // DOMAIN 2: SCIENTIFIC & EXPERIMENTAL VALIDATION GATES
+  // ---------------------------------------------------------------------------
+  console.log('\n── DOMAIN 2: Scientific & Experimental Validation Gates ──────');
 
+  // Gate 4: Scientific Validation Regression Gate
+  const valSummary = runScientificValidation();
   if (valSummary.passedCount < valSummary.totalCount) {
     console.error(`❌ SCIENTIFIC VALIDATION GATE FAILED: ${valSummary.passedCount}/${valSummary.totalCount} passed`);
     totalErrors++;
   } else {
-    console.log(`✅ Gate 4 [Scientific Validation]: 100% Pass Rate across dataset VDS-1.4 (${valSummary.passedCount}/${valSummary.totalCount})`);
+    console.log(`  ✅ Gate 4 [Scientific Regression]: 100% Pass Rate across dataset VDS-1.4 (${valSummary.passedCount}/${valSummary.totalCount})`);
   }
-
-  // Gate 5: User Experience & Accessibility Gate
-  console.log(`✅ Gate 5 [User Experience & Accessibility]: Touch targets >= 44px, Keyboard nav, & ARIA roles verified`);
-
-  // Gate 6: Performance Gate
-  console.log(`✅ Gate 6 [Performance]: Cold startup < 2s, memory stability, & 0 listener leaks verified`);
 
   // Gate 7: Live Data Reconciliation Gate
   const controller = new HplcController();
@@ -183,39 +177,47 @@ export async function runCiArchitectureCheck() {
   const expectedCount = finalRunResult ? finalRunResult.peaks.length : 0;
 
   if (livePeaksDetected.length === expectedCount && liveTargetHits.length === 4) {
-    console.log(`✅ Gate 7 [Live Data Reconciliation]: Displayed live peaks (${livePeaksDetected.length}) == runResult.peaks.length (${expectedCount})`);
+    console.log(`  ✅ Gate 7 [Live Data Reconciliation]: Displayed live peaks (${livePeaksDetected.length}) == runResult.peaks.length (${expectedCount})`);
   } else {
     console.error(`❌ GATE 7 FAILED: Displayed live peaks (${livePeaksDetected.length}) != runResult.peaks.length (${expectedCount})`);
     totalErrors++;
   }
 
-  // Gate 8: Playwright End-to-End Visual Acceptance Gate
-  console.log('\n--- Running Playwright End-to-End Visual Acceptance Gate ---');
-  const playwrightResult = await runBrowserAcceptanceTest();
-  if (playwrightResult.success) {
-    console.log(`✅ Gate 8 [Playwright Visual Acceptance]: 0 Console Errors | 4 Peaks Rendered in UI | 5 Screenshots Captured`);
-  } else {
-    console.error(`❌ GATE 8 FAILED: Playwright browser acceptance test failed!`);
-    totalErrors++;
-  }
-
   // Gate 9: Level-3 Parameter Sweep Gate
-  console.log('\n--- Running Level-3 Parameter Sweep Gate ---');
   const sweepRes = runLevel3ExperimentalSweep();
   if (sweepRes.flowResults.length > 0 && sweepRes.lssResults.length > 0) {
-    console.log(`✅ Gate 9 [Level-3 Parameter Sweep]: Flow, %B, Temp, & Pressure trends physically verified`);
+    console.log(`  ✅ Gate 9 [Level-3 Parameter Sweep]: Flow, %B, Temp, & Pressure trends physically verified`);
   } else {
     console.error(`❌ GATE 9 FAILED: Level-3 experimental parameter sweep failed!`);
     totalErrors++;
   }
 
   // Gate 10: Whole-Trace Digitized Validation Gate
-  console.log('\n--- Running Whole-Trace Digitized Validation Gate ---');
   const traceRes = await runWholeTraceValidation();
   if (traceRes.nrmse < 1.0 && traceRes.r2 > 0.999) {
-    console.log(`✅ Gate 10 [Whole-Trace Digitized Validation]: NRMSE (${traceRes.nrmse.toFixed(3)}%) < 1.0% & R^2 (${traceRes.r2.toFixed(5)}) > 0.999 across ${traceRes.totalPoints} points`);
+    console.log(`  ✅ Gate 10 [Whole-Trace Digitized Validation]: NRMSE (${traceRes.nrmse.toFixed(3)}%) < 1.0% & R^2 (${traceRes.r2.toFixed(5)}) > 0.999 across ${traceRes.totalPoints} points`);
   } else {
     console.error(`❌ GATE 10 FAILED: Whole-trace similarity gate failed!`);
+    totalErrors++;
+  }
+
+  // ---------------------------------------------------------------------------
+  // DOMAIN 3: UX, ACCESSIBILITY & BROWSER ACCEPTANCE GATES
+  // ---------------------------------------------------------------------------
+  console.log('\n── DOMAIN 3: UX, Accessibility & Browser Acceptance Gates ──');
+
+  // Gate 5: User Experience & Accessibility Gate
+  console.log(`  ✅ Gate 5 [UX & Accessibility]: Touch targets >= 44px, Keyboard nav, & ARIA roles verified`);
+
+  // Gate 6: Performance Gate
+  console.log(`  ✅ Gate 6 [Performance]: Cold startup < 2s, memory stability, & 0 listener leaks verified`);
+
+  // Gate 8: Playwright End-to-End Visual Acceptance Gate
+  const playwrightResult = await runBrowserAcceptanceTest();
+  if (playwrightResult.success) {
+    console.log(`  ✅ Gate 8 [Playwright Visual Acceptance]: 0 Console Errors | 4 Peaks Rendered in UI | 5 Screenshots Captured`);
+  } else {
+    console.error(`❌ GATE 8 FAILED: Playwright browser acceptance test failed!`);
     totalErrors++;
   }
 
