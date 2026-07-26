@@ -10,136 +10,187 @@
 
 <body>
 
-<header class="hero" style="position:relative;">
-  <h1>HPLC Simulator & Method Development Lab</h1>
-  <p>Mobile-Responsive Virtual HPLC Instrument with Entity Platform & Solution Chemistry Engine</p>
-  <button id="guidedDemoBtn" style="position:absolute; right:20px; top:20px; padding:8px 16px; background:#ffd54f; color:#000; font-weight:bold; border:none; border-radius:20px; cursor:pointer;">⚡ 60s Guided Demo</button>
+<!-- Header Bar -->
+<header class="app-header">
+  <h1 class="app-title">Virtual Analytical Lab — HPLC</h1>
+  <button id="guidedDemoBtn" class="demo-badge-btn">⚡ 60s Guided Demo</button>
 </header>
 
-<main class="instrument-grid">
+<!-- Universal 5-Tab Navigation Bar -->
+<nav class="nav-tab-bar" id="platformNav">
+  <button class="nav-tab-item active" data-tab="tab-run" id="tabBtn-run">
+    <span class="tab-icon">📈</span>
+    <span>Run</span>
+  </button>
+  <button class="nav-tab-item" data-tab="tab-method" id="tabBtn-method">
+    <span class="tab-icon">🧪</span>
+    <span>Method</span>
+  </button>
+  <button class="nav-tab-item" data-tab="tab-sample" id="tabBtn-sample">
+    <span class="tab-icon">🧬</span>
+    <span>Sample</span>
+  </button>
+  <button class="nav-tab-item" data-tab="tab-results" id="tabBtn-results" disabled>
+    <span class="tab-icon">📊</span>
+    <span>Results<span id="resultsBadge" style="display:none;" class="badge-dot"></span></span>
+  </button>
+  <button class="nav-tab-item" data-tab="tab-learn" id="tabBtn-learn">
+    <span class="tab-icon">🎓</span>
+    <span>Learn</span>
+  </button>
+</nav>
 
-  <div class="area-status" style="padding: 12px 40px 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-    <span id="status" class="status-badge">IDLE</span>
-    <span id="satWarning" class="status-badge error" style="display: none;">⚠️ DETECTOR SATURATED</span>
-    <span id="pressureWarning" class="status-badge error" style="display: none;">🚨 OVERPRESSURE SHUTDOWN</span>
-  </div>
+<main class="platform-container">
 
-  <div class="instrument-card area-diagram">
-    <h2 style="margin-top:0">HPLC Flow Schematic</h2>
-    <div id="diagramContainer" style="overflow-x:auto;">Loading diagram…</div>
+  <!-- TAB 1: RUN (Primary Landing View) -->
+  <div id="tab-run" class="tab-panel active">
+    
+    <!-- Primary Chromatogram Card (Top Position) -->
+    <div class="instrument-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="margin:0; font-size:1.1rem; color:var(--brand-primary);">Live Chromatogram</h2>
+        <div>
+          <span id="status" class="status-badge">IDLE</span>
+          <span id="satWarning" class="status-badge error" style="display: none;">⚠️ SATURATED</span>
+          <span id="pressureWarning" class="status-badge error" style="display: none;">🚨 OVERPRESSURE</span>
+        </div>
+      </div>
 
-    <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
-
-    <h3 style="margin-top:0; color:#1565c0;">🌈 UV Absorbance Spectrum</h3>
-    <div style="height:180px; position:relative;">
-      <canvas id="spectrumCanvas"></canvas>
+      <div class="chromatogram-container">
+        <canvas id="graphCanvas"></canvas>
+        <div id="ghostOverlay" class="ghost-overlay">
+          <div style="font-size:2rem; margin-bottom:6px;">📈</div>
+          <div style="font-weight:600;">Your chromatogram will appear here</div>
+          <div style="font-size:0.85rem; margin-top:4px;">Press ▶ Pump START then Inject Sample</div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="instrument-card area-controls">
-    <h2 style="margin-top:0">Method Parameters</h2>
-
-    <label for="flowInput">Flow Rate &nbsp;<span class="param-val" id="flowVal">1.0</span> mL/min <span id="infoFlow">ⓘ</span></label>
-    <input id="flowInput" type="range" min="0.5" max="5.0" step="0.1" value="1.0">
-
-    <br><br>
-
-    <label for="organicInput">Mobile Phase %B &nbsp;<span class="param-val" id="organicVal">40%</span> <span id="infoOrganic">ⓘ</span></label>
-    <input id="organicInput" type="range" min="10" max="90" step="5" value="40">
-
-    <br><br>
-
-    <label for="tempInput">Column Temperature &nbsp;<span class="param-val" id="tempVal">25°C</span> <span id="infoTemp">ⓘ</span></label>
-    <input id="tempInput" type="range" min="25" max="60" step="5" value="25">
-
-    <br><br>
-
-    <label for="phInput">Mobile Phase pH &nbsp;<span class="param-val" id="phVal">pH 7.0</span> <span id="infoPh">ⓘ</span></label>
-    <input id="phInput" type="range" min="2.0" max="8.0" step="0.1" value="7.0">
-
-    <br><br>
-
-    <label for="bufferSelect">Buffer System Entity <span id="infoBuffer">ⓘ</span></label><br>
-    <select id="bufferSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
-      <option value="phosphate_buffer" selected>Phosphate Buffer (pH 2.0–8.0, UV 200nm)</option>
-      <option value="acetate_buffer">Acetate Buffer (pH 3.8–5.8, UV 210nm, LC-MS)</option>
-      <option value="formate_buffer">Formate Buffer (pH 2.8–4.8, UV 210nm, LC-MS)</option>
-    </select>
-
-    <br><br>
-
-    <label for="wavelengthInput">UV Wavelength (λ) &nbsp;<span class="param-val" id="wavelengthVal">254 nm</span> <span id="infoWavelength">ⓘ</span></label>
-    <input id="wavelengthInput" type="range" min="200" max="400" step="2" value="254">
-
-    <br><br>
-
-    <label for="sensitivityInput">Detector Sensitivity &nbsp;<span class="param-val" id="sensitivityVal">1.0</span></label>
-    <input id="sensitivityInput" type="range" min="0.5" max="5" step="0.5" value="1">
-
-    <br><br>
-
-    <label for="compoundSelect">Sample Browser (Registry Driven)</label><br>
-    <select id="compoundSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
-      <!-- Auto-populated by SampleBrowserComponent -->
-    </select>
-
-    <br><br>
-
-    <label for="exerciseSelect">Method Development Exercise</label><br>
-    <select id="exerciseSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
-      <option value="QC_ASSAY" selected>QC Assay Exercise (General Separation)</option>
-      <option value="FAST_SCREENING">High Throughput Screening Exercise</option>
-      <option value="HIGH_RESOLUTION">High Resolution Separation Exercise</option>
-    </select>
-
-    <br><br>
-
-    <label for="profileSelect">Pharmacopeial SST Profile</label><br>
-    <select id="profileSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
-      <option value="USP" selected>USP (United States Pharmacopeia)</option>
-      <option value="EP">EP (European Pharmacopoeia)</option>
-      <option value="IP">IP (Indian Pharmacopoeia)</option>
-      <option value="TEACHING">Teaching Mode (Permissive)</option>
-      <option value="RESEARCH">Research Mode (Strict)</option>
-    </select>
-
-    <br><br>
-
-    <label for="speedSelect">Simulation Speed</label><br>
-    <select id="speedSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
-      <option value="1">1× (Real time)</option>
-      <option value="5">5× Speed</option>
-      <option value="10" selected>10× Speed (Recommended)</option>
-      <option value="30">30× Speed</option>
-      <option value="60">60× Fast Speed</option>
-    </select>
-
-    <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
-
-    <div style="margin-bottom: 16px;">
-      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600;">
-        <span>System Pressure</span>
-        <span id="pressureVal">0 bar</span>
+    <!-- Sticky Action Dock (Bottom Position) -->
+    <div class="action-dock">
+      <div class="dock-telemetry">
+        <div>
+          <span style="color:var(--text-secondary);">Pressure:</span>
+          <span id="pressureVal" style="font-weight:700;">0 bar</span>
+        </div>
+        <div id="rtDisplay" style="color:var(--text-secondary);">Elapsed Time: 00:00</div>
       </div>
       <meter id="pressureMeter" min="0" max="400" low="250" high="350" optimum="150" value="0"></meter>
+      <div class="dock-buttons" style="margin-top:12px;">
+        <button id="pumpBtn">▶ Pump START</button>
+        <button id="injectBtn" disabled>Inject Sample</button>
+      </div>
     </div>
-
-    <button id="pumpBtn">▶ Pump START</button>
-    <button id="injectBtn" disabled>Inject Sample</button>
-
-    <p id="rtDisplay" style="margin-top:16px;font-size:0.9rem;color:#555;">Elapsed Time: 00:00</p>
   </div>
 
-  <div class="instrument-card area-graph">
-    <h2 style="margin-top:0">Chromatogram</h2>
-    <div style="height:250px; position:relative;">
-      <canvas id="graphCanvas"></canvas>
-    </div>
+  <!-- TAB 2: METHOD TUNING -->
+  <div id="tab-method" class="tab-panel">
+    <div class="instrument-card">
+      <h2 style="margin-top:0; color:var(--brand-primary);">Method Parameters</h2>
 
+      <label for="flowInput">Flow Rate &nbsp;<span class="param-val" id="flowVal">1.0</span> mL/min <span id="infoFlow">ⓘ</span></label>
+      <input id="flowInput" type="range" min="0.5" max="5.0" step="0.1" value="1.0">
+
+      <br><br>
+
+      <label for="organicInput">Mobile Phase %B &nbsp;<span class="param-val" id="organicVal">40%</span> <span id="infoOrganic">ⓘ</span></label>
+      <input id="organicInput" type="range" min="10" max="90" step="5" value="40">
+
+      <br><br>
+
+      <label for="tempInput">Column Temperature &nbsp;<span class="param-val" id="tempVal">25°C</span> <span id="infoTemp">ⓘ</span></label>
+      <input id="tempInput" type="range" min="25" max="60" step="5" value="25">
+
+      <br><br>
+
+      <label for="phInput">Mobile Phase pH &nbsp;<span class="param-val" id="phVal">pH 7.0</span> <span id="infoPh">ⓘ</span></label>
+      <input id="phInput" type="range" min="2.0" max="8.0" step="0.1" value="7.0">
+
+      <br><br>
+
+      <label for="bufferSelect">Buffer System Entity <span id="infoBuffer">ⓘ</span></label><br>
+      <select id="bufferSelect" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
+        <option value="phosphate_buffer" selected>Phosphate Buffer (pH 2.0–8.0, UV 200nm)</option>
+        <option value="acetate_buffer">Acetate Buffer (pH 3.8–5.8, UV 210nm, LC-MS)</option>
+        <option value="formate_buffer">Formate Buffer (pH 2.8–4.8, UV 210nm, LC-MS)</option>
+      </select>
+
+      <br><br>
+
+      <label for="wavelengthInput">UV Wavelength (λ) &nbsp;<span class="param-val" id="wavelengthVal">254 nm</span> <span id="infoWavelength">ⓘ</span></label>
+      <input id="wavelengthInput" type="range" min="200" max="400" step="2" value="254">
+
+      <br><br>
+
+      <label for="sensitivityInput">Detector Sensitivity &nbsp;<span class="param-val" id="sensitivityVal">1.0</span></label>
+      <input id="sensitivityInput" type="range" min="0.5" max="5" step="0.5" value="1">
+    </div>
+  </div>
+
+  <!-- TAB 3: SAMPLE & EXERCISE BROWSER -->
+  <div id="tab-sample" class="tab-panel">
+    <div class="instrument-card">
+      <h2 style="margin-top:0; color:var(--brand-primary);">Sample & Exercise Selection</h2>
+
+      <label for="compoundSelect">Sample Browser (Registry Driven)</label><br>
+      <select id="compoundSelect" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
+        <!-- Auto-populated by SampleBrowserComponent -->
+      </select>
+
+      <br><br>
+
+      <label for="exerciseSelect">Method Development Exercise</label><br>
+      <select id="exerciseSelect" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
+        <option value="QC_ASSAY" selected>QC Assay Exercise (General Separation)</option>
+        <option value="FAST_SCREENING">High Throughput Screening Exercise</option>
+        <option value="HIGH_RESOLUTION">High Resolution Separation Exercise</option>
+      </select>
+
+      <br><br>
+
+      <label for="profileSelect">Pharmacopeial SST Profile</label><br>
+      <select id="profileSelect" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
+        <option value="USP" selected>USP (United States Pharmacopeia)</option>
+        <option value="EP">EP (European Pharmacopoeia)</option>
+        <option value="IP">IP (Indian Pharmacopoeia)</option>
+        <option value="TEACHING">Teaching Mode (Permissive)</option>
+        <option value="RESEARCH">Research Mode (Strict)</option>
+      </select>
+
+      <br><br>
+
+      <label for="speedSelect">Simulation Speed</label><br>
+      <select id="speedSelect" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
+        <option value="1">1× (Real time)</option>
+        <option value="5">5× Speed</option>
+        <option value="10" selected>10× Speed (Recommended)</option>
+        <option value="30">30× Speed</option>
+        <option value="60">60× Fast Speed</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- TAB 4: RESULTS & EVALUATION -->
+  <div id="tab-results" class="tab-panel">
     <div id="methodLabContainer"></div>
     <div id="peakTableContainer"></div>
     <div id="compareContainer"></div>
     <div id="historyContainer"></div>
+  </div>
+
+  <!-- TAB 5: LEARN & SCHEMATIC -->
+  <div id="tab-learn" class="tab-panel">
+    <div class="instrument-card">
+      <h2 style="margin-top:0; color:var(--brand-primary);">HPLC Flow Schematic</h2>
+      <div id="diagramContainer" style="overflow-x:auto;">Loading diagram…</div>
+    </div>
+
+    <div class="instrument-card">
+      <h3 style="margin-top:0; color:var(--brand-primary);">UV Absorbance Spectrum</h3>
+      <div style="height:200px; position:relative;">
+        <canvas id="spectrumCanvas"></canvas>
+      </div>
+    </div>
   </div>
 
 </main>
@@ -185,6 +236,24 @@
 
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
 
+    // 5-Tab Navigation Switching Logic
+    const navButtons = document.querySelectorAll('.nav-tab-item');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.disabled) return;
+        const targetTab = btn.getAttribute('data-tab');
+
+        navButtons.forEach(b => b.classList.remove('active'));
+        tabPanels.forEach(p => p.classList.remove('active'));
+
+        btn.classList.add('active');
+        const targetPanel = document.getElementById(targetTab);
+        if (targetPanel) targetPanel.classList.add('active');
+      });
+    });
+
     // 60s Guided Demo Button Handler
     const demoBtn = document.getElementById("guidedDemoBtn");
     if (demoBtn) {
@@ -212,11 +281,15 @@
     controller.eventBus.on("runStarted", () => {
       graphView.reset();
       displayView.renderPeakTable(null);
+
+      // Hide ghost chromatogram overlay when run starts
+      const ghost = document.getElementById("ghostOverlay");
+      if (ghost) ghost.classList.add("hidden");
     });
 
     controller.eventBus.on("tick", ({ time, signal, pressure }) => {
       displayView.setTimeDisplay(time);
-      if (controller.getState() === "RUNNING") {
+      if (controller.getState() === 'RUNNING') {
         graphView.addPoint(time, signal);
       }
     });
@@ -230,6 +303,12 @@
       reportCard.render(runResult, exerciseProfile);
       compareView.render(methodComparison);
       historyView.render(methodHistory);
+
+      // Unlock & Badge Results Tab on Run 1 Completion
+      const resultsBtn = document.getElementById("tabBtn-results");
+      const badgeDot = document.getElementById("resultsBadge");
+      if (resultsBtn) resultsBtn.disabled = false;
+      if (badgeDot) badgeDot.style.display = "inline-block";
     });
 
     const compoundSelect = document.getElementById("compoundSelect");

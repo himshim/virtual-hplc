@@ -53,11 +53,14 @@ export class DisplayView {
       return;
     }
 
-    const sst = runResult.systemSuitability;
+    const sst = runResult.systemSuitability || {};
     const isPassed = sst && sst.status !== 'FAILED';
     const badgeBg = isPassed ? '#e8f5e9' : '#ffebee';
     const badgeColor = isPassed ? '#2e7d32' : '#c62828';
     const badgeIcon = isPassed ? '🟢' : '🔴';
+    const scoreVal = sst.score !== undefined ? sst.score : (runResult.exerciseScore ? runResult.exerciseScore.score : 0);
+    const qualityVal = sst.methodQuality || 'Standard';
+    const criteriaVal = sst.criteriaUsed || 'USP';
 
     let html = `
       <div style="margin-top:20px; padding:16px; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
@@ -66,7 +69,7 @@ export class DisplayView {
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
           <h3 style="margin:0; color:#1565c0;">📊 Pharmacopeial Report (${runResult.sampleName})</h3>
           <span style="background:${badgeBg}; color:${badgeColor}; padding:6px 14px; border-radius:20px; font-weight:bold; font-size:0.85rem;">
-            ${badgeIcon} Score: ${sst.score}% — ${sst.methodQuality} (${sst.criteriaUsed})
+            ${badgeIcon} Score: ${scoreVal}% — ${qualityVal} (${criteriaVal})
           </span>
         </div>
 
