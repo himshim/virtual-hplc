@@ -1,4 +1,5 @@
 import { HPLC_EVENTS } from '../controller/HplcEvents.js';
+import { EducationalEngine } from '../education/EducationalEngine.js';
 
 /**
  * UiCoordinator.js — Central UI Presentation Coordinator
@@ -15,6 +16,7 @@ export class UiCoordinator {
     this.controller = controller;
     this.views = views;
     this.bindEvents();
+    this.bindWhyModal();
   }
 
   /** Centralized Event Subscriptions */
@@ -185,5 +187,57 @@ export class UiCoordinator {
       if (i < activeNum)        el.classList.add('complete');
       else if (i === activeNum) el.classList.add('active');
     }
+  }
+
+  /** Sprint E1: Bind 'Why?' explanation triggers */
+  bindWhyModal() {
+    const paramMap = {
+      infoFlow: 'flowRate',
+      infoOrganic: 'organicPercent',
+      infoTemp: 'temperature',
+      infoPh: 'ph',
+      infoWavelength: 'wavelength'
+    };
+
+    Object.entries(paramMap).forEach(([elementId, paramId]) => {
+      const el = document.getElementById(elementId);
+      if (el) {
+        el.style.cursor = 'pointer';
+        el.title = 'Click for Educational Explanation';
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.showWhyModal(paramId);
+        });
+      }
+    });
+
+    const closeBtn = document.getElementById('closeWhyModal');
+    const overlay = document.getElementById('whyModalOverlay');
+    if (closeBtn && overlay) {
+      closeBtn.addEventListener('click', () => overlay.style.display = 'none');
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.style.display = 'none';
+      });
+    }
+  }
+
+  /** Render EducationalExplanation payload in modal */
+  showWhyModal(paramId) {
+    const exp = EducationalEngine.getParameterExplanation(paramId);
+    const overlay = document.getElementById('whyModalOverlay');
+    if (!overlay || !exp) return;
+
+    document.getElementById('whyParamName').textContent = exp.parameter;
+    document.getElementById('whyPhysicalEffect').textContent = exp.physicalEffect;
+    document.getElementById('whyObservedEffect').textContent = exp.observedEffect;
+    document.getElementById('whyLearnerOutcome').textContent = exp.learnerOutcome;
+    document.getElementById('whyPracticalTip').textContent = exp.practicalTip || 'N/A';
+
+    const refList = document.getElementById('whyReferences');
+    if (refList) {
+      refList.innerHTML = (exp.references || []).map(r => `<li>${r}</li>`).join('');
+    }
+
+    overlay.style.display = 'flex';
   }
 }
