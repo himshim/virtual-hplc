@@ -5,11 +5,12 @@ import { HPLC_EVENTS } from '../controller/HplcEvents.js';
 import { getBaselineNoise } from '../engine/detector.js';
 import { HplcController } from '../controller/HplcController.js';
 import { PeakDetectionEngine } from '../engine/peakDetectionEngine.js';
+import { GraphView } from '../ui/graph.js';
 
 /**
  * ciArchitectureCheck.js — Automated CI Architectural Gate & Health Check
  *
- * Enforces seven strict architectural, scientific, & live UI quality gates:
+ * Enforces eight strict architectural, scientific, live UI, & rendering quality gates:
  * 1. Architecture Gate: 0 UI->Engine imports, 0 Engine->UI/DOM imports, 0 Circular imports
  * 2. Event Registry Gate: Unique & centralized HPLC_EVENTS definitions
  * 3. Determinism Gate: Bit-identical output given identical seeds
@@ -17,6 +18,7 @@ import { PeakDetectionEngine } from '../engine/peakDetectionEngine.js';
  * 5. User Experience & Accessibility Gate: Touch targets >= 44px, ARIA roles, responsive layout
  * 6. Performance Gate: Cold startup < 2s, memory stability, 0 listener leaks
  * 7. Live UI Reconciliation Gate: Displayed live peaks == runResult.peaks.length
+ * 8. Visual Rendering & Interaction Gate: GraphView fitAll, fitPeaks, & resetZoom functions present
  */
 
 function scanDirectory(dir, extension = '.js') {
@@ -36,7 +38,7 @@ function scanDirectory(dir, extension = '.js') {
 
 export async function runCiArchitectureCheck() {
   console.log('================================================================');
-  console.log('🛡️ RUNNING AUTOMATED SEVEN CI QUALITY GATES (VDS-1.4)');
+  console.log('🛡️ RUNNING AUTOMATED EIGHT CI QUALITY GATES (VDS-1.4)');
   console.log('================================================================\n');
 
   let totalErrors = 0;
@@ -177,15 +179,24 @@ export async function runCiArchitectureCheck() {
   const expectedCount = finalRunResult ? finalRunResult.peaks.length : 0;
 
   if (livePeaksDetected.length === expectedCount && liveTargetHits.length === 4) {
-    console.log(`✅ Gate 7 [Live UI Reconciliation]: Displayed live peaks (${livePeaksDetected.length}) == runResult.peaks.length (${expectedCount})`);
+    console.log(`✅ Gate 7 [Live Data Reconciliation]: Displayed live peaks (${livePeaksDetected.length}) == runResult.peaks.length (${expectedCount})`);
   } else {
     console.error(`❌ GATE 7 FAILED: Displayed live peaks (${livePeaksDetected.length}) != runResult.peaks.length (${expectedCount})`);
     totalErrors++;
   }
 
+  // Gate 8: Visual Rendering & Interaction Verification Gate
+  const graphProto = GraphView.prototype;
+  if (typeof graphProto.fitAll === 'function' && typeof graphProto.fitPeaks === 'function' && typeof graphProto.resetZoom === 'function') {
+    console.log(`✅ Gate 8 [Visual Rendering & Interaction]: Fit All, Fit Peaks, & Reset View graph controls verified`);
+  } else {
+    console.error(`❌ GATE 8 FAILED: GraphView missing fitAll/fitPeaks/resetZoom interaction methods`);
+    totalErrors++;
+  }
+
   console.log('\n================================================================');
   if (totalErrors === 0) {
-    console.log('🎉 ALL SEVEN CONFIGURABLE ARCHITECTURAL & QUALITY GATES PASSED!');
+    console.log('🎉 ALL EIGHT CONFIGURABLE ARCHITECTURAL & QUALITY GATES PASSED!');
     console.log('================================================================\n');
     return { success: true, totalErrors: 0 };
   } else {

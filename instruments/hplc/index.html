@@ -126,15 +126,15 @@
         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
           <!-- Zoom control strip (P5) -->
           <div id="zoom-controls" style="display:flex; gap:4px;" role="group" aria-label="Zoom controls">
-            <button onclick="window._graphViewInstance?.fitAll?.()" title="Fit All"
-              style="background:#1e293b; border:1px solid #334155; color:#94a3b8; border-radius:6px; padding:3px 7px; font-size:0.65rem; cursor:pointer; min-height:28px;"
-              aria-label="Fit all data in view">[A]</button>
-            <button onclick="window._graphViewInstance?.fitPeaks?.()" title="Fit Peaks"
-              style="background:#1e293b; border:1px solid #334155; color:#94a3b8; border-radius:6px; padding:3px 7px; font-size:0.65rem; cursor:pointer; min-height:28px;"
-              aria-label="Fit peaks in view">[P]</button>
-            <button onclick="window._graphViewInstance?.resetZoom?.()" title="Reset Zoom"
-              style="background:#1e293b; border:1px solid #334155; color:#94a3b8; border-radius:6px; padding:3px 7px; font-size:0.65rem; cursor:pointer; min-height:28px;"
-              aria-label="Reset zoom to full range">⊙</button>
+            <button onclick="window._graphViewInstance?.fitAll?.()" title="Fit All Data"
+              style="background:#1e293b; border:1px solid #334155; color:#38bdf8; border-radius:6px; padding:3px 9px; font-size:0.72rem; font-weight:600; cursor:pointer; min-height:28px;"
+              aria-label="Fit all data in view">🔍 Fit All</button>
+            <button onclick="window._graphViewInstance?.fitPeaks?.()" title="Fit Peaks Window"
+              style="background:#1e293b; border:1px solid #334155; color:#34d399; border-radius:6px; padding:3px 9px; font-size:0.72rem; font-weight:600; cursor:pointer; min-height:28px;"
+              aria-label="Fit peaks in view">🎯 Fit Peaks</button>
+            <button onclick="window._graphViewInstance?.resetZoom?.()" title="Reset Graph View"
+              style="background:#1e293b; border:1px solid #334155; color:#94a3b8; border-radius:6px; padding:3px 9px; font-size:0.72rem; font-weight:600; cursor:pointer; min-height:28px;"
+              aria-label="Reset zoom to full range">↺ Reset View</button>
           </div>
           <div role="status" aria-live="polite" aria-label="Instrument warnings">
             <span id="status" class="status-badge" aria-label="Instrument status">IDLE</span>
