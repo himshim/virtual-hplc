@@ -146,16 +146,17 @@ body {
 }
 .status-badge.error { background: #fee2e2; color: var(--brand-danger); }
 
-/* ===== P6 SCIENTIFIC WORKSPACE: 50-60% CHROMATOGRAM CANVAS ===== */
+/* Chromatogram container — Hero Element (Sprint U2: 60-70% Viewport Focus) */
 .chromatogram-container {
   position: relative;
-  height: 360px;
-  min-height: 320px;
   width: 100%;
-  max-width: 100%;
-  overflow: hidden;
+  height: 52vh;
+  min-height: 320px;
+  max-height: 600px;
+  background: #020810;
   border-radius: var(--radius-sm);
-  background: #0f172a;
+  padding: 12px;
+  overflow: hidden;
 }
 #graphCanvas {
   position: absolute;
@@ -545,7 +546,155 @@ input[type="range"]:focus-visible {
   .sample-card { padding: 16px; }
 }
 
-/* ===== REPLAY STRIP ANIMATION ===== */
+/* ===== SPRINT U1–U5: AUTHENTIC CDS WORKSPACE & STEPPER CONTROLS ===== */
+
+/* CDS Workstation Telemetry Strip (Sprint U1) */
+.cds-telemetry-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cds-telemetry-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cds-telemetry-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+}
+
+.cds-telemetry-val {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  font-family: var(--font-mono);
+}
+
+.cds-badge-on {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #34d399;
+}
+
+/* Guided Step Unlock Banner (Sprint U4) */
+.guided-step-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #090d16;
+  border: 1px solid #1e293b;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.guided-step-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: #475569;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0.6;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.guided-step-item.active {
+  color: #38bdf8;
+  opacity: 1.0;
+  font-weight: 800;
+}
+
+.guided-step-item.complete {
+  color: #34d399;
+  opacity: 0.9;
+}
+
+.guided-step-arrow {
+  font-size: 0.65rem;
+  color: #334155;
+}
+
+/* Touch-First Stepper Controls (Sprint U3) */
+.stepper-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.stepper-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stepper-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: var(--brand-primary);
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.step-btn:hover {
+  background: #e0f2fe;
+  border-color: #38bdf8;
+}
+
+.step-btn:active {
+  background: #bae6fd;
+}
+
+.step-val-display {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 70px;
+  text-align: center;
+  font-family: var(--font-mono);
+}
+
+/* Replay strip animation */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0);   }

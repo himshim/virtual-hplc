@@ -1,10 +1,9 @@
 import { globalModal } from '../../../ui/components/Modal.js';
 
 /**
- * controls.js - DOM Inputs, User Action Bindings & Educational Tooltips ⓘ
+ * controls.js - DOM Inputs, User Action Bindings, Steppers & Educational Tooltips ⓘ
  *
- * Updated for CDS acquisition lifecycle:
- *   IDLE → PRIMING → EQUILIBRATING → READY → RUNNING → COMPLETED
+ * Updated for Sprint U3 (Touch-First Steppers) & CDS Workstation telemetry
  */
 export class ControlsView {
   constructor(controller) {
@@ -36,6 +35,7 @@ export class ControlsView {
     this.stopBtn   = document.getElementById("stopBtn");
 
     this.bindEvents();
+    this.bindSteppers();
     this.bindTooltips();
   }
 
@@ -43,7 +43,9 @@ export class ControlsView {
     if (this.flowInput) {
       this.flowInput.oninput = (e) => {
         const val = e.target.value;
-        if (this.flowVal) this.flowVal.textContent = val;
+        if (this.flowVal) this.flowVal.textContent = `${parseFloat(val).toFixed(1)} mL/min`;
+        const cdsFlow = document.getElementById("cdsFlowVal");
+        if (cdsFlow) cdsFlow.textContent = `${parseFloat(val).toFixed(2)} mL/min`;
         this.controller.setFlowRate(val);
       };
     }
@@ -60,6 +62,8 @@ export class ControlsView {
       this.tempInput.oninput = (e) => {
         const val = e.target.value;
         if (this.tempVal) this.tempVal.textContent = `${val}°C`;
+        const cdsTemp = document.getElementById("cdsTempVal");
+        if (cdsTemp) cdsTemp.textContent = `${parseFloat(val).toFixed(1)} °C`;
         this.controller.setTemperature(val);
       };
     }
@@ -68,6 +72,8 @@ export class ControlsView {
       this.wavelengthInput.oninput = (e) => {
         const val = e.target.value;
         if (this.wavelengthVal) this.wavelengthVal.textContent = `${val} nm`;
+        const cdsUv = document.getElementById("cdsUvVal");
+        if (cdsUv) cdsUv.textContent = `${val} nm`;
         this.controller.setWavelength(val);
       };
     }
@@ -149,6 +155,35 @@ export class ControlsView {
         this.controller.stopPump();
       };
     }
+  }
+
+  /** Touch-First Stepper Controls Binding (Sprint U3) */
+  bindSteppers() {
+    document.querySelectorAll('.step-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        const param = btn.getAttribute('data-param');
+        const step  = parseFloat(btn.getAttribute('data-step') || 1);
+
+        const inputMap = {
+          flow:    this.flowInput,
+          organic: this.organicInput,
+          temp:    this.tempInput,
+          ph:      this.phInput
+        };
+
+        const targetInput = inputMap[param];
+        if (!targetInput) return;
+
+        const min = parseFloat(targetInput.min);
+        const max = parseFloat(targetInput.max);
+        let current = parseFloat(targetInput.value);
+        let next = Math.max(min, Math.min(max, current + step));
+
+        targetInput.value = next;
+        targetInput.dispatchEvent(new Event('input'));
+      };
+    });
   }
 
   bindTooltips() {

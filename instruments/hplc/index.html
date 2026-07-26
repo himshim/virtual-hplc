@@ -61,6 +61,55 @@
   <!-- TAB 1: RUN (Primary Landing View) -->
   <div id="tab-run" class="tab-panel active" role="tabpanel" aria-label="Run View">
 
+    <!-- Sprint U1: Workstation Telemetry Header Strip -->
+    <div class="cds-telemetry-strip" role="region" aria-label="CDS Telemetry Dashboard">
+      <div class="cds-telemetry-item">
+        <span class="cds-telemetry-label">System State</span>
+        <span id="cdsStateVal" class="cds-telemetry-val">● IDLE</span>
+      </div>
+      <div class="cds-telemetry-item">
+        <span class="cds-telemetry-label">Pressure</span>
+        <span id="cdsPressureVal" class="cds-telemetry-val">0.0 bar</span>
+      </div>
+      <div class="cds-telemetry-item">
+        <span class="cds-telemetry-label">Flow Rate</span>
+        <span id="cdsFlowVal" class="cds-telemetry-val">1.00 mL/min</span>
+        <span class="cds-badge-on">Flow Stable ✓</span>
+      </div>
+      <div class="cds-telemetry-item">
+        <span class="cds-telemetry-label">UV Wavelength</span>
+        <span id="cdsUvVal" class="cds-telemetry-val">254 nm</span>
+        <span class="cds-badge-on">UV Lamp ● ON</span>
+      </div>
+      <div class="cds-telemetry-item">
+        <span class="cds-telemetry-label">Column Oven</span>
+        <span id="cdsTempVal" class="cds-telemetry-val">25.0 °C</span>
+      </div>
+    </div>
+
+    <!-- Sprint U4: Guided Step Unlock Banner -->
+    <div class="guided-step-banner" id="guided-step-banner" role="progressbar" aria-label="Guided experiment progress">
+      <div class="guided-step-item active" id="gstep-1">
+        <span>① Start Pump</span>
+      </div>
+      <span class="guided-step-arrow">➔</span>
+      <div class="guided-step-item" id="gstep-2">
+        <span>② Wait for Ready</span>
+      </div>
+      <span class="guided-step-arrow">➔</span>
+      <div class="guided-step-item" id="gstep-3">
+        <span>③ Inject Sample</span>
+      </div>
+      <span class="guided-step-arrow">➔</span>
+      <div class="guided-step-item" id="gstep-4">
+        <span>④ Watch Separation</span>
+      </div>
+      <span class="guided-step-arrow">➔</span>
+      <div class="guided-step-item" id="gstep-5">
+        <span>⑤ View Report</span>
+      </div>
+    </div>
+
     <!-- P7: Instrument Status Bar Strip -->
     <div id="instrument-status-bar" style="margin-bottom:10px;" aria-live="polite" aria-label="Instrument status"></div>
 
@@ -168,22 +217,63 @@
       <!-- P7: Parameter Impact Preview -->
       <div id="param-impact-panel" style="display:none;"></div>
 
-      <label for="flowInput">Flow Rate &nbsp;<span class="param-val" id="flowVal">1.0</span> mL/min <span id="infoFlow">ⓘ</span></label>
+      <!-- Sprint U3: Touch-First Steppers alongside Sliders -->
+      <div class="stepper-control-row">
+        <div>
+          <label for="flowInput" class="stepper-label">Flow Rate <span id="infoFlow">ⓘ</span></label>
+          <div style="font-size:0.75rem; color:#64748b;">Standard: 1.0 mL/min</div>
+        </div>
+        <div class="stepper-btn-group">
+          <button class="step-btn" data-param="flow" data-step="-1" aria-label="Decrease flow rate">−</button>
+          <span class="step-val-display" id="flowVal">1.0 mL/min</span>
+          <button class="step-btn" data-param="flow" data-step="1" aria-label="Increase flow rate">+</button>
+        </div>
+      </div>
       <input id="flowInput" type="range" min="0.5" max="5.0" step="0.1" value="1.0">
 
-      <br><br>
+      <br>
 
-      <label for="organicInput">Mobile Phase %B &nbsp;<span class="param-val" id="organicVal">40%</span> <span id="infoOrganic">ⓘ</span></label>
+      <div class="stepper-control-row">
+        <div>
+          <label for="organicInput" class="stepper-label">Mobile Phase %B <span id="infoOrganic">ⓘ</span></label>
+          <div style="font-size:0.75rem; color:#64748b;">Organic Modifier (A combination)</div>
+        </div>
+        <div class="stepper-btn-group">
+          <button class="step-btn" data-param="organic" data-step="-5" aria-label="Decrease organic percent">−</button>
+          <span class="step-val-display" id="organicVal">40%</span>
+          <button class="step-btn" data-param="organic" data-step="5" aria-label="Increase organic percent">+</button>
+        </div>
+      </div>
       <input id="organicInput" type="range" min="10" max="90" step="5" value="40">
 
-      <br><br>
+      <br>
 
-      <label for="tempInput">Column Temperature &nbsp;<span class="param-val" id="tempVal">25°C</span> <span id="infoTemp">ⓘ</span></label>
+      <div class="stepper-control-row">
+        <div>
+          <label for="tempInput" class="stepper-label">Column Temperature <span id="infoTemp">ⓘ</span></label>
+          <div style="font-size:0.75rem; color:#64748b;">Thermostatic Column Oven</div>
+        </div>
+        <div class="stepper-btn-group">
+          <button class="step-btn" data-param="temp" data-step="-5" aria-label="Decrease temperature">−</button>
+          <span class="step-val-display" id="tempVal">25°C</span>
+          <button class="step-btn" data-param="temp" data-step="5" aria-label="Increase temperature">+</button>
+        </div>
+      </div>
       <input id="tempInput" type="range" min="25" max="60" step="5" value="25">
 
-      <br><br>
+      <br>
 
-      <label for="phInput">Mobile Phase pH &nbsp;<span class="param-val" id="phVal">pH 7.0</span> <span id="infoPh">ⓘ</span></label>
+      <div class="stepper-control-row">
+        <div>
+          <label for="phInput" class="stepper-label">Mobile Phase pH <span id="infoPh">ⓘ</span></label>
+          <div style="font-size:0.75rem; color:#64748b;">Buffer pH speciation</div>
+        </div>
+        <div class="stepper-btn-group">
+          <button class="step-btn" data-param="ph" data-step="-0.5" aria-label="Decrease pH">−</button>
+          <span class="step-val-display" id="phVal">pH 7.0</span>
+          <button class="step-btn" data-param="ph" data-step="0.5" aria-label="Increase pH">+</button>
+        </div>
+      </div>
       <input id="phInput" type="range" min="2.0" max="8.0" step="0.1" value="7.0">
 
       <br><br>
@@ -504,6 +594,9 @@
       statusBar.update({ status: newState });
 
       const acqLabel = document.getElementById("acqPhaseLabel");
+      const cdsState = document.getElementById("cdsStateVal");
+      if (cdsState) cdsState.textContent = `● ${newState}`;
+
       if (acqLabel) {
         const phaseMap = {
           PRIMING:      "⚡ PRIMING: Ramping pressure...",
@@ -518,12 +611,36 @@
         acqLabel.textContent = phaseMap[newState] || newState;
       }
 
-      if (newState === 'PRIMING')      runTimeline.setPhase('prime');
-      if (newState === 'EQUILIBRATING')runTimeline.setPhase('equilibrate');
-      if (newState === 'READY')        runTimeline.setPhase('ready');
-      if (newState === 'INJECTING')    runTimeline.setPhase('inject');
-      if (newState === 'RUNNING')      runTimeline.setPhase('separation');
-      if (newState === 'COMPLETED')    runTimeline.setPhase('complete');
+      // Sprint U4: Update Guided Step Unlock Banner active highlight
+      const updateStepHighlight = (activeStepNum) => {
+        for (let i = 1; i <= 5; i++) {
+          const el = document.getElementById(`gstep-${i}`);
+          if (!el) continue;
+          el.classList.remove('active', 'complete');
+          if (i < activeStepNum) el.classList.add('complete');
+          else if (i === activeStepNum) el.classList.add('active');
+        }
+      };
+
+      if (newState === 'PRIMING') {
+        runTimeline.setPhase('prime');
+        updateStepHighlight(1);
+      } else if (newState === 'EQUILIBRATING') {
+        runTimeline.setPhase('equilibrate');
+        updateStepHighlight(2);
+      } else if (newState === 'READY') {
+        runTimeline.setPhase('ready');
+        updateStepHighlight(3);
+      } else if (newState === 'INJECTING') {
+        runTimeline.setPhase('inject');
+        updateStepHighlight(3);
+      } else if (newState === 'RUNNING') {
+        runTimeline.setPhase('separation');
+        updateStepHighlight(4);
+      } else if (newState === 'COMPLETED') {
+        runTimeline.setPhase('complete');
+        updateStepHighlight(5);
+      }
 
       if (runExpBtn) {
         if (newState === 'RUNNING') {
@@ -540,8 +657,9 @@
 
     controller.eventBus.on("pressureChanged", ({ pressure }) => {
       displayView.setPressure(pressure);
-      // P7: Update status bar pressure
       statusBar.update({ pressureBar: pressure });
+      const cdsP = document.getElementById("cdsPressureVal");
+      if (cdsP) cdsP.textContent = `${pressure.toFixed(1)} bar`;
     });
 
     controller.eventBus.on("wavelengthChanged", ({ wavelengthNm }) => {
