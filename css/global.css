@@ -44,33 +44,64 @@ body {
 .app-header {
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
-  padding: 12px 20px;
+  padding: 12px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .app-title {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--brand-primary);
 }
+
+/* ===== MODE SELECTOR ===== */
+.mode-selector {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-app);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 3px;
+}
+.mode-btn {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  min-height: 32px;
+  transition: all 0.15s ease;
+}
+.mode-btn.active {
+  background: var(--brand-primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
 .demo-badge-btn {
-  padding: 6px 14px;
+  padding: 6px 12px;
   background: #fef3c7;
   color: #92400e;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   border: 1px solid #fde68a;
   border-radius: var(--radius-full);
   cursor: pointer;
+  min-height: 32px;
 }
 
 /* ===== MAIN CONTENT WRAPPER ===== */
 .platform-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px;
 }
 
 /* ===== TAB PANELS ===== */
@@ -86,7 +117,7 @@ body {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 20px;
+  padding: 16px;
   margin-bottom: 16px;
   box-shadow: var(--shadow-sm);
 }
@@ -94,9 +125,9 @@ body {
 /* ===== STATUS & BADGES ===== */
 .status-badge {
   display: inline-block;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   background: #e0f2fe;
@@ -107,7 +138,7 @@ body {
 /* ===== CHROMATOGRAM CANVAS & CONTAINER ===== */
 .chromatogram-container {
   position: relative;
-  height: 250px;
+  height: 240px;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
@@ -127,13 +158,15 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.92);
   border: 2px dashed var(--border-strong);
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
   pointer-events: none;
   transition: opacity 0.2s ease;
   z-index: 10;
+  text-align: center;
+  padding: 16px;
 }
 .ghost-overlay.hidden {
   opacity: 0;
@@ -143,27 +176,46 @@ body {
 /* ===== STICKY ACTION DOCK ===== */
 .action-dock {
   position: sticky;
-  bottom: 72px;
+  bottom: 68px;
   background: var(--bg-surface);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
-  padding: 14px 18px;
+  padding: 12px 16px;
   box-shadow: var(--shadow-md);
-  margin-top: 16px;
+  margin-top: 12px;
   z-index: 900;
 }
 .dock-telemetry {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .dock-buttons {
   display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.dock-buttons.multi {
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+}
+
+/* Single 1-Tap CTA for Beginner Mode */
+#runExperimentBtn {
+  background: var(--brand-success);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+  margin-bottom: 0;
+}
+#runExperimentBtn.running {
+  background: var(--brand-danger);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
 }
 
 /* ===== UNIVERSAL 5-TAB NAVIGATION BAR ===== */
@@ -192,22 +244,29 @@ body {
   background: none;
   border: none;
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 2px 0;
   transition: color 0.15s ease;
+
+  /* Keyboard Focus & A11y */
+  outline: none;
+}
+.nav-tab-item:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: -2px;
 }
 .nav-tab-item .tab-icon {
-  font-size: 1.2rem;
-  margin-bottom: 2px;
+  font-size: 1.1rem;
+  margin-bottom: 1px;
 }
 .nav-tab-item.active {
   color: var(--brand-primary);
   border-top: 2px solid var(--brand-primary);
 }
 .nav-tab-item:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
@@ -221,7 +280,7 @@ body {
 }
 
 /* ===== HARDWARE GAUGE ===== */
-meter { width: 100%; height: 16px; border-radius: var(--radius-sm); }
+meter { width: 100%; height: 14px; border-radius: var(--radius-sm); }
 meter::-webkit-meter-optimum-value { background: var(--brand-success); }
 meter::-webkit-meter-suboptimum-value { background: #f59e0b; }
 meter::-webkit-meter-even-less-good-value { background: var(--brand-danger); }
@@ -230,11 +289,11 @@ meter::-webkit-meter-even-less-good-value { background: var(--brand-danger); }
 input[type="range"] { width: 100%; accent-color: var(--brand-primary); cursor: pointer; min-height: var(--min-touch-target); }
 button { 
   min-height: var(--min-touch-target);
-  padding: 10px 16px;
+  padding: 10px 14px;
   border: none;
   border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
 }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -248,7 +307,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   }
   .nav-tab-bar {
     position: static;
-    height: 50px;
+    height: 48px;
     border-top: none;
     border-bottom: 1px solid var(--border-subtle);
     box-shadow: none;
@@ -258,6 +317,15 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   }
   .action-dock {
     position: static;
-    margin-top: 20px;
+    margin-top: 16px;
   }
+}
+
+/* ===== VERY SMALL VIEWPORT FIX (<340px) ===== */
+@media (max-width: 340px) {
+  .app-header { padding: 8px 12px; }
+  .app-title { font-size: 0.9rem; }
+  .mode-btn { padding: 3px 8px; font-size: 0.7rem; }
+  .nav-tab-item { font-size: 0.65rem; }
+  .nav-tab-item .tab-icon { font-size: 1rem; }
 }

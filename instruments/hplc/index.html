@@ -10,31 +10,39 @@
 
 <body>
 
-<!-- Header Bar -->
+<!-- Header Bar with Mode Selector -->
 <header class="app-header">
   <h1 class="app-title">Virtual Analytical Lab — HPLC</h1>
-  <button id="guidedDemoBtn" class="demo-badge-btn">⚡ 60s Guided Demo</button>
+
+  <!-- Mode Selector: Beginner, Standard, Advanced -->
+  <div class="mode-selector" id="modeSelector" role="radiogroup" aria-label="Expertise Mode">
+    <button class="mode-btn active" data-mode="beginner" role="radio" aria-checked="true">🟢 Beginner</button>
+    <button class="mode-btn" data-mode="standard" role="radio" aria-checked="false">🟡 Standard</button>
+    <button class="mode-btn" data-mode="advanced" role="radio" aria-checked="false">🔴 Advanced</button>
+  </div>
+
+  <button id="guidedDemoBtn" class="demo-badge-btn">⚡ 60s Demo</button>
 </header>
 
 <!-- Universal 5-Tab Navigation Bar -->
-<nav class="nav-tab-bar" id="platformNav">
-  <button class="nav-tab-item active" data-tab="tab-run" id="tabBtn-run">
+<nav class="nav-tab-bar" id="platformNav" aria-label="Main Navigation">
+  <button class="nav-tab-item active" data-tab="tab-run" id="tabBtn-run" aria-label="Run View">
     <span class="tab-icon">📈</span>
     <span>Run</span>
   </button>
-  <button class="nav-tab-item" data-tab="tab-method" id="tabBtn-method">
+  <button class="nav-tab-item" data-tab="tab-method" id="tabBtn-method" aria-label="Method Tuning">
     <span class="tab-icon">🧪</span>
     <span>Method</span>
   </button>
-  <button class="nav-tab-item" data-tab="tab-sample" id="tabBtn-sample">
+  <button class="nav-tab-item" data-tab="tab-sample" id="tabBtn-sample" aria-label="Sample Selection">
     <span class="tab-icon">🧬</span>
     <span>Sample</span>
   </button>
-  <button class="nav-tab-item" data-tab="tab-results" id="tabBtn-results" disabled>
+  <button class="nav-tab-item" data-tab="tab-results" id="tabBtn-results" disabled aria-label="Results Evaluation">
     <span class="tab-icon">📊</span>
     <span>Results<span id="resultsBadge" style="display:none;" class="badge-dot"></span></span>
   </button>
-  <button class="nav-tab-item" data-tab="tab-learn" id="tabBtn-learn">
+  <button class="nav-tab-item" data-tab="tab-learn" id="tabBtn-learn" aria-label="Learn Hub">
     <span class="tab-icon">🎓</span>
     <span>Learn</span>
   </button>
@@ -47,7 +55,7 @@
     
     <!-- Primary Chromatogram Card (Top Position) -->
     <div class="instrument-card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
         <h2 style="margin:0; font-size:1.1rem; color:var(--brand-primary);">Live Chromatogram</h2>
         <div>
           <span id="status" class="status-badge">IDLE</span>
@@ -56,12 +64,24 @@
         </div>
       </div>
 
+      <!-- Beginner Mode Quick Sample Selector -->
+      <div id="beginnerSampleBox" style="margin-bottom: 12px; padding: 10px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
+        <label for="beginnerCompoundSelect" style="font-size: 0.85rem; font-weight: 700; color: #0369a1; display: block; margin-bottom: 4px;">
+          🧪 Select Sample to Analyze:
+        </label>
+        <select id="beginnerCompoundSelect" style="width:100%; padding:8px; border-radius:6px; border:1px solid #7dd3fc; background:white; font-size:0.9rem;">
+          <!-- Mirror of compoundSelect -->
+        </select>
+      </div>
+
       <div class="chromatogram-container">
         <canvas id="graphCanvas"></canvas>
         <div id="ghostOverlay" class="ghost-overlay">
           <div style="font-size:2rem; margin-bottom:6px;">📈</div>
           <div style="font-weight:600;">Your chromatogram will appear here</div>
-          <div style="font-size:0.85rem; margin-top:4px;">Press ▶ Pump START then Inject Sample</div>
+          <div id="ghostSubtext" style="font-size:0.85rem; margin-top:4px; color:var(--brand-primary);">
+            Tap <strong>▶ Run Experiment</strong> for 1-tap automated run!
+          </div>
         </div>
       </div>
     </div>
@@ -76,7 +96,14 @@
         <div id="rtDisplay" style="color:var(--text-secondary);">Elapsed Time: 00:00</div>
       </div>
       <meter id="pressureMeter" min="0" max="400" low="250" high="350" optimum="150" value="0"></meter>
-      <div class="dock-buttons" style="margin-top:12px;">
+
+      <!-- Beginner 1-Tap Single CTA Button (Default) -->
+      <div id="beginnerDockBox" style="margin-top:10px;">
+        <button id="runExperimentBtn">▶ Run Experiment</button>
+      </div>
+
+      <!-- Standard / Advanced Dual Button Dock (Hidden in Beginner Mode) -->
+      <div id="standardDockBox" class="dock-buttons multi" style="margin-top:10px; display:none;">
         <button id="pumpBtn">▶ Pump START</button>
         <button id="injectBtn" disabled>Inject Sample</button>
       </div>
@@ -206,7 +233,6 @@
   import { SampleBrowserComponent } from '../../ui/components/SampleBrowser.js';
   import { ReportCardComponent } from '../../ui/components/ReportCard.js';
   import { globalModal } from '../../ui/components/Modal.js';
-  import { getMethodExercise } from './engine/methodProfiles.js';
 
   async function injectDiagramSVG() {
     const container = document.getElementById("diagramContainer");
@@ -236,6 +262,78 @@
 
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
 
+    // Sync Beginner quick sample dropdown with primary compoundSelect
+    const mainSampleSelect = document.getElementById("compoundSelect");
+    const beginnerSampleSelect = document.getElementById("beginnerCompoundSelect");
+    
+    if (mainSampleSelect && beginnerSampleSelect) {
+      beginnerSampleSelect.innerHTML = mainSampleSelect.innerHTML;
+      beginnerSampleSelect.onchange = (e) => {
+        mainSampleSelect.value = e.target.value;
+        controller.setSampleKey(e.target.value);
+        spectrumView.renderSpectrum(e.target.value, controller.simState.wavelengthNm);
+      };
+    }
+
+    // Mode Selector Logic (🟢 Beginner, 🟡 Standard, 🔴 Advanced)
+    let currentMode = "beginner";
+    const modeBtns = document.querySelectorAll(".mode-btn");
+    const beginnerDockBox = document.getElementById("beginnerDockBox");
+    const standardDockBox = document.getElementById("standardDockBox");
+    const beginnerSampleBox = document.getElementById("beginnerSampleBox");
+    const ghostSubtext = document.getElementById("ghostSubtext");
+
+    function setMode(mode) {
+      currentMode = mode;
+      modeBtns.forEach(btn => {
+        const isActive = btn.getAttribute("data-mode") === mode;
+        btn.classList.toggle("active", isActive);
+        btn.setAttribute("aria-checked", isActive ? "true" : "false");
+      });
+
+      if (mode === "beginner") {
+        if (beginnerDockBox) beginnerDockBox.style.display = "block";
+        if (standardDockBox) standardDockBox.style.display = "none";
+        if (beginnerSampleBox) beginnerSampleBox.style.display = "block";
+        if (ghostSubtext) ghostSubtext.innerHTML = 'Tap <strong>▶ Run Experiment</strong> for 1-tap automated run!';
+      } else {
+        if (beginnerDockBox) beginnerDockBox.style.display = "none";
+        if (standardDockBox) standardDockBox.style.display = "grid";
+        if (beginnerSampleBox) beginnerSampleBox.style.display = "none";
+        if (ghostSubtext) ghostSubtext.innerHTML = 'Press <strong>▶ Pump START</strong> then <strong>Inject Sample</strong>';
+      }
+    }
+
+    modeBtns.forEach(btn => {
+      btn.onclick = () => setMode(btn.getAttribute("data-mode"));
+    });
+    setMode("beginner"); // Default to Beginner Mode
+
+    // 1-Tap Automated Experiment Execution (Beginner Mode)
+    const runExpBtn = document.getElementById("runExperimentBtn");
+    if (runExpBtn) {
+      runExpBtn.onclick = () => {
+        const state = controller.getState();
+        if (state === 'IDLE' || state === 'STOPPED' || state === 'COMPLETED' || state === 'OVERPRESSURE') {
+          runExpBtn.textContent = "⏳ Starting Experiment...";
+          runExpBtn.disabled = true;
+
+          // 1-Tap Automation Chain: Start Pump -> 400ms Ramp -> Inject Sample
+          controller.startPump();
+          setTimeout(() => {
+            controller.injectSample();
+            runExpBtn.disabled = false;
+            runExpBtn.textContent = "⏹ Stop Experiment";
+            runExpBtn.classList.add("running");
+          }, 400);
+        } else if (state === 'READY' || state === 'RUNNING') {
+          controller.stopPump();
+          runExpBtn.textContent = "▶ Run Experiment";
+          runExpBtn.classList.remove("running");
+        }
+      };
+    }
+
     // 5-Tab Navigation Switching Logic
     const navButtons = document.querySelectorAll('.nav-tab-item');
     const tabPanels = document.querySelectorAll('.tab-panel');
@@ -260,7 +358,7 @@
       demoBtn.onclick = () => {
         globalModal.show(
           "⚡ 60-Second Guided HPLC Demo",
-          "Welcome to Virtual HPLC Simulator!<br><br>1. Click <strong>▶ Pump START</strong> to pressurize the system.<br>2. Click <strong>Inject Sample</strong> to run the chromatogram.<br>3. Watch real-time peak separation and view your Method Evaluation Report!<br><br>Ready?"
+          "Welcome to Virtual HPLC Simulator!<br><br>1. Select a sample from the dropdown.<br>2. Tap <strong>▶ Run Experiment</strong> for 1-tap automated analysis.<br>3. View your Method Evaluation Report in the Results tab!<br><br>Ready?"
         );
       };
     }
@@ -268,6 +366,17 @@
     controller.eventBus.on("statusChanged", ({ newState }) => {
       displayView.setStatus(newState);
       controlsView.updateControlsForState(newState);
+
+      // Keep 1-Tap button text synced with state changes
+      if (runExpBtn) {
+        if (newState === 'RUNNING') {
+          runExpBtn.textContent = "⏹ Stop Experiment";
+          runExpBtn.classList.add("running");
+        } else if (newState === 'IDLE' || newState === 'STOPPED' || newState === 'COMPLETED') {
+          runExpBtn.textContent = "▶ Run Experiment";
+          runExpBtn.classList.remove("running");
+        }
+      }
     });
 
     controller.eventBus.on("pressureChanged", ({ pressure }) => {
@@ -309,11 +418,21 @@
       const badgeDot = document.getElementById("resultsBadge");
       if (resultsBtn) resultsBtn.disabled = false;
       if (badgeDot) badgeDot.style.display = "inline-block";
+
+      // Prompt student when first run completes in Beginner Mode
+      if (currentMode === "beginner") {
+        setTimeout(() => {
+          globalModal.show(
+            "🎉 First Experiment Complete!",
+            "Great job! Your chromatogram run is finished.<br><br>Check out your <strong>Method Evaluation Report</strong> in the <strong>Results tab</strong> to see your score and optimization tips!"
+          );
+        }, 600);
+      }
     });
 
-    const compoundSelect = document.getElementById("compoundSelect");
-    if (compoundSelect) {
-      compoundSelect.addEventListener("change", (e) => {
+    if (mainSampleSelect) {
+      mainSampleSelect.addEventListener("change", (e) => {
+        if (beginnerSampleSelect) beginnerSampleSelect.value = e.target.value;
         controller.setSampleKey(e.target.value);
         spectrumView.renderSpectrum(e.target.value, controller.simState.wavelengthNm);
       });
