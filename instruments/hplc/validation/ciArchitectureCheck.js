@@ -10,11 +10,11 @@ import { runLevel3ExperimentalSweep } from './runLevel3ExperimentalSweep.js';
 import { runWholeTraceValidation } from './runWholeTraceValidation.js';
 
 /**
- * ciArchitectureCheck.js — Categorized Continuous Verification Pipeline
+ * ciArchitectureCheck.js — Educational Simulation Quality & Health Pipeline
  *
  * Domain 1: Software & Engineering Architecture Gates (Gates 1 - 3)
- * Domain 2: Scientific & Experimental Validation Gates (Gates 4, 7, 9, 10)
- * Domain 3: UX, Accessibility & Browser Acceptance Gates (Gates 5, 6, 8)
+ * Domain 2: Scientific Grounding & Educational Model Gates (Gates 4, 7, 9, 10)
+ * Domain 3: UX, Accessibility & Learner Acceptance Gates (Gates 5, 6, 8)
  */
 
 function scanDirectory(dir, extension = '.js') {
@@ -44,7 +44,6 @@ export async function runCiArchitectureCheck() {
   // ---------------------------------------------------------------------------
   console.log('── DOMAIN 1: Software & Engineering Architecture Gates ────────');
 
-  // Gate 1: Architecture - UI & Engine Import Boundaries
   const uiFiles = scanDirectory('./instruments/hplc/ui');
   let uiEngineViolations = 0;
 
@@ -124,9 +123,9 @@ export async function runCiArchitectureCheck() {
   }
 
   // ---------------------------------------------------------------------------
-  // DOMAIN 2: SCIENTIFIC & EXPERIMENTAL VALIDATION GATES
+  // DOMAIN 2: SCIENTIFIC GROUNDING & EDUCATIONAL MODEL GATES
   // ---------------------------------------------------------------------------
-  console.log('\n── DOMAIN 2: Scientific & Experimental Validation Gates ──────');
+  console.log('\n── DOMAIN 2: Scientific Grounding & Educational Model Gates ──');
 
   // Gate 4: Scientific Validation Regression Gate
   const valSummary = runScientificValidation();
@@ -192,19 +191,19 @@ export async function runCiArchitectureCheck() {
     totalErrors++;
   }
 
-  // Gate 10: Whole-Trace Digitized Validation Gate
+  // Gate 10: Educational Model Verification Gate
   const traceRes = await runWholeTraceValidation();
   if (traceRes.nrmse < 1.0 && traceRes.r2 > 0.999) {
-    console.log(`  ✅ Gate 10 [Whole-Trace Digitized Validation]: NRMSE (${traceRes.nrmse.toFixed(3)}%) < 1.0% & R^2 (${traceRes.r2.toFixed(5)}) > 0.999 across ${traceRes.totalPoints} points`);
+    console.log(`  ✅ Gate 10 [Educational Model Verification]: NRMSE (${traceRes.nrmse.toFixed(3)}%) < 1.0% & R^2 (${traceRes.r2.toFixed(5)}) > 0.999 across ${traceRes.totalPoints} points`);
   } else {
-    console.error(`❌ GATE 10 FAILED: Whole-trace similarity gate failed!`);
+    console.error(`❌ GATE 10 FAILED: Educational model verification gate failed!`);
     totalErrors++;
   }
 
   // ---------------------------------------------------------------------------
-  // DOMAIN 3: UX, ACCESSIBILITY & BROWSER ACCEPTANCE GATES
+  // DOMAIN 3: UX, ACCESSIBILITY & LEARNER ACCEPTANCE GATES
   // ---------------------------------------------------------------------------
-  console.log('\n── DOMAIN 3: UX, Accessibility & Browser Acceptance Gates ──');
+  console.log('\n── DOMAIN 3: UX, Accessibility & Learner Acceptance Gates ──');
 
   // Gate 5: User Experience & Accessibility Gate
   console.log(`  ✅ Gate 5 [UX & Accessibility]: Touch targets >= 44px, Keyboard nav, & ARIA roles verified`);
