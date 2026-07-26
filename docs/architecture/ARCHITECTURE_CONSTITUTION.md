@@ -12,6 +12,7 @@
 7. **Semantic API stability**: Public engine APIs (`v1.x`) remain backward compatible; breaking changes require `v2.0`.
 8. **Educational realism over visual fluff**: Workstation fidelity and pedagogical clarity take priority over decorative effects.
 9. **Workflow before widgets**: If a feature makes the simulated laboratory workflow more authentic, it has higher priority than adding new interface controls or visual effects.
+10. **One scientific fact, one owner**: Every scientific quantity (retention time, pressure, absorbance, plate count, resolution, peak area, etc.) has exactly one authoritative source in the codebase. UI components display or format it, but never recompute it.
 
 ---
 
