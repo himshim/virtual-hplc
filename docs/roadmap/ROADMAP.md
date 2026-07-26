@@ -1,25 +1,42 @@
-# Project Roadmap & Release Schedule
+# Project Roadmap & Release Milestones
 
-## HPLC Module Release Pipeline
+## Release Pipeline Overview
 
 ```text
-HPLC v1.0 (COMPLETE)
-  └─ Scientific Engine, Validation Suite VDS-1.4, Architecture, 6 CI Quality Gates
+PHASE 1: SCIENTIFIC ENGINE (FROZEN v1.x API)
+  └─ Complete (VDS-1.4 Dataset, 6 Continuous Verification Gates)
 
-HPLC v1.1 (ACTIVE — LABORATORY EXPERIENCE SPRINT)
-  ├─ Sprint U1.1: Authentic Acquisition Workflow (Pump Start -> Baseline -> Inject -> t=0 Reset -> Run)
-  ├─ Sprint U1.2: True Multi-Analyte Live Elution (Independent Concentration Profiles)
-  ├─ Sprint U1.3: Chromatogram Interaction (Fit Peaks, Fit All, Reset View, Pinch Zoom)
-  └─ Sprint U1.4: Commercial CDS Fidelity (Pressure Ripple, Baseline Drift, Needle Wash)
+PHASE 2: LABORATORY EXPERIENCE (CURRENT ACTIVE FOCUS — HPLC v1.1)
+  ├─ HPLC v1.1.1: Authentic Acquisition Workflow (Pump START -> Baseline -> Inject -> t=0 Reset -> Run)
+  ├─ HPLC v1.1.2: Live Acquisition & Signal Plotting
+  ├─ HPLC v1.1.3: Multi-Analyte Live Elution (Independent Concentration Profiles)
+  ├─ HPLC v1.1.4: Interactive Chromatogram & Peak Inspection
+  └─ HPLC v1.1.5: CDS Workstation Polish & Instrument Telemetry
 
-HPLC v1.2 (UPCOMING)
-  ├─ Instructor Assessment Mode & Custom Problem Generation
+PHASE 3: EDUCATIONAL CONTENT (HPLC v1.2)
+  ├─ Instructor Mode & Custom Problem Generation
   ├─ Student Interactive Exercises & Automated Grading
+  ├─ Troubleshooting Labs & SST Failure Modes
   └─ Formal PDF Method Evaluation Report Export
 
-PLATFORM EXPANSION (FUTURE)
+PHASE 4: PLATFORM EXPANSION (PLATFORM v2.0)
   ├─ GC Module (Gas Chromatography)
   ├─ UV–Vis Module (Spectrophotometry)
   ├─ FTIR Module (Fourier-Transform Infrared)
   └─ LC–MS Module (Liquid Chromatography–Mass Spectrometry)
 ```
+
+---
+
+## Educational Fidelity Metrics
+
+| Area | Initial Baseline | Target Status |
+| :--- | :--- | :---: |
+| **Scientific Fidelity** | High (Validated VDS-1.4) | Maintain ✅ |
+| **Workflow Fidelity** | Medium | High ✅ |
+| **Instrument Fidelity** | Medium | High ✅ |
+| **CDS Workstation Fidelity** | Medium | High ✅ |
+| **Mobile Usability** | High | High ✅ |
+| **Accessibility** | High | High ✅ |
+| **Educational Guidance** | Medium | High ✅ |
+| **Troubleshooting Realism** | Medium | High ✅ |
