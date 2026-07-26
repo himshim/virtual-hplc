@@ -74,10 +74,24 @@
     <div class="instrument-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
         <h2 style="margin:0; font-size:1.1rem; color:var(--brand-primary);" id="chromatogram-heading">Live Chromatogram</h2>
-        <div role="status" aria-live="polite" aria-label="Instrument warnings">
-          <span id="status" class="status-badge" aria-label="Instrument status">IDLE</span>
-          <span id="satWarning" class="status-badge error" style="display: none;" role="alert">⚠️ SATURATED</span>
-          <span id="pressureWarning" class="status-badge error" style="display: none;" role="alert">🚨 OVERPRESSURE</span>
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <!-- Zoom control strip (P5) -->
+          <div id="zoom-controls" style="display:flex; gap:4px;" role="group" aria-label="Zoom controls">
+            <button onclick="window._graphViewInstance?.fitAll?.()" title="Fit All"
+              style="background:#1e293b; border:1px solid #334155; color:#94a3b8; border-radius:6px; padding:3px 7px; font-size:0.65rem; cursor:pointer; min-height:28px;"
+              aria-label="Fit all data in view">[A]</button>
+            <button onclick="window._graphViewInstance?.fitPeaks?.()" title="Fit Peaks"
+              style="background:#1e293b; border:1px solid #334155; color:#94a3b8; border-radius:6px; padding:3px 7px; font-size:0.65rem; cursor:pointer; min-height:28px;"
+              aria-label="Fit peaks in view">[P]</button>
+            <button onclick="window._graphViewInstance?.resetZoom?.()" title="Reset Zoom"
+              style="background:#1e293b; border:1px solid #334155; color:#94a3b8; border-radius:6px; padding:3px 7px; font-size:0.65rem; cursor:pointer; min-height:28px;"
+              aria-label="Reset zoom to full range">⊙</button>
+          </div>
+          <div role="status" aria-live="polite" aria-label="Instrument warnings">
+            <span id="status" class="status-badge" aria-label="Instrument status">IDLE</span>
+            <span id="satWarning" class="status-badge error" style="display: none;" role="alert">⚠️ SATURATED</span>
+            <span id="pressureWarning" class="status-badge error" style="display: none;" role="alert">🚨 OVERPRESSURE</span>
+          </div>
         </div>
       </div>
 
@@ -104,25 +118,36 @@
     </div>
 
     <!-- Sticky Action Dock (Bottom Position) -->
-    <div class="action-dock">
+    <div class="action-dock" role="group" aria-label="Experiment Controls">
       <div class="dock-telemetry">
         <div>
           <span style="color:var(--text-secondary);">Pressure:</span>
           <span id="pressureVal" style="font-weight:700;">0 bar</span>
         </div>
-        <div id="rtDisplay" style="color:var(--text-secondary);">Elapsed Time: 00:00</div>
+        <div id="rtDisplay" style="color:var(--text-secondary);">Elapsed: 00:00</div>
       </div>
-      <meter id="pressureMeter" min="0" max="400" low="250" high="350" optimum="150" value="0"></meter>
+      <meter id="pressureMeter" min="0" max="400" low="250" high="350" optimum="150" value="0"
+        aria-label="System pressure gauge"></meter>
+
+      <!-- Phase label (Priming / Equilibrating / Ready / Running) -->
+      <div id="acqPhaseLabel" style="
+        font-size:0.72rem; font-weight:700; letter-spacing:0.06em; text-align:center;
+        color:#38bdf8; margin-top:6px; min-height:18px; font-family:'JetBrains Mono',monospace;
+      " aria-live="polite"></div>
 
       <!-- Beginner 1-Tap Single CTA Button (Default) -->
       <div id="beginnerDockBox" style="margin-top:10px;">
-        <button id="runExperimentBtn">▶ Run Experiment</button>
+        <button id="runExperimentBtn" aria-label="Run experiment automatically">▶ Run Experiment</button>
       </div>
 
-      <!-- Standard / Advanced Dual Button Dock (Hidden in Beginner Mode) -->
-      <div id="standardDockBox" class="dock-buttons multi" style="margin-top:10px; display:none;">
-        <button id="pumpBtn">▶ Pump START</button>
-        <button id="injectBtn" disabled>Inject Sample</button>
+      <!-- Standard / Advanced Multi-Button Dock (Hidden in Beginner Mode) -->
+      <div id="standardDockBox" class="dock-buttons multi" style="margin-top:10px; display:none;"
+        role="group" aria-label="Instrument workflow controls">
+        <button id="pumpBtn" aria-label="Start pump and begin equilibration">▶ Pump START</button>
+        <button id="blankBtn" disabled aria-label="Run blank injection"
+          style="background:linear-gradient(135deg,#1e3a2f,#14532d); color:#86efac; border-color:#15803d;">Inject Blank</button>
+        <button id="injectBtn" disabled aria-label="Inject sample and start acquisition">Inject Sample</button>
+        <button id="stopBtn" disabled aria-label="Stop acquisition" style="background:linear-gradient(135deg,#3b1919,#450a0a); color:#fca5a5; border-color:#991b1b;">⏹ Stop</button>
       </div>
     </div>
   </div>
@@ -408,29 +433,41 @@
     setMode("beginner"); // Default to Beginner Mode
 
     // 1-Tap Automated Experiment Execution (Beginner Mode)
+    // Runs full CDS sequence automatically: Pump START → Priming → Equilibrating → Inject → Separation
     const runExpBtn = document.getElementById("runExperimentBtn");
+    let _beginnerAutoInjectPending = false;
+
     if (runExpBtn) {
       runExpBtn.onclick = () => {
         const state = controller.getState();
         if (state === 'IDLE' || state === 'STOPPED' || state === 'COMPLETED' || state === 'OVERPRESSURE') {
-          runExpBtn.textContent = "⏳ Starting Experiment...";
+          runExpBtn.textContent = "⏳ Equilibrating Column...";
           runExpBtn.disabled = true;
-
-          // 1-Tap Automation Chain: Start Pump -> 400ms Ramp -> Inject Sample
+          _beginnerAutoInjectPending = true;
           controller.startPump();
-          setTimeout(() => {
-            controller.injectSample();
-            runExpBtn.disabled = false;
-            runExpBtn.textContent = "⏹ Stop Experiment";
-            runExpBtn.classList.add("running");
-          }, 400);
-        } else if (state === 'READY' || state === 'RUNNING') {
+        } else if (state === 'PRIMING' || state === 'EQUILIBRATING' || state === 'READY' || state === 'RUNNING') {
+          _beginnerAutoInjectPending = false;
           controller.stopPump();
           runExpBtn.textContent = "▶ Run Experiment";
+          runExpBtn.disabled = false;
           runExpBtn.classList.remove("running");
         }
       };
     }
+
+    controller.eventBus.on("baselineStabilized", () => {
+      const acqLabel = document.getElementById("acqPhaseLabel");
+      if (acqLabel) acqLabel.textContent = "🟢 READY FOR INJECTION";
+      if (_beginnerAutoInjectPending && controller.getState() === 'READY') {
+        _beginnerAutoInjectPending = false;
+        if (runExpBtn) {
+          runExpBtn.textContent = "⏹ Stop Experiment";
+          runExpBtn.disabled = false;
+          runExpBtn.classList.add("running");
+        }
+        controller.injectSample();
+      }
+    });
 
     // 5-Tab Navigation Switching Logic
     const navButtons = document.querySelectorAll('.nav-tab-item');
@@ -464,15 +501,36 @@
     controller.eventBus.on("statusChanged", ({ newState }) => {
       displayView.setStatus(newState);
       controlsView.updateControlsForState(newState);
-      // P7: Sync status bar
       statusBar.update({ status: newState });
+
+      const acqLabel = document.getElementById("acqPhaseLabel");
+      if (acqLabel) {
+        const phaseMap = {
+          PRIMING:      "⚡ PRIMING: Ramping pressure...",
+          EQUILIBRATING:"💧 EQUILIBRATING: Stabilizing baseline...",
+          READY:        "🟢 READY FOR INJECTION",
+          RUNNING:      "📈 ACQUIRING CHROMATOGRAM...",
+          COMPLETED:    "✅ ACQUISITION COMPLETE",
+          STOPPED:      "⏹ PUMP STOPPED",
+          IDLE:         "IDLE"
+        };
+        acqLabel.textContent = phaseMap[newState] || newState;
+      }
+
+      if (newState === 'PRIMING')      runTimeline.setPhase('prime');
+      if (newState === 'EQUILIBRATING')runTimeline.setPhase('equilibrate');
+      if (newState === 'READY')        runTimeline.setPhase('ready');
+      if (newState === 'RUNNING')      runTimeline.setPhase('separation');
+      if (newState === 'COMPLETED')    runTimeline.setPhase('complete');
 
       if (runExpBtn) {
         if (newState === 'RUNNING') {
           runExpBtn.textContent = "⏹ Stop Experiment";
+          runExpBtn.disabled = false;
           runExpBtn.classList.add("running");
         } else if (newState === 'IDLE' || newState === 'STOPPED' || newState === 'COMPLETED') {
           runExpBtn.textContent = "▶ Run Experiment";
+          runExpBtn.disabled = false;
           runExpBtn.classList.remove("running");
         }
       }
@@ -504,15 +562,20 @@
       if (ghost) ghost.classList.add("hidden");
     });
 
-    controller.eventBus.on("tick", ({ time, signal, pressure }) => {
+    controller.eventBus.on("tick", ({ time, signal, pressure, phase }) => {
       displayView.setTimeDisplay(time);
-      if (controller.getState() === 'RUNNING') {
+
+      const state = controller.getState();
+      if (state === 'PRIMING' || state === 'EQUILIBRATING' || state === 'READY' || state === 'RUNNING') {
         graphView.addPoint(time, signal);
-        // P7: Timeline phase tracking based on time
-        if (time < 0.3) runTimeline.setPhase('prime');
-        else if (time < 0.8) runTimeline.setPhase('equilibrate');
-        else if (time < 1.5) runTimeline.setPhase('inject');
-        else runTimeline.setPhase('separation');
+
+        // Timeline phase sync during RUNNING
+        if (state === 'RUNNING') {
+          if (time < 0.3)      runTimeline.setPhase('prime');
+          else if (time < 0.8) runTimeline.setPhase('equilibrate');
+          else if (time < 1.5) runTimeline.setPhase('inject');
+          else                 runTimeline.setPhase('separation');
+        }
       }
     });
 

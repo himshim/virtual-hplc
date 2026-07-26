@@ -2,31 +2,38 @@ import { globalModal } from '../../../ui/components/Modal.js';
 
 /**
  * controls.js - DOM Inputs, User Action Bindings & Educational Tooltips ⓘ
+ *
+ * Updated for CDS acquisition lifecycle:
+ *   IDLE → PRIMING → EQUILIBRATING → READY → RUNNING → COMPLETED
  */
 export class ControlsView {
   constructor(controller) {
     this.controller = controller;
 
     // DOM Inputs
-    this.flowInput = document.getElementById("flowInput");
-    this.flowVal = document.getElementById("flowVal");
-    this.organicInput = document.getElementById("organicInput");
-    this.organicVal = document.getElementById("organicVal");
-    this.tempInput = document.getElementById("tempInput");
-    this.tempVal = document.getElementById("tempVal");
-    this.wavelengthInput = document.getElementById("wavelengthInput");
-    this.wavelengthVal = document.getElementById("wavelengthVal");
-    this.phInput = document.getElementById("phInput");
-    this.phVal = document.getElementById("phVal");
-    this.bufferSelect = document.getElementById("bufferSelect");
+    this.flowInput        = document.getElementById("flowInput");
+    this.flowVal          = document.getElementById("flowVal");
+    this.organicInput     = document.getElementById("organicInput");
+    this.organicVal       = document.getElementById("organicVal");
+    this.tempInput        = document.getElementById("tempInput");
+    this.tempVal          = document.getElementById("tempVal");
+    this.wavelengthInput  = document.getElementById("wavelengthInput");
+    this.wavelengthVal    = document.getElementById("wavelengthVal");
+    this.phInput          = document.getElementById("phInput");
+    this.phVal            = document.getElementById("phVal");
+    this.bufferSelect     = document.getElementById("bufferSelect");
     this.sensitivityInput = document.getElementById("sensitivityInput");
-    this.sensitivityVal = document.getElementById("sensitivityVal");
-    this.compoundSelect = document.getElementById("compoundSelect");
-    this.speedSelect = document.getElementById("speedSelect");
-    this.profileSelect = document.getElementById("profileSelect");
-    this.exerciseSelect = document.getElementById("exerciseSelect");
-    this.pumpBtn = document.getElementById("pumpBtn");
+    this.sensitivityVal   = document.getElementById("sensitivityVal");
+    this.compoundSelect   = document.getElementById("compoundSelect");
+    this.speedSelect      = document.getElementById("speedSelect");
+    this.profileSelect    = document.getElementById("profileSelect");
+    this.exerciseSelect   = document.getElementById("exerciseSelect");
+
+    // Action Dock Buttons
+    this.pumpBtn   = document.getElementById("pumpBtn");
+    this.blankBtn  = document.getElementById("blankBtn");
     this.injectBtn = document.getElementById("injectBtn");
+    this.stopBtn   = document.getElementById("stopBtn");
 
     this.bindEvents();
     this.bindTooltips();
@@ -111,13 +118,22 @@ export class ControlsView {
       };
     }
 
+    // Action Dock Buttons
     if (this.pumpBtn) {
       this.pumpBtn.onclick = () => {
         const state = this.controller.getState();
         if (state === 'IDLE' || state === 'STOPPED' || state === 'COMPLETED' || state === 'OVERPRESSURE') {
           this.controller.startPump();
-        } else if (state === 'READY' || state === 'RUNNING') {
+        } else {
           this.controller.stopPump();
+        }
+      };
+    }
+
+    if (this.blankBtn) {
+      this.blankBtn.onclick = () => {
+        if (typeof this.controller.injectBlank === 'function') {
+          this.controller.injectBlank();
         }
       };
     }
@@ -125,6 +141,12 @@ export class ControlsView {
     if (this.injectBtn) {
       this.injectBtn.onclick = () => {
         this.controller.injectSample();
+      };
+    }
+
+    if (this.stopBtn) {
+      this.stopBtn.onclick = () => {
+        this.controller.stopPump();
       };
     }
   }
@@ -167,19 +189,34 @@ export class ControlsView {
   }
 
   updateControlsForState(state) {
-    const isPumpOff = (state === 'IDLE' || state === 'STOPPED' || state === 'COMPLETED' || state === 'OVERPRESSURE');
-    
-    if (this.flowInput) this.flowInput.disabled = !isPumpOff;
-    if (this.organicInput) this.organicInput.disabled = !isPumpOff;
-    if (this.tempInput) this.tempInput.disabled = !isPumpOff;
-    if (this.phInput) this.phInput.disabled = (state === 'RUNNING');
-    if (this.bufferSelect) this.bufferSelect.disabled = (state === 'RUNNING');
-    if (this.wavelengthInput) this.wavelengthInput.disabled = (state === 'RUNNING');
-    if (this.compoundSelect) this.compoundSelect.disabled = (state === 'RUNNING');
-    if (this.injectBtn) this.injectBtn.disabled = (state !== 'READY');
+    const isOff = (state === 'IDLE' || state === 'STOPPED' || state === 'COMPLETED' || state === 'OVERPRESSURE');
+    const isPreAcq = (state === 'PRIMING' || state === 'EQUILIBRATING');
+    const isReady = (state === 'READY');
+    const isRunning = (state === 'RUNNING');
+
+    if (this.flowInput)       this.flowInput.disabled = !isOff;
+    if (this.organicInput)    this.organicInput.disabled = !isOff;
+    if (this.tempInput)       this.tempInput.disabled = !isOff;
+    if (this.phInput)         this.phInput.disabled = isRunning;
+    if (this.bufferSelect)    this.bufferSelect.disabled = isRunning;
+    if (this.wavelengthInput) this.wavelengthInput.disabled = isRunning;
+    if (this.compoundSelect)  this.compoundSelect.disabled = isRunning;
+
     if (this.pumpBtn) {
-      this.pumpBtn.disabled = (state === 'BOOTING');
-      this.pumpBtn.textContent = isPumpOff ? "▶ Pump START" : "⏹ Pump STOP";
+      this.pumpBtn.disabled  = (state === 'BOOTING' || isPreAcq);
+      this.pumpBtn.textContent = isOff ? "▶ Pump START" : isPreAcq ? "⏳ Equilibrating..." : "⏹ Pump STOP";
+    }
+
+    if (this.blankBtn) {
+      this.blankBtn.disabled = !isReady;
+    }
+
+    if (this.injectBtn) {
+      this.injectBtn.disabled = !isReady;
+    }
+
+    if (this.stopBtn) {
+      this.stopBtn.disabled = isOff;
     }
   }
 }
