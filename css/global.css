@@ -143,13 +143,16 @@ body {
 }
 .status-badge.error { background: #fee2e2; color: var(--brand-danger); }
 
-/* ===== CHROMATOGRAM CANVAS & CONTAINER ===== */
+/* ===== P6 SCIENTIFIC WORKSPACE: 50-60% CHROMATOGRAM CANVAS ===== */
 .chromatogram-container {
   position: relative;
-  height: 240px;
+  height: 360px;
+  min-height: 320px;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: #0f172a;
 }
 #graphCanvas {
   position: absolute;
@@ -166,10 +169,10 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: rgba(255,255,255,0.92);
-  border: 2px dashed var(--border-strong);
+  background: rgba(15, 23, 42, 0.92);
+  border: 2px dashed rgba(56, 189, 248, 0.3);
   border-radius: var(--radius-sm);
-  color: var(--text-secondary);
+  color: #cbd5e1;
   pointer-events: none;
   transition: opacity 150ms ease;
   z-index: 10;
@@ -197,7 +200,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
   font-weight: 600;
   margin-bottom: 8px;
 }
@@ -434,6 +438,9 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 @media (min-width: 900px) {
   body {
     padding-bottom: 0;
+  }
+  .chromatogram-container {
+    height: 480px;
   }
   .nav-tab-bar {
     position: static;
