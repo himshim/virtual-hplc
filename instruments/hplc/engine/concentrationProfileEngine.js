@@ -1,20 +1,19 @@
 import { TransportEngine } from './transportEngine.js';
+import { BandProfileEngine } from './bandProfileEngine.js';
 
 /**
  * concentrationProfileEngine.js - Time-Dependent Species Concentration Profile Engine
  * 
  * Implements standard BaseEngine interface.
- * Converts chemical species speciation & retention into time-dependent concentration profiles c_i(t).
- * 
- * Formula:
- * c_i(t) = (mass_i / (flowRate * sigma_i * sqrt(2*pi))) * exp( -(t - tR_i)^2 / (2 * sigma_i^2) )
+ * Converts chemical species speciation & retention into physical concentration profiles c_i(t)
+ * supporting both ideal Gaussian and Exponentially Modified Gaussian (EMG) peak tailing.
  */
 export class ConcentrationProfileEngine {
   static metadata = {
     name: "ConcentrationProfileEngine",
-    version: "1.0.0",
+    version: "1.1.0",
     apiVersion: 1,
-    supports: ["gaussianConcentration", "multiSpeciesProfiles", "physicalBroadening"]
+    supports: ["gaussianConcentration", "emgTailing", "multiSpeciesProfiles", "physicalBroadening"]
   };
 
   validate(context) {
@@ -38,6 +37,7 @@ export class ConcentrationProfileEngine {
     const columnLengthMm = context.columnLengthMm || 150;
 
     const transportEngine = new TransportEngine();
+    const bandProfileEngine = new BandProfileEngine();
     const speciesProfiles = [];
 
     for (const spec of speciesDist) {
@@ -49,19 +49,27 @@ export class ConcentrationProfileEngine {
         columnLengthMm
       });
       const sigma = patch.sigmaTotal;
+      const tailingFactor = spec.tailingFactor || 1.0;
 
-      // Instantaneous mass transport concentration calculation c_i(t)
-      const diff = t - tR;
-      const exponent = -(diff * diff) / (2.0 * sigma * sigma);
-      const normFactor = (spec.concentration || 1.0) / (sigma * Math.sqrt(2.0 * Math.PI));
-      const concentration = Math.max(0, normFactor * Math.exp(exponent));
+      const normHeight = (spec.concentration || 1.0) / (sigma * Math.sqrt(2.0 * Math.PI));
+
+      // Calculate instantaneous band concentration c_i(t) via BandProfileEngine
+      const profilePatch = bandProfileEngine.process({
+        time: t,
+        tR,
+        sigma,
+        height: normHeight,
+        tailingFactor
+      });
 
       speciesProfiles.push({
         speciesName: spec.compoundName,
         compoundEntity: spec.compoundEntity,
         tR,
         sigma,
-        concentration, // c_i(t)
+        concentration: profilePatch.intensity, // c_i(t)
+        profileType: profilePatch.profileType,
+        tailingFactor: profilePatch.tailingFactor,
         alphaNeutral: spec.alphaNeutral,
         alphaIonized: spec.alphaIonized
       });
