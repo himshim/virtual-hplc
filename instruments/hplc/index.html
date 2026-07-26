@@ -52,7 +52,13 @@
 
   <!-- TAB 1: RUN (Primary Landing View) -->
   <div id="tab-run" class="tab-panel active">
-    
+
+    <!-- P7: Instrument Status Bar Strip -->
+    <div id="instrument-status-bar" style="margin-bottom:10px;"></div>
+
+    <!-- P7: Run Acquisition Timeline -->
+    <div id="run-timeline-container"></div>
+
     <!-- Primary Chromatogram Card (Top Position) -->
     <div class="instrument-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
@@ -122,6 +128,9 @@
 
     <div class="instrument-card">
       <h2 style="margin-top:0; color:var(--brand-primary);">Method Parameters</h2>
+
+      <!-- P7: Parameter Impact Preview -->
+      <div id="param-impact-panel" style="display:none;"></div>
 
       <label for="flowInput">Flow Rate &nbsp;<span class="param-val" id="flowVal">1.0</span> mL/min <span id="infoFlow">ⓘ</span></label>
       <input id="flowInput" type="range" min="0.5" max="5.0" step="0.1" value="1.0">
@@ -246,6 +255,10 @@
   import { ReportCardComponent } from '../../ui/components/ReportCard.js';
   import { ValidationDashboard } from '../../ui/components/ValidationDashboard.js';
   import { globalModal } from '../../ui/components/Modal.js';
+  // P7 UI Modules
+  import { InstrumentStatusBar } from './ui/InstrumentStatusBar.js';
+  import { RunTimeline } from './ui/RunTimeline.js';
+  import { ParameterImpact } from './ui/ParameterImpact.js';
 
   async function injectDiagramSVG() {
     const container = document.getElementById("diagramContainer");
@@ -275,6 +288,13 @@
     const sampleBrowser = new SampleBrowserComponent("compoundSelect", "sampleGridContainer");
     const reportCard = new ReportCardComponent("methodLabContainer");
     const validationDashboard = new ValidationDashboard("validation-dashboard-container");
+
+    // P7 Components
+    const statusBar = new InstrumentStatusBar('instrument-status-bar');
+    const runTimeline = new RunTimeline('run-timeline-container');
+    const paramImpact = new ParameterImpact('param-impact-panel');
+    statusBar.render();
+    runTimeline.render();
 
     validationDashboard.render();
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
@@ -386,6 +406,8 @@
     controller.eventBus.on("statusChanged", ({ newState }) => {
       displayView.setStatus(newState);
       controlsView.updateControlsForState(newState);
+      // P7: Sync status bar
+      statusBar.update({ status: newState });
 
       if (runExpBtn) {
         if (newState === 'RUNNING') {
@@ -400,6 +422,8 @@
 
     controller.eventBus.on("pressureChanged", ({ pressure }) => {
       displayView.setPressure(pressure);
+      // P7: Update status bar pressure
+      statusBar.update({ pressureBar: pressure });
     });
 
     controller.eventBus.on("wavelengthChanged", ({ wavelengthNm }) => {
@@ -409,6 +433,9 @@
     controller.eventBus.on("runStarted", () => {
       graphView.reset();
       displayView.renderPeakTable(null);
+      // P7: Timeline - prime -> inject -> separation
+      runTimeline.setPhase('inject');
+      paramImpact.reset();
 
       const ghost = document.getElementById("ghostOverlay");
       if (ghost) ghost.classList.add("hidden");
@@ -418,6 +445,11 @@
       displayView.setTimeDisplay(time);
       if (controller.getState() === 'RUNNING') {
         graphView.addPoint(time, signal);
+        // P7: Timeline phase tracking based on time
+        if (time < 0.3) runTimeline.setPhase('prime');
+        else if (time < 0.8) runTimeline.setPhase('equilibrate');
+        else if (time < 1.5) runTimeline.setPhase('inject');
+        else runTimeline.setPhase('separation');
       }
     });
 
@@ -430,6 +462,14 @@
       reportCard.render(runResult, exerciseProfile);
       compareView.render(methodComparison);
       historyView.render(methodHistory);
+      // P7: Timeline -> complete phase + update status bar
+      runTimeline.setPhase('complete');
+      statusBar.update({
+        status: 'COMPLETED',
+        flowRate: controller.simState.flowRate || 1.0,
+        wavelengthNm: controller.simState.wavelengthNm || 254,
+        temperatureC: controller.simState.temperature || 25
+      });
 
       // Unlock & Badge Results Tab on Run 1 Completion
       const resultsBtn = document.getElementById("tabBtn-results");
@@ -455,6 +495,29 @@
         spectrumView.renderSpectrum(e.target.value, controller.simState.wavelengthNm);
       });
     }
+
+    // P7: Parameter Impact Preview — bind to Method tab sliders
+    let _lastMethodParams = null;
+    function _captureMethodParams() {
+      return {
+        flowRate: parseFloat(document.getElementById('flowInput')?.value || 1.0),
+        organicPercent: parseFloat(document.getElementById('organicInput')?.value || 40),
+        temperature: parseFloat(document.getElementById('tempInput')?.value || 25)
+      };
+    }
+
+    ['flowInput', 'organicInput', 'tempInput'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        const current = _captureMethodParams();
+        paramImpact.update(current, _lastMethodParams);
+        _lastMethodParams = current;
+      });
+      el.addEventListener('focus', () => {
+        if (!_lastMethodParams) _lastMethodParams = _captureMethodParams();
+      });
+    });
 
     controller.initialize();
   });
