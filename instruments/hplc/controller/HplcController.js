@@ -235,6 +235,13 @@ export class HplcController extends SimulationController {
     let peaks = [];
     const educationalExplanations = [];
 
+    // 1. Digital ADC Signal Sampling
+    const rawSamples = this.chromatogram.getPoints().map(p => ({ time: p.x, intensity: p.y }));
+
+    // 2. Pure Detector-Agnostic CDS Peak Detection Engine
+    const detectedPeaks = PeakDetectionEngine.detectPeaks(rawSamples);
+
+    // 3. Downstream Peak Identification & Solution Chemistry Evaluation
     const expectedAnalytes = [];
     if (sampleEntity && sampleEntity.components) {
       sampleEntity.components.forEach(compDef => {
@@ -250,9 +257,15 @@ export class HplcController extends SimulationController {
       });
     }
 
-    // CDS Signal-First Peak Detection Engine
-    const points = this.chromatogram.getPoints();
-    peaks = PeakDetectionEngine.detectPeaks(points, expectedAnalytes);
+    // Match detected digital peaks against expected analyte retention windows
+    peaks = detectedPeaks.map(dp => {
+      const match = expectedAnalytes.find(a => Math.abs(a.expectedTR - dp.tR) <= Math.max(0.15, 2.5 * a.sigma));
+      const compoundName = match ? match.compound.name : dp.compound;
+      return new Peak({
+        ...dp,
+        compound: compoundName
+      });
+    });
 
     peaks.sort((a, b) => a.tR - b.tR);
 

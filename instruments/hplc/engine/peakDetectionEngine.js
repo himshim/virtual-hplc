@@ -1,88 +1,112 @@
-import { Peak } from '../models/Peak.js';
-
 /**
- * peakDetectionEngine.js - CDS Signal Peak Detection & Integration Engine
- * Discovers peaks from the continuous detector signal time-series S(t).
- * Performs apex detection, valley boundary determination, trapezoidal integration,
- * and compound identification / co-elution classification.
+ * peakDetectionEngine.js - Detector-Agnostic CDS Digital Signal Processing Engine
+ * 
+ * STRICT ARCHITECTURAL BOUNDARY:
+ * This engine NEVER imports chemistry entities or compound definitions.
+ * It operates EXCLUSIVELY on digital signal time-series samples [{ time, intensity }].
+ * 
+ * Peak Lifecycle:
+ * CANDIDATE -> VALIDATED -> INTEGRATED -> REPORTED
  */
+
 export class PeakDetectionEngine {
   /**
-   * Detects chromatographic peaks from continuous signal time series.
-   * @param {Array<{x: number, y: number}>} points - Time-series points [{x: timeMin, y: signalAU}]
-   * @param {Array<{compound: Object, expectedTR: number, sigma: number}>} [expectedAnalytes=[]] - Expected retention windows
-   * @param {number} [noiseThreshold=0.003] - Minimum peak height cutoff above baseline
-   * @returns {Array<Peak>} Array of detected Peak models
+   * Discovers and integrates chromatographic peaks from digital signal samples.
+   * @param {Array<{time: number, intensity: number}>} samples - Digital time-series samples
+   * @param {number} [noiseThreshold=0.003] - Minimum height threshold above baseline (AU)
+   * @returns {Array<Object>} Array of reported peak objects
    */
-  static detectPeaks(points, expectedAnalytes = [], noiseThreshold = 0.003) {
-    if (!points || points.length < 5) return [];
+  static detectPeaks(samples, noiseThreshold = 0.003) {
+    if (!samples || samples.length < 5) return [];
 
-    const detectedPeaks = [];
-    const n = points.length;
+    const candidates = [];
+    const n = samples.length;
 
-    // Step 1: Find local maxima (apices) above noise threshold
+    // STEP 1: Candidate Detection — Find local maxima (apices) above noise threshold
     for (let i = 2; i < n - 2; i++) {
-      const prev2 = points[i - 2].y;
-      const prev1 = points[i - 1].y;
-      const curr = points[i].y;
-      const next1 = points[i + 1].y;
-      const next2 = points[i + 2].y;
+      const prev2 = samples[i - 2].intensity;
+      const prev1 = samples[i - 1].intensity;
+      const curr = samples[i].intensity;
+      const next1 = samples[i + 1].intensity;
+      const next2 = samples[i + 2].intensity;
 
-      // Local maximum check
       if (curr > noiseThreshold && curr >= prev1 && curr >= prev2 && curr >= next1 && curr >= next2) {
-        // Trace peak start (left valley)
-        let leftIdx = i;
-        while (leftIdx > 0 && points[leftIdx - 1].y <= points[leftIdx].y && points[leftIdx - 1].y > noiseThreshold * 0.1) {
-          leftIdx--;
-        }
-
-        // Trace peak end (right valley)
-        let rightIdx = i;
-        while (rightIdx < n - 1 && points[rightIdx + 1].y <= points[rightIdx].y && points[rightIdx + 1].y > noiseThreshold * 0.1) {
-          rightIdx++;
-        }
-
-        const tApex = points[i].x;
-        const height = points[i].y;
-        const tStart = points[leftIdx].x;
-        const tEnd = points[rightIdx].x;
-        const widthBase = Math.max(0.01, tEnd - tStart);
-        const sigma = widthBase / 4;
-
-        // Trapezoidal integration for peak area
-        let area = 0;
-        for (let j = leftIdx; j < rightIdx; j++) {
-          const dt = points[j + 1].x - points[j].x;
-          const avgY = (points[j].y + points[j + 1].y) / 2;
-          area += avgY * dt;
-        }
-
-        // Identify compound match from expected analyte retention windows
-        const matchingAnalytes = expectedAnalytes.filter(a => Math.abs(a.expectedTR - tApex) <= Math.max(0.15, 2.5 * a.sigma));
-
-        let compoundName = "Unidentified Peak";
-        if (matchingAnalytes.length === 1) {
-          compoundName = matchingAnalytes[0].compound.name;
-        } else if (matchingAnalytes.length > 1) {
-          compoundName = matchingAnalytes.map(a => a.compound.name).join(" + ") + " (Co-elution)";
-        }
-
-        detectedPeaks.push(new Peak({
-          compound: compoundName,
-          tR: tApex,
-          sigma,
-          height,
-          area,
-          widthBase,
-          widthHalf: 2.3548 * sigma,
-          widthFivePercent: 4.30 * sigma
-        }));
-
-        // Move loop index past this peak's right valley to avoid duplicate detection
-        i = rightIdx;
+        candidates.push({
+          apexIndex: i,
+          tApex: samples[i].time,
+          rawHeight: curr,
+          status: "CANDIDATE"
+        });
       }
     }
 
-    return detectedPeaks;
+    if (candidates.length === 0) return [];
+
+    const reportedPeaks = [];
+
+    // STEP 2 & 3: Validation & Integration — Trace valley boundaries and compute area
+    candidates.forEach((cand, idx) => {
+      let leftIdx = cand.apexIndex;
+      while (leftIdx > 0 && samples[leftIdx - 1].intensity <= samples[leftIdx].intensity && samples[leftIdx - 1].intensity > noiseThreshold * 0.1) {
+        leftIdx--;
+      }
+
+      let rightIdx = cand.apexIndex;
+      while (rightIdx < n - 1 && samples[rightIdx + 1].intensity <= samples[rightIdx].intensity && samples[rightIdx + 1].intensity > noiseThreshold * 0.1) {
+        rightIdx++;
+      }
+
+      const tStart = samples[leftIdx].time;
+      const tEnd = samples[rightIdx].time;
+      const widthBase = Math.max(0.01, tEnd - tStart);
+      const sigma = widthBase / 4;
+      const widthHalf = 2.3548 * sigma;
+      const baselineIntensity = (samples[leftIdx].intensity + samples[rightIdx].intensity) / 2;
+      const netHeight = Math.max(0, cand.rawHeight - baselineIntensity);
+
+      // Trapezoidal Area Integration
+      let area = 0;
+      for (let j = leftIdx; j < rightIdx; j++) {
+        const dt = samples[j + 1].time - samples[j].time;
+        const avgY = Math.max(0, ((samples[j].intensity + samples[j + 1].intensity) / 2) - baselineIntensity);
+        area += avgY * dt;
+      }
+
+      // STEP 4: Classification of Peak Overlap
+      let classification = "BASELINE_SEPARATED";
+      if (idx > 0) {
+        const prevPeak = reportedPeaks[idx - 1];
+        const gap = cand.tApex - prevPeak.tR;
+        const avgWidth = (widthBase + prevPeak.widthBase) / 2;
+        if (gap < avgWidth * 0.5) {
+          classification = "SHOULDER_MERGED";
+          prevPeak.classification = "SHOULDER_MERGED";
+        } else if (gap < avgWidth * 0.75) {
+          classification = "PARTIALLY_RESOLVED";
+          if (prevPeak.classification === "BASELINE_SEPARATED") {
+            prevPeak.classification = "PARTIALLY_RESOLVED";
+          }
+        }
+      }
+
+      // Final Lifecycle State: REPORTED
+      reportedPeaks.push({
+        id: `peak_${idx + 1}`,
+        status: "REPORTED",
+        tR: cand.tApex,
+        height: netHeight,
+        area: area,
+        widthBase: widthBase,
+        widthHalf: widthHalf,
+        widthFivePercent: 4.30 * sigma,
+        sigma: sigma,
+        tStart: tStart,
+        tEnd: tEnd,
+        classification: classification,
+        compound: "Unidentified Peak" // Identification populated downstream
+      });
+    });
+
+    return reportedPeaks;
   }
 }
