@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "analytical-chemistry/SKILL.md",
       "computedHash": "fb4d94e0777885e5b511c0f2920ba6c9cb91297d7b1c8b7a385ed1aa345ece08"
+    },
+    "chemistry-skills": {
+      "source": "wentorai/research-plugins",
+      "sourceType": "github",
+      "skillPath": "skills/domains/chemistry/SKILL.md",
+      "computedHash": "4061cfa184ce4ca08cc919beac65ac9b5b627a29b54a4616e2cfe10423415db7"
     }
   }
 }
