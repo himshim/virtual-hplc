@@ -4,7 +4,7 @@
 
 - **Physics Engine Version**: `v1.0` (Public API Frozen)
 - **Validation Dataset Identifier**: `VDS-1.4` (Validation Date: `2026-07-26`)
-- **UI Experience Version**: `v1.1.1` (Active Sprint)
+- **UI Experience Version**: `v1.1.2` (Active Milestone)
 - **Architecture Constitution**: `v3.0` (`docs/architecture/ARCHITECTURE_CONSTITUTION.md`)
 
 ---
@@ -55,7 +55,7 @@
 
 ---
 
-## 5. Six Automated Continuous Verification Gates
+## 5. Seven Automated Continuous Verification Gates
 
 Automated CLI execution via `node instruments/hplc/validation/ciArchitectureCheck.js`:
 
@@ -65,3 +65,4 @@ Automated CLI execution via `node instruments/hplc/validation/ciArchitectureChec
 4. **Scientific Validation Gate**: 100% Pass Rate across dataset `VDS-1.4`.
 5. **UX & Accessibility Gate**: Touch targets $\ge 44\text{px}$, Keyboard nav ($Space, R, Esc$), ARIA roles.
 6. **Performance Gate (Target Metrics)**: Startup $<2\text{s}$, Redraws $>60\text{ FPS}$, Memory stability.
+7. **Live UI Reconciliation Gate**: Displayed Live Peaks ($4$) $==$ `runResult.peaks.length` ($4$).
