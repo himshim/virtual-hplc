@@ -11,6 +11,7 @@
 6. **Versioned validation datasets**: Benchmark dataset versions (`VDS-1.4`) are independent of software releases.
 7. **Semantic API stability**: Public engine APIs (`v1.x`) remain backward compatible; breaking changes require `v2.0`.
 8. **Educational realism over visual fluff**: Workstation fidelity and pedagogical clarity take priority over decorative effects.
+9. **Workflow before widgets**: If a feature makes the simulated laboratory workflow more authentic, it has higher priority than adding new interface controls or visual effects.
 
 ---
 
