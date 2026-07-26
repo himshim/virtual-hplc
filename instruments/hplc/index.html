@@ -169,6 +169,9 @@
       <label for="sensitivityInput">Detector Sensitivity &nbsp;<span class="param-val" id="sensitivityVal">1.0</span></label>
       <input id="sensitivityInput" type="range" min="0.5" max="5" step="0.5" value="1">
     </div>
+
+    <!-- P10: Educational Narrator Panel -->
+    <div id="edu-narrator-panel" style="display:none;"></div>
   </div>
 
   <!-- TAB 3: SAMPLE & EXERCISE BROWSER (P3 Registry Cards) -->
@@ -259,6 +262,14 @@
   import { InstrumentStatusBar } from './ui/InstrumentStatusBar.js';
   import { RunTimeline } from './ui/RunTimeline.js';
   import { ParameterImpact } from './ui/ParameterImpact.js';
+  // P8 Workspace Polish
+  import { WorkspaceMemory } from './ui/WorkspaceMemory.js';
+  import { KeyboardShortcuts } from './ui/KeyboardShortcuts.js';
+  import { ChromatogramFullscreen } from './ui/ChromatogramFullscreen.js';
+  // P9 Interactive Chromatogram
+  import { InteractiveChromatogram } from './ui/InteractiveChromatogram.js';
+  // P10 Educational Narrator
+  import { EducationalNarrator } from './ui/EducationalNarrator.js';
 
   async function injectDiagramSVG() {
     const container = document.getElementById("diagramContainer");
@@ -295,6 +306,29 @@
     const paramImpact = new ParameterImpact('param-impact-panel');
     statusBar.render();
     runTimeline.render();
+
+    // P8: Persistent workspace memory — restore last session
+    const mem = WorkspaceMemory.load();
+
+    // P9: Interactive chromatogram (attach after chart is ready)
+    const interactiveChromatogram = new InteractiveChromatogram(
+      graphView.chart, 'graphCanvas', 'peak-inspector'
+    );
+
+    // P8: Fullscreen + Export
+    const chromFS = new ChromatogramFullscreen(
+      'graphCanvas',  // container = parent of canvas
+      'graphCanvas',
+      () => ({
+        compound: controller.simState?.sampleKey || 'Run',
+        flowRate: document.getElementById('flowInput')?.value,
+        organicPercent: document.getElementById('organicInput')?.value,
+        wavelengthNm: controller.simState?.wavelengthNm || 254
+      })
+    );
+
+    // P10: Educational narrator
+    const narrator = new EducationalNarrator('edu-narrator-panel');
 
     validationDashboard.render();
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
@@ -436,6 +470,9 @@
       // P7: Timeline - prime -> inject -> separation
       runTimeline.setPhase('inject');
       paramImpact.reset();
+      // P9: Clear interactive annotations
+      interactiveChromatogram.reset();
+      narrator.clear();
 
       const ghost = document.getElementById("ghostOverlay");
       if (ghost) ghost.classList.add("hidden");
@@ -469,6 +506,22 @@
         flowRate: controller.simState.flowRate || 1.0,
         wavelengthNm: controller.simState.wavelengthNm || 254,
         temperatureC: controller.simState.temperature || 25
+      });
+      // P9: Pin peak annotations onto chromatogram
+      if (runResult?.peaks) {
+        interactiveChromatogram.setPeaks(runResult.peaks);
+        // Store snapshot for ghost overlay on next run
+        const snapshot = [...(graphView.chart?.data?.datasets?.[0]?.data || [])];
+        if (snapshot.length) interactiveChromatogram.setReferenceRun(snapshot);
+      }
+      // P10: Narrator — post-run analysis
+      narrator.onRunCompleted(runResult);
+      // P8: Persist workspace state
+      WorkspaceMemory.save({
+        flowRate: parseFloat(document.getElementById('flowInput')?.value || 1),
+        organicPercent: parseFloat(document.getElementById('organicInput')?.value || 40),
+        temperature: parseFloat(document.getElementById('tempInput')?.value || 25),
+        sampleKey: controller.simState?.sampleKey
       });
 
       // Unlock & Badge Results Tab on Run 1 Completion
@@ -506,16 +559,73 @@
       };
     }
 
-    ['flowInput', 'organicInput', 'tempInput'].forEach(id => {
+    // P10: Narrator + P7 Impact — combined slider handler map
+    const _narratorParamMap = {
+      flowInput:      'flowRate',
+      organicInput:   'organicPercent',
+      tempInput:      'temperature',
+      phInput:        'ph',
+      wavelengthInput:'wavelength'
+    };
+
+    Object.entries(_narratorParamMap).forEach(([id, paramKey]) => {
       const el = document.getElementById(id);
       if (!el) return;
-      el.addEventListener('input', () => {
-        const current = _captureMethodParams();
-        paramImpact.update(current, _lastMethodParams);
-        _lastMethodParams = current;
-      });
+      let _oldVal = parseFloat(el.value);
+
       el.addEventListener('focus', () => {
+        _oldVal = parseFloat(el.value);
         if (!_lastMethodParams) _lastMethodParams = _captureMethodParams();
+      });
+
+      el.addEventListener('input', () => {
+        const newVal = parseFloat(el.value);
+        // P7 impact arrows
+        if (['flowInput','organicInput','tempInput'].includes(id)) {
+          const current = _captureMethodParams();
+          paramImpact.update(current, _lastMethodParams);
+          _lastMethodParams = current;
+        }
+        // P10 narrator
+        narrator.onParameterChange(paramKey, _oldVal, newVal);
+        _oldVal = newVal;
+        WorkspaceMemory.save({ [paramKey]: newVal });
+      });
+    });
+
+    // P8: Keyboard Shortcuts
+    const shortcuts = new KeyboardShortcuts({
+      run: () => {
+        const state = controller.getState();
+        if (state === 'IDLE' || state === 'COMPLETED' || state === 'STOPPED') {
+          controller.startPump();
+          setTimeout(() => controller.injectSample(), 400);
+        } else if (state === 'RUNNING' || state === 'READY') {
+          controller.stopPump();
+        }
+      },
+      fullscreen: () => chromFS.toggle(),
+      export: () => chromFS.exportPng(),
+      escape: () => chromFS.exit(),
+      tabs: [
+        () => document.getElementById('tabBtn-run')?.click(),
+        () => document.getElementById('tabBtn-method')?.click(),
+        () => document.getElementById('tabBtn-sample')?.click(),
+        () => !document.getElementById('tabBtn-results')?.disabled && document.getElementById('tabBtn-results')?.click(),
+        () => document.getElementById('tabBtn-learn')?.click(),
+      ]
+    });
+
+    // P8: Restore last active tab from memory
+    if (mem.activeTab && mem.activeTab !== 'tab-run') {
+      const savedTabBtn = document.querySelector(`[data-tab="${mem.activeTab}"]`);
+      if (savedTabBtn && !savedTabBtn.disabled) savedTabBtn.click();
+    }
+
+    // P8: Persist active tab on navigation
+    document.querySelectorAll('.nav-tab-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        WorkspaceMemory.save({ activeTab: btn.getAttribute('data-tab') });
       });
     });
 
