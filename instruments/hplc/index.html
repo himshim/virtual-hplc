@@ -10,8 +10,11 @@
 
 <body>
 
+<!-- QA: Skip-to-content for keyboard users -->
+<a class="skip-link" href="#main-content">Skip to content</a>
+
 <!-- Header Bar with Mode Selector -->
-<header class="app-header">
+<header class="app-header" role="banner">
   <h1 class="app-title">Virtual Analytical Lab — HPLC</h1>
 
   <!-- Mode Selector: Beginner, Standard, Advanced -->
@@ -25,48 +28,56 @@
 </header>
 
 <!-- Universal 5-Tab Navigation Bar -->
-<nav class="nav-tab-bar" id="platformNav" aria-label="Main Navigation">
-  <button class="nav-tab-item active" data-tab="tab-run" id="tabBtn-run" aria-label="Run View">
-    <span class="tab-icon">📈</span>
+<nav class="nav-tab-bar" id="platformNav" aria-label="Main Navigation" role="navigation">
+  <button class="nav-tab-item active" data-tab="tab-run" id="tabBtn-run"
+    aria-label="Run View" aria-selected="true" role="tab">
+    <span class="tab-icon" aria-hidden="true">📈</span>
     <span>Run</span>
   </button>
-  <button class="nav-tab-item" data-tab="tab-method" id="tabBtn-method" aria-label="Method Tuning">
-    <span class="tab-icon">🧪</span>
+  <button class="nav-tab-item" data-tab="tab-method" id="tabBtn-method"
+    aria-label="Method Tuning" aria-selected="false" role="tab">
+    <span class="tab-icon" aria-hidden="true">🧪</span>
     <span>Method</span>
   </button>
-  <button class="nav-tab-item" data-tab="tab-sample" id="tabBtn-sample" aria-label="Sample Selection">
-    <span class="tab-icon">🧬</span>
+  <button class="nav-tab-item" data-tab="tab-sample" id="tabBtn-sample"
+    aria-label="Sample Selection" aria-selected="false" role="tab">
+    <span class="tab-icon" aria-hidden="true">🧬</span>
     <span>Sample</span>
   </button>
-  <button class="nav-tab-item" data-tab="tab-results" id="tabBtn-results" disabled aria-label="Results Evaluation">
-    <span class="tab-icon">📊</span>
-    <span>Results<span id="resultsBadge" style="display:none;" class="badge-dot"></span></span>
+  <button class="nav-tab-item" data-tab="tab-results" id="tabBtn-results" disabled
+    aria-label="Results Evaluation" aria-selected="false" role="tab" aria-disabled="true">
+    <span class="tab-icon" aria-hidden="true">📊</span>
+    <span>Results<span id="resultsBadge" style="display:none;" class="badge-dot" aria-label="new results"></span></span>
   </button>
-  <button class="nav-tab-item" data-tab="tab-learn" id="tabBtn-learn" aria-label="Learn Hub">
-    <span class="tab-icon">🎓</span>
+  <button class="nav-tab-item" data-tab="tab-learn" id="tabBtn-learn"
+    aria-label="Learn Hub" aria-selected="false" role="tab">
+    <span class="tab-icon" aria-hidden="true">🎓</span>
     <span>Learn</span>
   </button>
 </nav>
 
-<main class="platform-container">
+<main class="platform-container" id="main-content" role="main">
 
   <!-- TAB 1: RUN (Primary Landing View) -->
-  <div id="tab-run" class="tab-panel active">
+  <div id="tab-run" class="tab-panel active" role="tabpanel" aria-label="Run View">
 
     <!-- P7: Instrument Status Bar Strip -->
-    <div id="instrument-status-bar" style="margin-bottom:10px;"></div>
+    <div id="instrument-status-bar" style="margin-bottom:10px;" aria-live="polite" aria-label="Instrument status"></div>
 
     <!-- P7: Run Acquisition Timeline -->
     <div id="run-timeline-container"></div>
 
+    <!-- Replay Strip (shown after first run) -->
+    <div id="replay-strip" style="display:none;" class="replay-strip-enter"></div>
+
     <!-- Primary Chromatogram Card (Top Position) -->
     <div class="instrument-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-        <h2 style="margin:0; font-size:1.1rem; color:var(--brand-primary);">Live Chromatogram</h2>
-        <div>
-          <span id="status" class="status-badge">IDLE</span>
-          <span id="satWarning" class="status-badge error" style="display: none;">⚠️ SATURATED</span>
-          <span id="pressureWarning" class="status-badge error" style="display: none;">🚨 OVERPRESSURE</span>
+        <h2 style="margin:0; font-size:1.1rem; color:var(--brand-primary);" id="chromatogram-heading">Live Chromatogram</h2>
+        <div role="status" aria-live="polite" aria-label="Instrument warnings">
+          <span id="status" class="status-badge" aria-label="Instrument status">IDLE</span>
+          <span id="satWarning" class="status-badge error" style="display: none;" role="alert">⚠️ SATURATED</span>
+          <span id="pressureWarning" class="status-badge error" style="display: none;" role="alert">🚨 OVERPRESSURE</span>
         </div>
       </div>
 
@@ -80,8 +91,8 @@
         </select>
       </div>
 
-      <div class="chromatogram-container">
-        <canvas id="graphCanvas"></canvas>
+      <div class="chromatogram-container" role="img" aria-labelledby="chromatogram-heading">
+        <canvas id="graphCanvas" aria-label="Live chromatogram signal"></canvas>
         <div id="ghostOverlay" class="ghost-overlay">
           <div style="font-size:2rem; margin-bottom:6px;">📈</div>
           <div style="font-weight:600;">Your chromatogram will appear here</div>
@@ -270,6 +281,8 @@
   import { InteractiveChromatogram } from './ui/InteractiveChromatogram.js';
   // P10 Educational Narrator
   import { EducationalNarrator } from './ui/EducationalNarrator.js';
+  // v1.x Method Replay
+  import { MethodReplay } from './ui/MethodReplay.js';
 
   async function injectDiagramSVG() {
     const container = document.getElementById("diagramContainer");
@@ -329,6 +342,17 @@
 
     // P10: Educational narrator
     const narrator = new EducationalNarrator('edu-narrator-panel');
+
+    // v1.x Method Replay
+    const methodReplay = new MethodReplay({
+      containerId: 'replay-strip',
+      chart: graphView.chart,
+      onPhase: (phaseId) => runTimeline.setPhase(phaseId),
+      onScrub: (t, fraction) => {
+        // Update status bar time while scrubbing
+        statusBar.update({ status: fraction >= 0.98 ? 'COMPLETED' : 'REPLAYING' });
+      }
+    });
 
     validationDashboard.render();
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
@@ -473,6 +497,8 @@
       // P9: Clear interactive annotations
       interactiveChromatogram.reset();
       narrator.clear();
+      // v1.x: Reset replay when new run starts
+      methodReplay.reset();
 
       const ghost = document.getElementById("ghostOverlay");
       if (ghost) ghost.classList.add("hidden");
@@ -516,6 +542,11 @@
       }
       // P10: Narrator — post-run analysis
       narrator.onRunCompleted(runResult);
+      // v1.x: Load completed run into replay
+      const replayPoints = [...(graphView.chart?.data?.datasets?.[0]?.data || [])];
+      if (replayPoints.length && runResult?.peaks) {
+        methodReplay.loadRun(replayPoints, runResult.peaks);
+      }
       // P8: Persist workspace state
       WorkspaceMemory.save({
         flowRate: parseFloat(document.getElementById('flowInput')?.value || 1),
@@ -622,9 +653,13 @@
       if (savedTabBtn && !savedTabBtn.disabled) savedTabBtn.click();
     }
 
-    // P8: Persist active tab on navigation
+    // P8: Persist active tab on navigation + QA: update aria-selected
     document.querySelectorAll('.nav-tab-item').forEach(btn => {
       btn.addEventListener('click', () => {
+        // Update aria-selected on all tabs
+        document.querySelectorAll('.nav-tab-item').forEach(b => {
+          b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+        });
         WorkspaceMemory.save({ activeTab: btn.getAttribute('data-tab') });
       });
     });

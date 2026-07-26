@@ -27,6 +27,9 @@
 
   --min-touch-target: 44px;
   --nav-height: 60px;
+
+  /* QA: Focus ring token — meets WCAG 2.4.11 */
+  --focus-ring: 0 0 0 3px rgba(2, 132, 199, 0.55);
 }
 
 * { box-sizing: border-box; }
@@ -465,3 +468,89 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   .nav-tab-item { font-size: 0.65rem; }
   .nav-tab-item .tab-icon { font-size: 1rem; }
 }
+
+/* ===== QA SPRINT: ACCESSIBILITY & FOCUS MANAGEMENT ===== */
+
+/* Skip-to-content link — visible only when keyboard-focused */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  background: var(--brand-primary);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9rem;
+  z-index: 99999;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 16px;
+}
+
+/* WCAG 2.4.11 compliant focus-visible ring on ALL focusable elements */
+*:focus { outline: none; }
+*:focus-visible {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Stronger focus for range inputs (often lose ring on Webkit) */
+input[type="range"]:focus-visible {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: 4px;
+}
+
+/* Keyboard-only focus for nav tabs (pointer users already have underline) */
+.nav-tab-item:focus-visible {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: -3px;
+  border-radius: 0;
+}
+
+/* ===== QA SPRINT: REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:   0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration:  0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== QA SPRINT: HIGH CONTRAST MODE ===== */
+@media (forced-colors: active) {
+  .status-badge        { forced-color-adjust: none; }
+  .sample-card.selected { border: 3px solid ButtonText; }
+  .mode-btn.active      { forced-color-adjust: none; }
+}
+
+/* ===== QA SPRINT: PRINT STYLES (chromatogram export) ===== */
+@media print {
+  .nav-tab-bar, .action-dock, .app-header, .mode-selector { display: none !important; }
+  .tab-panel { display: block !important; opacity: 1 !important; }
+  .chromatogram-container { height: 60vh; }
+  body { background: white; color: black; padding: 0; }
+}
+
+/* ===== QA SPRINT: MOBILE TOUCH IMPROVEMENTS ===== */
+/* Ensure all range inputs are tall enough to touch on mobile */
+@media (hover: none) and (pointer: coarse) {
+  input[type="range"] { min-height: 48px; }
+  .filter-pill { min-height: 40px; }
+  select { min-height: 44px; padding: 10px 8px; }
+  .sample-card { padding: 16px; }
+}
+
+/* ===== REPLAY STRIP ANIMATION ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.replay-strip-enter {
+  animation: fadeInUp 200ms ease forwards;
+}
+

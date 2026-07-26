@@ -20,19 +20,60 @@ export class EducationalNarrator {
   constructor(containerId = 'edu-narrator-panel') {
     this.containerId = containerId;
     this._messages = [];
+
+    // Combined-effect accumulator
+    // Collects pending changes within a debounce window, then generates
+    // a single combined narrative instead of isolated per-parameter hints.
+    this._pendingChanges = {};   // { paramId: { oldVal, newVal, delta } }
+    this._debounceTimer  = null;
+    this._DEBOUNCE_MS    = 1200;
   }
 
   /* ── Public API ─────────────────────────────────────────────────────────── */
 
-  /** Called when a method parameter changes */
+  /**
+   * Called when a method parameter changes.
+   * Accumulates changes and debounces into a combined narrative.
+   */
   onParameterChange(paramId, oldVal, newVal) {
-    const messages = this._generateParamNarrative(paramId, oldVal, newVal);
-    this._messages = messages;
-    this._render();
+    const delta = newVal - oldVal;
+    if (Math.abs(delta) < 0.001) return;
+
+    // Merge into pending: preserve original oldVal, update newVal
+    if (this._pendingChanges[paramId]) {
+      this._pendingChanges[paramId].newVal = newVal;
+      this._pendingChanges[paramId].delta  = newVal - this._pendingChanges[paramId].oldVal;
+    } else {
+      this._pendingChanges[paramId] = { oldVal, newVal, delta };
+    }
+
+    // Debounce: wait for user to stop moving sliders
+    clearTimeout(this._debounceTimer);
+    this._debounceTimer = setTimeout(() => {
+      const changed = Object.keys(this._pendingChanges);
+
+      if (changed.length === 1) {
+        // Single change: original per-parameter narrative
+        const [id] = changed;
+        const { oldVal: ov, newVal: nv } = this._pendingChanges[id];
+        this._messages = this._generateParamNarrative(id, ov, nv);
+      } else {
+        // Multiple changes: combined instructor-level narrative
+        this._messages = [this._generateCombinedNarrative(this._pendingChanges)];
+      }
+
+      this._pendingChanges = {};
+      this._render();
+    }, this._DEBOUNCE_MS);
+
+    // Show a pending indicator immediately so UI feels responsive
+    this._showPendingHint(Object.keys(this._pendingChanges));
   }
 
   /** Called after run completes with peak data */
   onRunCompleted(runResult) {
+    clearTimeout(this._debounceTimer);
+    this._pendingChanges = {};
     const messages = this._generateRunNarrative(runResult);
     this._messages = messages;
     this._render();
@@ -45,8 +86,107 @@ export class EducationalNarrator {
   }
 
   clear() {
+    clearTimeout(this._debounceTimer);
+    this._pendingChanges = {};
     this._messages = [];
     this._render();
+  }
+
+  /* ── Combined-Effect Narrative ────────────────────────────────────────────── */
+
+  _showPendingHint(paramIds) {
+    const el = document.getElementById(this.containerId);
+    if (!el || !paramIds.length) return;
+
+    const names = { flowRate:'flow rate', organicPercent:'%B', temperature:'temperature', ph:'pH', wavelength:'wavelength' };
+    const paramNames = paramIds.map(id => names[id] || id).join(' + ');
+
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div style="background:#0f172a; border:1px solid rgba(167,139,250,0.2); border-radius:12px; padding:12px 16px;">
+        <div style="font-size:0.72rem; color:#a78bfa; font-family:'JetBrains Mono',monospace;">
+          🎓 Analysing combined effect of: <strong>${paramNames}</strong>…
+        </div>
+      </div>
+    `;
+  }
+
+  _generateCombinedNarrative(changes) {
+    const flowD    = changes.flowRate?.delta     || 0;
+    const organicD = changes.organicPercent?.delta || 0;
+    const tempD    = changes.temperature?.delta   || 0;
+    const phD      = changes.ph?.delta            || 0;
+
+    // Determine net retention time direction
+    const rtReducers = [];
+    const rtIncreasers = [];
+    if (flowD    > 0.05)  rtReducers.push('increased flow rate');
+    if (flowD    < -0.05) rtIncreasers.push('decreased flow rate');
+    if (organicD > 0.5)   rtReducers.push('higher %B');
+    if (organicD < -0.5)  rtIncreasers.push('lower %B');
+    if (tempD    > 0.5)   rtReducers.push('higher temperature');
+    if (tempD    < -0.5)  rtIncreasers.push('lower temperature');
+
+    // Net retention direction
+    const netRtDown = rtReducers.length > rtIncreasers.length;
+    const netRtUp   = rtIncreasers.length > rtReducers.length;
+    const netRtMixed = !netRtDown && !netRtUp;
+
+    // Pressure direction (only flow matters)
+    const pressureDir = flowD > 0.05 ? '↑' : flowD < -0.05 ? '↓' : null;
+
+    // Build body
+    let body = '';
+
+    if (rtReducers.length && rtIncreasers.length === 0) {
+      body = `${rtReducers.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(' and ')} will all reduce retention time. `;
+      body += `Analytes will elute faster across the board.`;
+    } else if (rtIncreasers.length && rtReducers.length === 0) {
+      body = `${rtIncreasers.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(' and ')} will all increase retention time. `;
+      body += `Analytes will spend more time interacting with the stationary phase.`;
+    } else if (rtReducers.length && rtIncreasers.length) {
+      body = `You have made changes that work in opposite directions on retention time: `
+           + `${rtReducers.join(', ')} reduce retention while ${rtIncreasers.join(', ')} increase it. `
+           + `The net effect will depend on which factor dominates for each analyte — run the simulation to see the combined result.`;
+    }
+
+    if (flowD > 0.05 && (organicD > 0.5 || tempD > 0.5)) {
+      body += ` Note: higher flow rate shortens analysis time further, but combined with more organic or higher temperature, resolution (Rs) may drop because analytes spend less time separating on the column.`;
+    }
+
+    if (Math.abs(phD) > 0.3) {
+      body += ` The pH change may additionally alter the ionisation state of acidic or basic analytes, shifting their retention independently of the organic or temperature effects.`;
+    }
+
+    // Build prediction array
+    const predictions = [];
+
+    if (netRtDown) {
+      predictions.push({ label:'Retention time (all compounds)', arrow:'↓', conf: rtReducers.length >= 2 ? CONFIDENCE.CERTAIN : CONFIDENCE.LIKELY });
+    } else if (netRtUp) {
+      predictions.push({ label:'Retention time (all compounds)', arrow:'↑', conf: rtIncreasers.length >= 2 ? CONFIDENCE.CERTAIN : CONFIDENCE.LIKELY });
+    } else {
+      predictions.push({ label:'Retention time', arrow:'?', conf: CONFIDENCE.VARIABLE, note:'Opposing changes — net effect requires simulation.' });
+    }
+
+    if (pressureDir) {
+      predictions.push({ label:'Back-pressure', arrow: pressureDir, conf: CONFIDENCE.CERTAIN });
+    }
+
+    const rsConf = (Math.abs(flowD) > 0.3 && Math.abs(organicD) > 5) ? CONFIDENCE.VARIABLE : CONFIDENCE.UNCERTAIN;
+    predictions.push({
+      label: 'Resolution Rs',
+      arrow: '?',
+      conf:  rsConf,
+      note:  'Combined parameter changes have complex, non-additive effects on selectivity (α). Run the simulation to quantify.'
+    });
+
+    return {
+      heading: `Combined Effect: ${Object.keys(changes).length} parameters changed`,
+      body,
+      predictions,
+      equation: null
+    };
   }
 
   /* ── Narrative Generators ────────────────────────────────────────────────── */
