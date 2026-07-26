@@ -12,7 +12,7 @@
 
 <header class="hero">
   <h1>HPLC Simulator & Method Development Lab</h1>
-  <p>Interactive reversed-phase HPLC virtual instrument with Pharmacopeial Quality Assessment & Optimization Lab</p>
+  <p>Interactive reversed-phase HPLC virtual instrument with Chemistry Entity Platform & UV Wavelength Selector</p>
 </header>
 
 <main class="instrument-grid">
@@ -26,6 +26,13 @@
   <div class="instrument-card area-diagram">
     <h2 style="margin-top:0">HPLC Flow Schematic</h2>
     <div id="diagramContainer" style="overflow-x:auto;">Loading diagram…</div>
+
+    <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
+
+    <h3 style="margin-top:0; color:#1565c0;">🌈 UV Absorbance Spectrum</h3>
+    <div style="height:180px; position:relative;">
+      <canvas id="spectrumCanvas"></canvas>
+    </div>
   </div>
 
   <div class="instrument-card area-controls">
@@ -43,6 +50,11 @@
 
     <label for="tempInput">Column Temperature &nbsp;<span class="param-val" id="tempVal">25°C</span></label>
     <input id="tempInput" type="range" min="25" max="60" step="5" value="25">
+
+    <br><br>
+
+    <label for="wavelengthInput">UV Wavelength (λ) &nbsp;<span class="param-val" id="wavelengthVal">254 nm</span></label>
+    <input id="wavelengthInput" type="range" min="200" max="400" step="2" value="254">
 
     <br><br>
 
@@ -129,6 +141,7 @@
   import { MethodLabCardView } from './ui/methodLabCard.js';
   import { CompareView } from './ui/compareView.js';
   import { HistoryView } from './ui/historyView.js';
+  import { SpectrumView } from './ui/spectrumView.js';
   import { getMethodExercise } from './engine/methodProfiles.js';
 
   async function injectDiagramSVG() {
@@ -154,9 +167,11 @@
     const labCardView = new MethodLabCardView("methodLabContainer");
     const compareView = new CompareView("compareContainer");
     const historyView = new HistoryView("historyContainer");
+    const spectrumView = new SpectrumView("spectrumCanvas");
 
-    // Render initial exercise card
+    // Render initial views
     labCardView.render(null, getMethodExercise(controller.exerciseProfileId));
+    spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
 
     // Event Subscriptions
     controller.eventBus.on("statusChanged", ({ newState }) => {
@@ -166,6 +181,10 @@
 
     controller.eventBus.on("pressureChanged", ({ pressure }) => {
       displayView.setPressure(pressure);
+    });
+
+    controller.eventBus.on("wavelengthChanged", ({ wavelengthNm }) => {
+      spectrumView.renderSpectrum(controller.simState.sampleKey, wavelengthNm);
     });
 
     controller.eventBus.on("exerciseChanged", ({ exerciseProfileId }) => {
@@ -194,6 +213,14 @@
       compareView.render(methodComparison);
       historyView.render(methodHistory);
     });
+
+    // Handle compound selector changes to update spectrum canvas
+    const compoundSelect = document.getElementById("compoundSelect");
+    if (compoundSelect) {
+      compoundSelect.addEventListener("change", (e) => {
+        spectrumView.renderSpectrum(e.target.value, controller.simState.wavelengthNm);
+      });
+    }
 
     // Initialize instrument
     controller.init();
