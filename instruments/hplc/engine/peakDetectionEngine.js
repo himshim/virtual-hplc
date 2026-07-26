@@ -8,11 +8,10 @@
  * Peak Lifecycle:
  * CANDIDATE -> VALIDATED -> INTEGRATED -> REPORTED
  *
- * v1.1 fixes:
- * - Inter-apex minimum search replaces greedy valley walk (fixes multi-peak collapse)
- * - Safely resolves point property names (time/x, intensity/y)
- * - noiseThreshold set to 0.005 default; filters noise artifacts
- * - Minimum separation guard: candidates within 2 samples are merged
+ * v1.2:
+ * - Adaptive peak detection threshold: max(3 * baselineNoiseRMS, minDetectablePeak)
+ * - Inter-apex minimum search replaces greedy valley walk
+ * - Safe property extraction (getTime/getIntensity)
  */
 
 function getTime(p) {
@@ -27,17 +26,37 @@ function getIntensity(p) {
 
 export class PeakDetectionEngine {
   /**
+   * Estimates baseline noise RMS from digital signal sample time-series.
+   * Computes standard deviation of lowest 30% intensity samples.
+   */
+  static estimateBaselineNoiseRMS(samples) {
+    if (!samples || samples.length < 10) return 0.0003;
+    const sorted = samples.map(s => getIntensity(s)).sort((a, b) => a - b);
+    const baselineSubset = sorted.slice(0, Math.max(5, Math.floor(sorted.length * 0.3)));
+    const mean = baselineSubset.reduce((sum, v) => sum + v, 0) / baselineSubset.length;
+    const variance = baselineSubset.reduce((sum, v) => sum + (v - mean) ** 2, 0) / baselineSubset.length;
+    return Math.sqrt(variance);
+  }
+
+  /**
    * Discovers and integrates chromatographic peaks from digital signal samples.
    * @param {Array<{time: number, intensity: number}>} samples - Digital time-series samples
-   * @param {number} [noiseThreshold=0.005] - Minimum height threshold above baseline (AU)
+   * @param {number} [userThreshold=null] - Optional user override height threshold (AU)
    * @returns {Array<Object>} Array of reported peak objects
    */
-  static detectPeaks(samples, noiseThreshold = 0.025) {
+  static detectPeaks(samples, userThreshold = null) {
     if (!samples || samples.length < 5) return [];
+
+    // Adaptive threshold: max(3 * noiseRMS, instrument.minimumDetectablePeak)
+    const noiseRMS = PeakDetectionEngine.estimateBaselineNoiseRMS(samples);
+    const minDetectablePeak = 0.001; // 1 mAU
+    const effectiveThreshold = (userThreshold !== null && userThreshold > 0 && userThreshold !== 0.025)
+      ? Math.max(3 * noiseRMS, userThreshold)
+      : Math.max(3 * noiseRMS, minDetectablePeak);
 
     const n = samples.length;
 
-    // ─── STEP 1: Candidate Detection — local maxima above noise threshold ─────
+    // ─── STEP 1: Candidate Detection — local maxima above threshold ───────────
     const rawCandidates = [];
 
     for (let i = 2; i < n - 2; i++) {
@@ -48,7 +67,7 @@ export class PeakDetectionEngine {
       const next2 = getIntensity(samples[i + 2]);
 
       if (
-        curr > noiseThreshold &&
+        curr > effectiveThreshold &&
         curr >= prev1 && curr >= prev2 &&
         curr >= next1 && curr >= next2
       ) {
@@ -98,7 +117,7 @@ export class PeakDetectionEngine {
       let leftIdx;
       if (idx === 0) {
         leftIdx = cand.apexIndex;
-        while (leftIdx > 0 && getIntensity(samples[leftIdx - 1]) < getIntensity(samples[leftIdx]) && getIntensity(samples[leftIdx - 1]) > noiseThreshold * 0.1) {
+        while (leftIdx > 0 && getIntensity(samples[leftIdx - 1]) < getIntensity(samples[leftIdx]) && getIntensity(samples[leftIdx - 1]) > effectiveThreshold * 0.1) {
           leftIdx--;
         }
       } else {
@@ -109,7 +128,7 @@ export class PeakDetectionEngine {
       let rightIdx;
       if (idx === candidates.length - 1) {
         rightIdx = cand.apexIndex;
-        while (rightIdx < n - 1 && getIntensity(samples[rightIdx + 1]) < getIntensity(samples[rightIdx]) && getIntensity(samples[rightIdx + 1]) > noiseThreshold * 0.1) {
+        while (rightIdx < n - 1 && getIntensity(samples[rightIdx + 1]) < getIntensity(samples[rightIdx]) && getIntensity(samples[rightIdx + 1]) > effectiveThreshold * 0.1) {
           rightIdx++;
         }
       } else {
@@ -124,7 +143,7 @@ export class PeakDetectionEngine {
       const baselineIntensity = (getIntensity(samples[leftIdx]) + getIntensity(samples[rightIdx])) / 2;
       const netHeight         = Math.max(0, cand.rawHeight - baselineIntensity);
 
-      if (netHeight < noiseThreshold * 0.5) return;
+      if (netHeight < effectiveThreshold * 0.5) return;
 
       // ─── Trapezoidal Area Integration ────────────────────────────────────
       let area = 0;

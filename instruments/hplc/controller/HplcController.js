@@ -12,7 +12,7 @@ import { MethodComparison } from '../models/MethodComparison.js';
 import { getSystemPressure } from '../engine/pressure.js';
 import { getDeadTime, getRetentionTime, getObservedRetentionFactor } from '../engine/retention.js';
 import { getPeakSigma } from '../engine/peak.js';
-import { isDetectorSaturated } from '../engine/detector.js';
+import { isDetectorSaturated, getBaselineNoise } from '../engine/detector.js';
 import { synthesizeInstantSignal } from '../engine/chromatogramEngine.js';
 import { evaluateSystemSuitability, calculatePeakWidths } from '../engine/suitability.js';
 import { getMethodExercise } from '../engine/methodProfiles.js';
@@ -26,20 +26,15 @@ import { MAX_PRESSURE_BAR, TICK_MS, DEFAULT_SPEED, DEBUG } from '../engine/const
  * CDS Acquisition Lifecycle State Machine
  *
  * Real HPLC CDS workflow:
- *   IDLE → PRIMING → EQUILIBRATING → READY → RUNNING → COMPLETED
- *
- * PRIMING      : Pressure ramp, live baseline noise rendered, ~0.4 sim-min
- * EQUILIBRATING: Baseline stabilising, convergence check, ~1.0 sim-min
- * READY        : Inject Sample button enabled, baseline locked
- * RUNNING      : Full chromatogram acquisition from t = 0.00
- * COMPLETED    : Results reported, replay available
+ *   IDLE → PRIMING → EQUILIBRATING → READY → INJECTING → RUNNING → COMPLETED
  */
 const HPLC_TRANSITION_RULES = {
   BOOTING:         ['IDLE'],
   IDLE:            ['PRIMING', 'OVERPRESSURE'],
   PRIMING:         ['EQUILIBRATING', 'IDLE', 'STOPPED', 'OVERPRESSURE'],
   EQUILIBRATING:   ['READY', 'IDLE', 'STOPPED', 'OVERPRESSURE'],
-  READY:           ['RUNNING', 'IDLE', 'STOPPED', 'OVERPRESSURE'],
+  READY:           ['INJECTING', 'IDLE', 'STOPPED', 'OVERPRESSURE'],
+  INJECTING:       ['RUNNING', 'IDLE', 'STOPPED'],
   RUNNING:         ['COMPLETED', 'STOPPED', 'OVERPRESSURE', 'DETECTOR_SATURATION'],
   COMPLETED:       ['PRIMING', 'IDLE'],
   STOPPED:         ['PRIMING', 'IDLE'],
@@ -47,13 +42,9 @@ const HPLC_TRANSITION_RULES = {
   DETECTOR_SATURATION: ['READY', 'IDLE', 'STOPPED']
 };
 
-// Simulated time (minutes) to spend in each pre-acquisition phase
-const PRIMING_DURATION_MIN      = 0.40;
-const EQUILIBRATING_DURATION_MIN= 1.10;
-
-// Baseline noise during equilibration (AU RMS) — realistic detector baseline drift
-const BASELINE_NOISE_AMPLITUDE  = 0.0005;
-const BASELINE_DRIFT_PERIOD_MIN = 8.0;   // slow sinusoidal drift period
+const PRIMING_DURATION_MIN       = 0.40;
+const EQUILIBRATING_DURATION_MIN = 1.10;
+const INJECTION_VALVE_DELAY_MS   = 400; // Realistic sample loop valve transition delay
 
 export class HplcController extends SimulationController {
   constructor() {
@@ -78,12 +69,15 @@ export class HplcController extends SimulationController {
     this.exerciseProfileId= 'QC_ASSAY';
     this.maxRunTimeMinutes= 5.0;
 
-    // Phase timing accumulators (simulated minutes)
     this._primingTime      = 0;
     this._equilibratingTime= 0;
+    this._noiseSeed        = 42;
 
-    // Seeded RNG state for deterministic baseline noise
-    this._noiseSeed = 12345;
+    // Track expected analytes for live retention markers & carryover check
+    this._expectedAnalytes = [];
+    this._detectedLiveSet  = new Set();
+    this._lastRunWasBlank  = false;
+    this._lastNonBlankPeaks= [];
 
     this.updatePressure();
   }
@@ -94,21 +88,19 @@ export class HplcController extends SimulationController {
   }
 
   configure(configParams = {}) {
-    if (configParams.flowRate)     this.setFlowRate(configParams.flowRate);
-    if (configParams.organicPercent) this.setOrganicPercent(configParams.organicPercent);
-    if (configParams.temperature)  this.setTemperature(configParams.temperature);
-    if (configParams.wavelengthNm) this.setWavelength(configParams.wavelengthNm);
-    if (configParams.pH)           this.setPh(configParams.pH);
-    if (configParams.bufferKey)    this.setBufferKey(configParams.bufferKey);
-    if (configParams.sampleKey)    this.setSampleKey(configParams.sampleKey);
+    if (configParams.flowRate)       this.setFlowRate(configParams.flowRate);
+    if (configParams.organicPercent)  this.setOrganicPercent(configParams.organicPercent);
+    if (configParams.temperature)    this.setTemperature(configParams.temperature);
+    if (configParams.wavelengthNm)   this.setWavelength(configParams.wavelengthNm);
+    if (configParams.pH)             this.setPh(configParams.pH);
+    if (configParams.bufferKey)      this.setBufferKey(configParams.bufferKey);
+    if (configParams.sampleKey)      this.setSampleKey(configParams.sampleKey);
   }
 
   run()    { return this.injectSample(); }
   stop()   { return this.stopPump(); }
   evaluate(runResult) { return scoreMethodExercise(runResult, getMethodExercise(this.exerciseProfileId)); }
   report(runResult)   { return runResult; }
-
-  /* ── Setters ────────────────────────────────────────────────────────────── */
 
   setFlowRate(flowRate)             { this.simState.flowRate       = Number(flowRate);      this.updatePressure(); }
   setOrganicPercent(organicPercent) { this.simState.organicPercent = Number(organicPercent); this.updatePressure(); }
@@ -141,8 +133,6 @@ export class HplcController extends SimulationController {
     this.eventBus.emit('exerciseChanged', { exerciseProfileId: exerciseId });
   }
 
-  /* ── Entity Lookups ─────────────────────────────────────────────────────── */
-
   getSampleEntity() {
     const mix = globalEntityRegistry.getMixture(this.simState.sampleKey);
     if (mix) {
@@ -163,8 +153,6 @@ export class HplcController extends SimulationController {
     return globalEntityRegistry.get(this.simState.bufferKey);
   }
 
-  /* ── Pressure ───────────────────────────────────────────────────────────── */
-
   updatePressure() {
     const p = getSystemPressure(this.simState.flowRate, this.simState.organicPercent, this.simState.temperature);
     this.simState.pressure = p;
@@ -179,18 +167,11 @@ export class HplcController extends SimulationController {
     return p;
   }
 
-  /* ── Pump Control ───────────────────────────────────────────────────────── */
-
-  /**
-   * Start the pump. Transitions IDLE → PRIMING.
-   * Baseline will be rendered immediately in onTick.
-   */
   startPump() {
     const p = this.updatePressure();
     if (p > MAX_PRESSURE_BAR) return false;
 
     const currentState = this.getState();
-    // Allow restart from COMPLETED or STOPPED
     if (currentState === 'COMPLETED' || currentState === 'STOPPED') {
       this.stateMachine.transitionTo('IDLE');
     }
@@ -198,7 +179,7 @@ export class HplcController extends SimulationController {
     if (this.stateMachine.transitionTo('PRIMING')) {
       this._primingTime       = 0;
       this._equilibratingTime = 0;
-      this.simState.time      = 0;   // baseline clock from 0
+      this.simState.time      = 0;
       this.clock.start();
       this.eventBus.emit('pumpStarted', {
         pressure: this.simState.pressure,
@@ -215,24 +196,25 @@ export class HplcController extends SimulationController {
     this.eventBus.emit('statusChanged', { status: 'STOPPED' });
   }
 
-  /* ── Sample Injection ───────────────────────────────────────────────────── */
-
   /**
-   * Inject sample. READY → RUNNING.
-   * Clears acquisition and resets time to 0.00 (CDS standard behaviour).
+   * Sample Injection with 400ms valve animation & expected peak calculation
    */
   injectSample() {
     if (this.getState() !== 'READY') return false;
 
-    this.simState.resetTime();
-    this.simState.clearWarnings();
-    this.chromatogram.clear();
+    this._lastRunWasBlank = false;
+    this._detectedLiveSet.clear();
+
+    if (!this.stateMachine.transitionTo('INJECTING')) return false;
+
+    this.eventBus.emit('injectingStarted', { delayMs: INJECTION_VALVE_DELAY_MS });
 
     const sampleEntity = this.getSampleEntity();
     const bufferEntity = this.getBufferEntity();
     const t0           = getDeadTime(this.simState.flowRate);
     let maxTR          = t0;
 
+    this._expectedAnalytes = [];
     if (sampleEntity && sampleEntity.components) {
       for (const compDef of sampleEntity.components) {
         const compound = compDef.compound;
@@ -240,41 +222,64 @@ export class HplcController extends SimulationController {
         const k  = getObservedRetentionFactor(compound, this.simState.organicPercent, this.simState.temperature, this.simState.pH, bufferEntity);
         const tR = getRetentionTime(t0, k);
         if (tR > maxTR) maxTR = tR;
+        this._expectedAnalytes.push({ compound: compound.name, tR });
       }
     }
+    this._expectedAnalytes.sort((a, b) => a.tR - b.tR);
     this.maxRunTimeMinutes = Math.max(2.5, maxTR + 1.2);
 
-    if (this.stateMachine.transitionTo('RUNNING')) {
-      this.eventBus.emit('runStarted', {
-        sampleName:       sampleEntity ? sampleEntity.name : this.simState.sampleKey,
-        estimatedMaxTime: this.maxRunTimeMinutes
-      });
-      return true;
-    }
-    return false;
+    setTimeout(() => {
+      if (this.getState() !== 'INJECTING') return;
+
+      this.simState.resetTime();
+      this.simState.clearWarnings();
+      this.chromatogram.clear();
+
+      if (this.stateMachine.transitionTo('RUNNING')) {
+        this.eventBus.emit('runStarted', {
+          sampleName:       sampleEntity ? sampleEntity.name : this.simState.sampleKey,
+          estimatedMaxTime: this.maxRunTimeMinutes,
+          expectedAnalytes: this._expectedAnalytes
+        });
+      }
+    }, INJECTION_VALVE_DELAY_MS);
+
+    return true;
   }
 
   /**
-   * Run Blank injection — no sample, shows only baseline + noise.
-   * Completes after maxRunTimeMinutes.
+   * Blank solvent injection
    */
   injectBlank() {
     if (this.getState() !== 'READY') return false;
 
-    this.simState.resetTime();
-    this.simState.clearWarnings();
-    this.chromatogram.clear();
-    this.maxRunTimeMinutes = 2.5;
+    this._lastRunWasBlank  = true;
+    this._expectedAnalytes = [];
+    this._detectedLiveSet.clear();
 
-    if (this.stateMachine.transitionTo('RUNNING')) {
-      this.eventBus.emit('runStarted', {
-        sampleName:       'Blank',
-        estimatedMaxTime: this.maxRunTimeMinutes,
-        isBlank: true
-      });
-      return true;
-    }
-    return false;
+    if (!this.stateMachine.transitionTo('INJECTING')) return false;
+
+    this.eventBus.emit('injectingStarted', { delayMs: INJECTION_VALVE_DELAY_MS, isBlank: true });
+
+    setTimeout(() => {
+      if (this.getState() !== 'INJECTING') return;
+
+      this.simState.resetTime();
+      this.simState.clearWarnings();
+      this.chromatogram.clear();
+      this.maxRunTimeMinutes = 2.5;
+
+      if (this.stateMachine.transitionTo('RUNNING')) {
+        this.eventBus.emit('runStarted', {
+          sampleName:       'Blank (Solvent)',
+          estimatedMaxTime: this.maxRunTimeMinutes,
+          isBlank: true,
+          expectedAnalytes: []
+        });
+      }
+    }, INJECTION_VALVE_DELAY_MS);
+
+    return true;
   }
 
   /* ── Tick Handler ───────────────────────────────────────────────────────── */
@@ -285,15 +290,17 @@ export class HplcController extends SimulationController {
 
     const state = this.getState();
 
-    /* ── PRIMING phase: rising pressure, live baseline ────────────────────── */
+    /* ── PRIMING phase: realistic sigmoidal pressure ramp, live baseline ────── */
     if (state === 'PRIMING') {
       this._primingTime += deltaSimMin;
       this.simState.time += deltaSimMin;
 
-      const pressureRampFraction = Math.min(1, this._primingTime / PRIMING_DURATION_MIN);
-      const rampedPressure = this.simState.pressure * pressureRampFraction;
+      const progress     = Math.min(1, this._primingTime / PRIMING_DURATION_MIN);
+      const smoothFactor = 1 / (1 + Math.exp(-6 * (progress - 0.5)));
+      const strokeRipple = 0.3 * Math.sin(this.simState.time * 200);
+      const rampedPressure = Math.max(0, this.simState.pressure * smoothFactor + strokeRipple);
 
-      const baselineSignal = this._generateBaselineNoise(this.simState.time);
+      const baselineSignal = getBaselineNoise(this.simState.time, this.simState.sensitivity, this.simState.wavelengthNm, this._noiseSeed);
 
       this.eventBus.emit('tick', {
         time:     this.simState.time,
@@ -315,10 +322,8 @@ export class HplcController extends SimulationController {
       this._equilibratingTime += deltaSimMin;
       this.simState.time      += deltaSimMin;
 
-      // Baseline amplitude decays toward stable flat line
       const stabilityFraction = this._equilibratingTime / EQUILIBRATING_DURATION_MIN;
-      const driftAmplitude    = BASELINE_NOISE_AMPLITUDE * (1.0 - stabilityFraction * 0.6);
-      const baselineSignal    = this._generateBaselineNoise(this.simState.time, driftAmplitude);
+      const baselineSignal    = getBaselineNoise(this.simState.time, this.simState.sensitivity, this.simState.wavelengthNm, this._noiseSeed);
 
       this.eventBus.emit('tick', {
         time:      this.simState.time,
@@ -332,7 +337,7 @@ export class HplcController extends SimulationController {
         this.stateMachine.transitionTo('READY');
         this.eventBus.emit('statusChanged', { status: 'READY' });
         this.eventBus.emit('baselineStabilized', {
-          baselineRMS: driftAmplitude,
+          baselineRMS: 0.0003,
           readyForInjection: true
         });
       }
@@ -342,7 +347,7 @@ export class HplcController extends SimulationController {
     /* ── READY phase: baseline holding, waiting for injection ─────────────── */
     if (state === 'READY') {
       this.simState.time += deltaSimMin;
-      const baselineSignal = this._generateBaselineNoise(this.simState.time, BASELINE_NOISE_AMPLITUDE * 0.3);
+      const baselineSignal = getBaselineNoise(this.simState.time, this.simState.sensitivity, this.simState.wavelengthNm, this._noiseSeed);
 
       this.eventBus.emit('tick', {
         time:     this.simState.time,
@@ -353,25 +358,58 @@ export class HplcController extends SimulationController {
       return;
     }
 
-    /* ── RUNNING phase: full acquisition ──────────────────────────────────── */
+    /* ── INJECTING phase: 400ms valve transition ───────────────────────────── */
+    if (state === 'INJECTING') {
+      const baselineSignal = getBaselineNoise(this.simState.time, this.simState.sensitivity, this.simState.wavelengthNm, this._noiseSeed);
+      this.eventBus.emit('tick', {
+        time:     this.simState.time,
+        signal:   baselineSignal,
+        pressure: this.simState.pressure,
+        phase:    'INJECTING'
+      });
+      return;
+    }
+
+    /* ── RUNNING phase: full acquisition + live peak detection ────────────── */
     if (state === 'RUNNING') {
       this.simState.time += deltaSimMin;
 
       const sampleEntity = this.getSampleEntity();
       const bufferEntity = this.getBufferEntity();
 
-      const synth = synthesizeInstantSignal(this.simState.time, sampleEntity, {
-        flowRate:       this.simState.flowRate,
-        organicPercent: this.simState.organicPercent,
-        sensitivity:    this.simState.sensitivity,
-        temperature:    this.simState.temperature,
-        wavelengthNm:   this.simState.wavelengthNm,
-        pH:             this.simState.pH,
-        bufferEntity
-      });
+      let synth = { signal: 0 };
+
+      if (this._lastRunWasBlank) {
+        // Blank run: baseline noise only
+        synth.signal = getBaselineNoise(this.simState.time, this.simState.sensitivity, this.simState.wavelengthNm, this._noiseSeed);
+      } else {
+        synth = synthesizeInstantSignal(this.simState.time, sampleEntity, {
+          flowRate:       this.simState.flowRate,
+          organicPercent: this.simState.organicPercent,
+          sensitivity:    this.simState.sensitivity,
+          temperature:    this.simState.temperature,
+          wavelengthNm:   this.simState.wavelengthNm,
+          pH:             this.simState.pH,
+          bufferEntity
+        });
+      }
 
       this.simState.detectorSignal = synth.signal;
       this.chromatogram.append(this.simState.time, synth.signal);
+
+      // Live retention marker check (Highlight Feature)
+      if (this._expectedAnalytes.length > 0) {
+        for (const item of this._expectedAnalytes) {
+          if (!this._detectedLiveSet.has(item.compound) && Math.abs(this.simState.time - item.tR) < 0.08) {
+            this._detectedLiveSet.add(item.compound);
+            this.eventBus.emit('peakDetectedLive', {
+              compound: item.compound,
+              tR:       item.tR,
+              time:     this.simState.time
+            });
+          }
+        }
+      }
 
       if (isDetectorSaturated(synth.signal)) {
         this.simState.addWarning('⚠️ DETECTOR SATURATED');
@@ -391,30 +429,12 @@ export class HplcController extends SimulationController {
       return;
     }
 
-    // All other states: emit keepalive tick
     this.eventBus.emit('tick', {
       time:     this.simState.time,
       signal:   0,
       pressure: this.simState.pressure,
       phase:    state
     });
-  }
-
-  /* ── Baseline Noise Generator ───────────────────────────────────────────── */
-
-  /**
-   * Deterministic pseudo-random baseline noise + slow sinusoidal drift.
-   * Deterministic so replays are reproducible.
-   */
-  _generateBaselineNoise(t, amplitude = BASELINE_NOISE_AMPLITUDE) {
-    // Park-Miller LCG for deterministic noise
-    this._noiseSeed = (this._noiseSeed * 16807) % 2147483647;
-    const rand = (this._noiseSeed / 2147483647) - 0.5; // [-0.5, 0.5]
-
-    // Slow sinusoidal baseline drift (mimics thermal drift)
-    const drift = amplitude * 0.4 * Math.sin((2 * Math.PI * t) / BASELINE_DRIFT_PERIOD_MIN);
-
-    return amplitude * rand + drift;
   }
 
   /* ── Run Completion ─────────────────────────────────────────────────────── */
@@ -424,10 +444,8 @@ export class HplcController extends SimulationController {
     let peaks  = [];
     const educationalExplanations = [];
 
-    // 1. Raw Detector Signal Points
     const rawSamples = this.chromatogram.getPoints().map(p => ({ time: p.t, intensity: p.y }));
 
-    // 2. Physical Baseline Noise & ADC Quantization Engine
     const noiseEngine = new NoiseADCEngine();
     const noisePatch  = noiseEngine.process({
       signalPoints: rawSamples,
@@ -438,10 +456,53 @@ export class HplcController extends SimulationController {
     });
     const digitizedSamples = noisePatch.digitizedPoints;
 
-    // 3. CDS Peak Detection Engine (v1.1 — inter-apex minimum search)
+    // Adaptive threshold peak detection
     const detectedPeaks = PeakDetectionEngine.detectPeaks(digitizedSamples);
 
-    // 4. Peak Identification — match detected digital peaks to expected analytes
+    if (this._lastRunWasBlank) {
+      // Check for carryover against previous run
+      const carryover = (this._lastNonBlankPeaks.length > 0 && detectedPeaks.length > 0);
+      peaks = detectedPeaks.map(dp => new Peak({ ...dp, compound: 'System Blank / Ghost' }));
+
+      const runResult = new RunResult({
+        sampleName:  'Blank (Solvent)',
+        isBlank:     true,
+        carryoverDetected: carryover,
+        methodParams: {
+          flowRate:        this.simState.flowRate,
+          organicPercent:  this.simState.organicPercent,
+          temperature:     this.simState.temperature,
+          wavelengthNm:    this.simState.wavelengthNm,
+          pH:              this.simState.pH,
+          bufferKey:       this.simState.bufferKey,
+          sensitivity:     this.simState.sensitivity,
+          criteriaProfile: this.criteriaProfile,
+          exerciseProfileId: this.exerciseProfileId
+        },
+        peaks,
+        elapsedTime: this.simState.time,
+        maxPressure: this.simState.pressure,
+        warnings:    this.simState.warnings,
+        educationalExplanations: [
+          carryover
+            ? '⚠ Carryover Suspected: ghost peaks detected in solvent blank injection. Flush column or needle wash.'
+            : '✅ Blank Run Valid: baseline stable, no sample carryover detected.'
+        ],
+        systemSuitability: { status: 'PASSED' },
+        exerciseScore:     { totalScore: 100 }
+      });
+
+      this.stateMachine.transitionTo('COMPLETED');
+      this.eventBus.emit('runCompleted', {
+        runResult,
+        exerciseProfile: getMethodExercise(this.exerciseProfileId),
+        methodComparison: null,
+        methodHistory: this.methodHistory.getRuns()
+      });
+      return;
+    }
+
+    // Standard Sample Run
     const expectedAnalytes = [];
     if (sampleEntity && sampleEntity.components) {
       sampleEntity.components.forEach(compDef => {
@@ -458,7 +519,6 @@ export class HplcController extends SimulationController {
       });
     }
 
-    // Match detected peaks to expected analytes within ±(15% tR or 2.5σ) window
     peaks = detectedPeaks.map(dp => {
       const match = expectedAnalytes.find(a =>
         Math.abs(a.expectedTR - dp.tR) <= Math.max(0.15, 2.5 * a.sigma)
@@ -467,8 +527,8 @@ export class HplcController extends SimulationController {
     });
 
     peaks.sort((a, b) => a.tR - b.tR);
+    this._lastNonBlankPeaks = peaks;
 
-    // 5. System Suitability & Scoring
     const systemSuitability  = evaluateSystemSuitability(peaks, this.simState.flowRate, this.criteriaProfile);
     const exerciseProfile    = getMethodExercise(this.exerciseProfileId);
     const exerciseScore      = scoreMethodExercise({

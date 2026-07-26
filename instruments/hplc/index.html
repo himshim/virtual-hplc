@@ -509,6 +509,7 @@
           PRIMING:      "⚡ PRIMING: Ramping pressure...",
           EQUILIBRATING:"💧 EQUILIBRATING: Stabilizing baseline...",
           READY:        "🟢 READY FOR INJECTION",
+          INJECTING:    "💉 INJECTING SAMPLE (Valve turning...)",
           RUNNING:      "📈 ACQUIRING CHROMATOGRAM...",
           COMPLETED:    "✅ ACQUISITION COMPLETE",
           STOPPED:      "⏹ PUMP STOPPED",
@@ -520,6 +521,7 @@
       if (newState === 'PRIMING')      runTimeline.setPhase('prime');
       if (newState === 'EQUILIBRATING')runTimeline.setPhase('equilibrate');
       if (newState === 'READY')        runTimeline.setPhase('ready');
+      if (newState === 'INJECTING')    runTimeline.setPhase('inject');
       if (newState === 'RUNNING')      runTimeline.setPhase('separation');
       if (newState === 'COMPLETED')    runTimeline.setPhase('complete');
 
@@ -546,20 +548,32 @@
       spectrumView.renderSpectrum(controller.simState.sampleKey, wavelengthNm);
     });
 
-    controller.eventBus.on("runStarted", () => {
+    controller.eventBus.on("injectingStarted", () => {
+      runTimeline.setPhase('inject');
+      const acqLabel = document.getElementById("acqPhaseLabel");
+      if (acqLabel) acqLabel.textContent = "💉 INJECTING SAMPLE (Valve turning...)";
+    });
+
+    controller.eventBus.on("runStarted", ({ expectedAnalytes }) => {
       graphView.reset();
       displayView.renderPeakTable(null);
-      // P7: Timeline - prime -> inject -> separation
-      runTimeline.setPhase('inject');
+      runTimeline.setPhase('separation');
       paramImpact.reset();
-      // P9: Clear interactive annotations
       interactiveChromatogram.reset();
       narrator.clear();
-      // v1.x: Reset replay when new run starts
       methodReplay.reset();
+
+      // Render faint live retention target markers on chromatogram
+      if (expectedAnalytes && expectedAnalytes.length) {
+        interactiveChromatogram.setExpectedMarkers(expectedAnalytes);
+      }
 
       const ghost = document.getElementById("ghostOverlay");
       if (ghost) ghost.classList.add("hidden");
+    });
+
+    controller.eventBus.on("peakDetectedLive", ({ compound }) => {
+      interactiveChromatogram.markLiveDetected(compound);
     });
 
     controller.eventBus.on("tick", ({ time, signal, pressure, phase }) => {
