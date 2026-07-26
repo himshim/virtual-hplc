@@ -1,4 +1,4 @@
-import { globalModal } from '../../ui/components/Modal.js';
+import { globalModal } from '../../../ui/components/Modal.js';
 
 /**
  * controls.js - DOM Inputs, User Action Bindings & Educational Tooltips ⓘ
