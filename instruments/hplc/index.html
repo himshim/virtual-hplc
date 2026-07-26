@@ -475,6 +475,7 @@
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
 
     // Central Presentation Layer Coordinator (Single Source of UI Event Subscriptions)
+    window._hplcControllerInstance = controller;
     const uiCoordinator = new UiCoordinator(controller, {
       graphView, controlsView, displayView, compareView, historyView,
       spectrumView, statusBar, runTimeline, paramImpact, reportCard,

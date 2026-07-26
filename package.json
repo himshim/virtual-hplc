@@ -1,0 +1,27 @@
+{
+  "name": "virtual-analytical-lab",
+  "version": "1.0.0",
+  "description": "A **virtual analytical chemistry lab** built to simulate analytical instruments and concepts for\r learning, teaching, and experimentation — **without real instruments or reagents**.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/himshim/virtual-analytical-lab.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/himshim/virtual-analytical-lab/issues"
+  },
+  "homepage": "https://github.com/himshim/virtual-analytical-lab#readme",
+  "dependencies": {
+    "playwright": "^1.62.0"
+  }
+}

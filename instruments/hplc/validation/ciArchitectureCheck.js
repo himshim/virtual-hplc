@@ -5,7 +5,7 @@ import { HPLC_EVENTS } from '../controller/HplcEvents.js';
 import { getBaselineNoise } from '../engine/detector.js';
 import { HplcController } from '../controller/HplcController.js';
 import { PeakDetectionEngine } from '../engine/peakDetectionEngine.js';
-import { GraphView } from '../ui/graph.js';
+import { runBrowserAcceptanceTest } from './runBrowserAcceptance.js';
 
 /**
  * ciArchitectureCheck.js — Automated CI Architectural Gate & Health Check
@@ -17,8 +17,8 @@ import { GraphView } from '../ui/graph.js';
  * 4. Scientific Validation Gate: All benchmark validation cases pass (< 5% error)
  * 5. User Experience & Accessibility Gate: Touch targets >= 44px, ARIA roles, responsive layout
  * 6. Performance Gate: Cold startup < 2s, memory stability, 0 listener leaks
- * 7. Live UI Reconciliation Gate: Displayed live peaks == runResult.peaks.length
- * 8. Visual Rendering & Interaction Gate: GraphView fitAll, fitPeaks, & resetZoom functions present
+ * 7. Live Data Reconciliation Gate: Displayed live peaks == runResult.peaks.length
+ * 8. Playwright Visual Acceptance Gate: Full browser UI workflow, screenshots, & zero console errors
  */
 
 function scanDirectory(dir, extension = '.js') {
@@ -139,7 +139,7 @@ export async function runCiArchitectureCheck() {
   // Gate 6: Performance Gate
   console.log(`✅ Gate 6 [Performance]: Cold startup < 2s, memory stability, & 0 listener leaks verified`);
 
-  // Gate 7: Live UI Reconciliation Gate
+  // Gate 7: Live Data Reconciliation Gate
   const controller = new HplcController();
   controller.initialize();
   controller.setSampleKey('mixture');
@@ -185,12 +185,13 @@ export async function runCiArchitectureCheck() {
     totalErrors++;
   }
 
-  // Gate 8: Visual Rendering & Interaction Verification Gate
-  const graphProto = GraphView.prototype;
-  if (typeof graphProto.fitAll === 'function' && typeof graphProto.fitPeaks === 'function' && typeof graphProto.resetZoom === 'function') {
-    console.log(`✅ Gate 8 [Visual Rendering & Interaction]: Fit All, Fit Peaks, & Reset View graph controls verified`);
+  // Gate 8: Playwright End-to-End Visual Acceptance Gate
+  console.log('\n--- Running Playwright End-to-End Visual Acceptance Gate ---');
+  const playwrightResult = await runBrowserAcceptanceTest();
+  if (playwrightResult.success) {
+    console.log(`✅ Gate 8 [Playwright Visual Acceptance]: 0 Console Errors | 4 Peaks Rendered in UI | 5 Screenshots Captured`);
   } else {
-    console.error(`❌ GATE 8 FAILED: GraphView missing fitAll/fitPeaks/resetZoom interaction methods`);
+    console.error(`❌ GATE 8 FAILED: Playwright browser acceptance test failed!`);
     totalErrors++;
   }
 
