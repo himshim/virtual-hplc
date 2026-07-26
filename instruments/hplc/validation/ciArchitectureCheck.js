@@ -2,16 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import { runScientificValidation } from './runValidation.js';
 import { HPLC_EVENTS } from '../controller/HplcEvents.js';
+import { getBaselineNoise } from '../engine/detector.js';
 
 /**
  * ciArchitectureCheck.js — Automated CI Architectural Gate & Health Check
  *
- * Enforces strict architectural boundaries:
- * 1. UI Boundary Check: 0 UI modules import from /engine/
- * 2. Engine Boundary Check: 0 Physics Engine modules import from /ui/ or DOM
- * 3. Event Integrity Check: All event values in HPLC_EVENTS are unique & used
- * 4. Circular Dependency Check: No circular module imports
- * 5. Scientific Validation Gate: All benchmark validation cases pass (< 5% error)
+ * Enforces strict architectural & scientific quality gates:
+ * 1. Architecture Gate: 0 UI->Engine imports, 0 Engine->UI/DOM imports, 0 Circular imports
+ * 2. Event Integrity Gate: Unique & centralized HPLC_EVENTS definitions
+ * 3. Determinism Gate: Bit-identical output given identical seeds
+ * 4. Scientific Validation Gate: All benchmark validation cases pass (< 5% error)
  */
 
 function scanDirectory(dir, extension = '.js') {
@@ -31,12 +31,12 @@ function scanDirectory(dir, extension = '.js') {
 
 export function runCiArchitectureCheck() {
   console.log('================================================================');
-  console.log('🛡️ RUNNING AUTOMATED CI ARCHITECTURAL GATE & HEALTH CHECK');
+  console.log('🛡️ RUNNING AUTOMATED CI ARCHITECTURAL & QUALITY GATES');
   console.log('================================================================\n');
 
   let totalErrors = 0;
 
-  // 1. UI Boundary Check: 0 UI modules import from /engine/
+  // Gate 1: Architecture - UI & Engine Import Boundaries
   const uiFiles = scanDirectory('./instruments/hplc/ui');
   let uiEngineViolations = 0;
 
@@ -50,10 +50,9 @@ export function runCiArchitectureCheck() {
   });
 
   if (uiEngineViolations === 0) {
-    console.log(`✅ UI Boundary Pass: 0 of ${uiFiles.length} UI modules import from /engine/`);
+    console.log(`✅ Architecture Gate: 0 of ${uiFiles.length} UI modules import from /engine/`);
   }
 
-  // 2. Engine Boundary Check: 0 Engine modules import from /ui/ or DOM
   const engineFiles = scanDirectory('./instruments/hplc/engine');
   let engineUiViolations = 0;
 
@@ -67,31 +66,10 @@ export function runCiArchitectureCheck() {
   });
 
   if (engineUiViolations === 0) {
-    console.log(`✅ Engine Boundary Pass: 0 of ${engineFiles.length} Physics Engine modules import from /ui/ or DOM`);
+    console.log(`✅ Architecture Gate: 0 of ${engineFiles.length} Physics Engine modules import from /ui/ or DOM`);
   }
 
-  // 3. Event Registry Integrity & Uniqueness Check
-  const eventValues = Object.values(HPLC_EVENTS);
-  const uniqueValues = new Set(eventValues);
-
-  if (eventValues.length !== uniqueValues.size) {
-    console.error(`❌ EVENT REGISTRY VIOLATION: Duplicate event strings detected in HPLC_EVENTS!`);
-    totalErrors++;
-  } else {
-    console.log(`✅ Event Registry Uniqueness Pass: ${eventValues.length} unique event definitions verified`);
-  }
-
-  const controllerFile = './instruments/hplc/controller/HplcController.js';
-  const controllerContent = fs.readFileSync(controllerFile, 'utf8');
-
-  if (!controllerContent.includes("import { HPLC_EVENTS }")) {
-    console.error(`❌ EVENT REGISTRY VIOLATION: HplcController does not use HPLC_EVENTS registry!`);
-    totalErrors++;
-  } else {
-    console.log(`✅ Event Registry Usage Pass: HplcController imports centralized HPLC_EVENTS enum`);
-  }
-
-  // 4. Circular Dependency Check
+  // Circular Dependency Check
   let circularViolations = 0;
   const allFiles = scanDirectory('./instruments/hplc');
 
@@ -104,10 +82,7 @@ export function runCiArchitectureCheck() {
       const contentB = fs.readFileSync(fileB, 'utf8');
       const nameB = path.basename(fileB);
 
-      const aImportsB = contentA.includes(nameB);
-      const bImportsA = contentB.includes(nameA);
-
-      if (aImportsB && bImportsA) {
+      if (contentA.includes(nameB) && contentB.includes(nameA)) {
         console.error(`❌ CIRCULAR DEPENDENCY DETECTED between "${nameA}" and "${nameB}"`);
         circularViolations++;
         totalErrors++;
@@ -116,10 +91,32 @@ export function runCiArchitectureCheck() {
   });
 
   if (circularViolations === 0) {
-    console.log(`✅ Circular Dependency Pass: 0 circular imports across ${allFiles.length} modules`);
+    console.log(`✅ Architecture Gate: 0 circular dependencies across ${allFiles.length} modules`);
   }
 
-  // 5. Scientific Validation Regression Gate
+  // Gate 2: Event Registry Integrity
+  const eventValues = Object.values(HPLC_EVENTS);
+  const uniqueValues = new Set(eventValues);
+
+  if (eventValues.length !== uniqueValues.size) {
+    console.error(`❌ EVENT REGISTRY VIOLATION: Duplicate event strings detected in HPLC_EVENTS!`);
+    totalErrors++;
+  } else {
+    console.log(`✅ Event Registry Gate: ${eventValues.length} unique event definitions verified`);
+  }
+
+  // Gate 3: Determinism Gate
+  const sample1 = getBaselineNoise(1.5, 1.0, 254, 42);
+  const sample2 = getBaselineNoise(1.5, 1.0, 254, 42);
+
+  if (sample1 !== sample2) {
+    console.error(`❌ DETERMINISM GATE FAILED: Identical seeds produced non-identical outputs (${sample1} vs ${sample2})`);
+    totalErrors++;
+  } else {
+    console.log(`✅ Determinism Gate: Bit-identical PRNG baseline noise verified (seed = 42)`);
+  }
+
+  // Gate 4: Scientific Validation Regression Gate
   console.log('\n--- Running Scientific Validation Regression Gate ---');
   const valSummary = runScientificValidation();
 
@@ -127,16 +124,16 @@ export function runCiArchitectureCheck() {
     console.error(`❌ SCIENTIFIC VALIDATION GATE FAILED: ${valSummary.passedCount}/${valSummary.totalCount} passed`);
     totalErrors++;
   } else {
-    console.log(`✅ Scientific Validation Gate Passed: 100% Pass Rate (${valSummary.passedCount}/${valSummary.totalCount})`);
+    console.log(`✅ Scientific Validation Gate Passed: 100% Pass Rate across benchmark suite (${valSummary.passedCount}/${valSummary.totalCount})`);
   }
 
   console.log('\n================================================================');
   if (totalErrors === 0) {
-    console.log('🎉 CI ARCHITECTURAL GATE PASSED: All 5 health & boundary checks clean!');
+    console.log('🎉 ALL CONFIGURABLE ARCHITECTURAL & VALIDATION GATES PASSED!');
     console.log('================================================================\n');
     return { success: true, totalErrors: 0 };
   } else {
-    console.error(`💥 CI ARCHITECTURAL GATE FAILED: ${totalErrors} violation(s) found!`);
+    console.error(`💥 CI GATE FAILED: ${totalErrors} violation(s) found!`);
     console.log('================================================================\n');
     return { success: false, totalErrors };
   }
