@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "analytical-chemistry": {
+      "source": "ffsshhttiikk/opencode-agents-skills",
+      "sourceType": "github",
+      "skillPath": "analytical-chemistry/SKILL.md",
+      "computedHash": "fb4d94e0777885e5b511c0f2920ba6c9cb91297d7b1c8b7a385ed1aa345ece08"
+    }
+  }
+}

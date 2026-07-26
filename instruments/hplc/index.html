@@ -12,7 +12,7 @@
 
 <header class="hero">
   <h1>HPLC Simulator</h1>
-  <p>Interactive reversed-phase HPLC virtual instrument</p>
+  <p>Interactive reversed-phase HPLC virtual instrument with USP System Suitability Assessment</p>
 </header>
 
 <main class="instrument-grid">
@@ -55,6 +55,28 @@
       <option value="mixture">── Mixture (all four) ──</option>
     </select>
 
+    <br><br>
+
+    <label for="profileSelect">Pharmacopeial SST Profile</label><br>
+    <select id="profileSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
+      <option value="USP" selected>USP (United States Pharmacopeia)</option>
+      <option value="EP">EP (European Pharmacopoeia)</option>
+      <option value="IP">IP (Indian Pharmacopoeia)</option>
+      <option value="TEACHING">Teaching Mode (Permissive)</option>
+      <option value="RESEARCH">Research Mode (Strict)</option>
+    </select>
+
+    <br><br>
+
+    <label for="speedSelect">Simulation Speed</label><br>
+    <select id="speedSelect" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;margin-top:4px">
+      <option value="1">1× (Real time)</option>
+      <option value="5">5× Speed</option>
+      <option value="10" selected>10× Speed (Recommended)</option>
+      <option value="30">30× Speed</option>
+      <option value="60">60× Fast Speed</option>
+    </select>
+
     <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
 
     <div style="margin-bottom: 16px;">
@@ -65,20 +87,83 @@
       <meter id="pressureMeter" min="0" max="400" low="250" high="350" optimum="150" value="0"></meter>
     </div>
 
-    <button id="pumpBtn" disabled>▶ Pump START</button>
+    <button id="pumpBtn">▶ Pump START</button>
     <button id="injectBtn" disabled>Inject Sample</button>
 
-    <p id="rtDisplay" style="margin-top:16px;font-size:0.9rem;color:#555;">Estimated RT: —</p>
+    <p id="rtDisplay" style="margin-top:16px;font-size:0.9rem;color:#555;">Elapsed Time: 00:00</p>
   </div>
 
   <div class="instrument-card area-graph">
     <h2 style="margin-top:0">Chromatogram</h2>
-    <canvas id="graphCanvas" height="200"></canvas>
+    <div style="height:250px; position:relative;">
+      <canvas id="graphCanvas"></canvas>
+    </div>
+    <div id="peakTableContainer"></div>
   </div>
 
 </main>
 
-<script type="module" src="./hplc.stable.js"></script>
+<script type="module">
+  import { HplcController } from './controller/HplcController.js';
+  import { GraphView } from './ui/graph.js';
+  import { ControlsView } from './ui/controls.js';
+  import { DisplayView } from './ui/display.js';
+
+  async function injectDiagramSVG() {
+    const container = document.getElementById("diagramContainer");
+    if (!container) return;
+    try {
+      const response = await fetch("./hplc.diagram.svg");
+      if (!response.ok) throw new Error("SVG not found");
+      container.innerHTML = await response.text();
+    } catch (error) {
+      container.textContent = "Diagram unavailable.";
+      console.error("SVG Load Error:", error);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await injectDiagramSVG();
+
+    const controller = new HplcController();
+    const graphView = new GraphView("graphCanvas");
+    const controlsView = new ControlsView(controller);
+    const displayView = new DisplayView();
+
+    // Event Subscriptions
+    controller.eventBus.on("statusChanged", ({ newState }) => {
+      displayView.setStatus(newState);
+      controlsView.updateControlsForState(newState);
+    });
+
+    controller.eventBus.on("pressureChanged", ({ pressure }) => {
+      displayView.setPressure(pressure);
+    });
+
+    controller.eventBus.on("runStarted", () => {
+      graphView.reset();
+      displayView.renderPeakTable(null);
+    });
+
+    controller.eventBus.on("tick", ({ time, signal, pressure }) => {
+      displayView.setTimeDisplay(time);
+      if (controller.getState() === "RUNNING") {
+        graphView.addPoint(time, signal);
+      }
+    });
+
+    controller.eventBus.on("warningRaised", ({ warnings }) => {
+      displayView.setWarnings(warnings);
+    });
+
+    controller.eventBus.on("runCompleted", ({ runResult }) => {
+      displayView.renderPeakTable(runResult);
+    });
+
+    // Initialize instrument
+    controller.init();
+  });
+</script>
 
 </body>
 </html>
