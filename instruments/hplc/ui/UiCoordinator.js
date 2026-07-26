@@ -370,24 +370,68 @@ export class UiCoordinator {
       observer.observe(heroStrip);
     }
 
-    // Single GraphView Morphing PiP Observer
+    // Single GraphView Morphing PiP Observer & DOM Portal Manager
     if (chromContainer && 'IntersectionObserver' in window) {
+      const originalParent = chromContainer.parentElement;
+      const nextSibling = chromContainer.nextSibling;
+
+      const setPipActive = (active) => {
+        if (active) {
+          if (!chromContainer.classList.contains('morph-pip-active')) {
+            chromContainer.classList.add('morph-pip-active');
+            if (chromContainer.parentElement !== document.body) {
+              document.body.appendChild(chromContainer);
+            }
+          }
+        } else {
+          if (chromContainer.classList.contains('morph-pip-active')) {
+            chromContainer.classList.remove('morph-pip-active');
+            if (chromContainer.parentElement !== originalParent) {
+              if (nextSibling) originalParent.insertBefore(chromContainer, nextSibling);
+              else originalParent.appendChild(chromContainer);
+            }
+          }
+        }
+      };
+
+      const checkEligibility = () => {
+        const state = this.controller.getState();
+        const dataLen = this.views.graphView?.chart?.data?.datasets?.[0]?.data?.length || 0;
+        return state === 'RUNNING' || state === 'INJECTING' || state === 'COMPLETED' || dataLen > 0;
+      };
+
+      const sentinel = document.getElementById('chromatogramSentinel');
       const morphObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          const isRunning = this.controller.getState() === 'RUNNING';
-          if (!entry.isIntersecting && isRunning) {
-            chromContainer.classList.add('morph-pip-active');
-          } else {
-            chromContainer.classList.remove('morph-pip-active');
+          const eligible = checkEligibility();
+          if (!entry.isIntersecting && eligible) {
+            setPipActive(true);
+          } else if (entry.isIntersecting) {
+            setPipActive(false);
           }
         });
       }, { threshold: 0.1 });
-      morphObserver.observe(chromContainer);
+
+      morphObserver.observe(sentinel || originalParent);
+
+      // Handle Tab Switch: Morph graph into PiP when navigating away from Run tab if run has data
+      document.querySelectorAll('.nav-tab-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.getAttribute('data-tab');
+          if (tab !== 'tab-run' && checkEligibility()) {
+            setPipActive(true);
+          } else if (tab === 'tab-run') {
+            setPipActive(false);
+          }
+        });
+      });
 
       chromContainer.addEventListener('click', (e) => {
         if (chromContainer.classList.contains('morph-pip-active')) {
           e.stopPropagation();
-          chromContainer.classList.remove('morph-pip-active');
+          setPipActive(false);
+          const runTabBtn = document.getElementById('tabBtn-run');
+          if (runTabBtn) runTabBtn.click();
           chromContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       });
