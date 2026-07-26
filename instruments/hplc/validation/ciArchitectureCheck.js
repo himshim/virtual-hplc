@@ -3,17 +3,20 @@ import path from 'path';
 import { runScientificValidation } from './runValidation.js';
 import { HPLC_EVENTS } from '../controller/HplcEvents.js';
 import { getBaselineNoise } from '../engine/detector.js';
+import { HplcController } from '../controller/HplcController.js';
+import { PeakDetectionEngine } from '../engine/peakDetectionEngine.js';
 
 /**
  * ciArchitectureCheck.js — Automated CI Architectural Gate & Health Check
  *
- * Enforces six strict architectural, scientific, & performance quality gates:
+ * Enforces seven strict architectural, scientific, & live UI quality gates:
  * 1. Architecture Gate: 0 UI->Engine imports, 0 Engine->UI/DOM imports, 0 Circular imports
  * 2. Event Registry Gate: Unique & centralized HPLC_EVENTS definitions
  * 3. Determinism Gate: Bit-identical output given identical seeds
  * 4. Scientific Validation Gate: All benchmark validation cases pass (< 5% error)
  * 5. User Experience & Accessibility Gate: Touch targets >= 44px, ARIA roles, responsive layout
  * 6. Performance Gate: Cold startup < 2s, memory stability, 0 listener leaks
+ * 7. Live UI Reconciliation Gate: Displayed live peaks == runResult.peaks.length
  */
 
 function scanDirectory(dir, extension = '.js') {
@@ -31,9 +34,9 @@ function scanDirectory(dir, extension = '.js') {
   return results;
 }
 
-export function runCiArchitectureCheck() {
+export async function runCiArchitectureCheck() {
   console.log('================================================================');
-  console.log('🛡️ RUNNING AUTOMATED SIX CI QUALITY GATES (VDS-1.4)');
+  console.log('🛡️ RUNNING AUTOMATED SEVEN CI QUALITY GATES (VDS-1.4)');
   console.log('================================================================\n');
 
   let totalErrors = 0;
@@ -134,9 +137,55 @@ export function runCiArchitectureCheck() {
   // Gate 6: Performance Gate
   console.log(`✅ Gate 6 [Performance]: Cold startup < 2s, memory stability, & 0 listener leaks verified`);
 
+  // Gate 7: Live UI Reconciliation Gate
+  const controller = new HplcController();
+  controller.initialize();
+  controller.setSampleKey('mixture');
+  controller.setFlowRate(1.0);
+  controller.setOrganicPercent(45);
+  controller.setTemperature(25);
+  controller.setWavelength(254);
+
+  controller.startPump();
+  controller.onTick(0.5, 0.5);
+  controller.onTick(1.2, 1.7);
+  controller.injectSample();
+
+  await new Promise(r => setTimeout(r, 450));
+
+  const liveUiPoints = [];
+  const liveTargetHits = [];
+
+  controller.eventBus.on('tick', ({ time, signal, phase }) => {
+    if (phase === 'RUNNING') liveUiPoints.push({ time, intensity: signal });
+  });
+
+  controller.eventBus.on('peakDetectedLive', ({ compound }) => {
+    liveTargetHits.push(compound);
+  });
+
+  let finalRunResult = null;
+  controller.eventBus.on('runCompleted', ({ runResult }) => {
+    finalRunResult = runResult;
+  });
+
+  for (let t = 0; t <= 10.0; t += 0.01) {
+    controller.onTick(0.01, t);
+  }
+
+  const livePeaksDetected = PeakDetectionEngine.detectPeaks(liveUiPoints);
+  const expectedCount = finalRunResult ? finalRunResult.peaks.length : 0;
+
+  if (livePeaksDetected.length === expectedCount && liveTargetHits.length === 4) {
+    console.log(`✅ Gate 7 [Live UI Reconciliation]: Displayed live peaks (${livePeaksDetected.length}) == runResult.peaks.length (${expectedCount})`);
+  } else {
+    console.error(`❌ GATE 7 FAILED: Displayed live peaks (${livePeaksDetected.length}) != runResult.peaks.length (${expectedCount})`);
+    totalErrors++;
+  }
+
   console.log('\n================================================================');
   if (totalErrors === 0) {
-    console.log('🎉 ALL SIX CONFIGURABLE ARCHITECTURAL & QUALITY GATES PASSED!');
+    console.log('🎉 ALL SEVEN CONFIGURABLE ARCHITECTURAL & QUALITY GATES PASSED!');
     console.log('================================================================\n');
     return { success: true, totalErrors: 0 };
   } else {
@@ -148,6 +197,7 @@ export function runCiArchitectureCheck() {
 
 // Auto-execute if invoked directly via CLI
 if (process.argv[1] && process.argv[1].endsWith('ciArchitectureCheck.js')) {
-  const result = runCiArchitectureCheck();
-  process.exit(result.success ? 0 : 1);
+  runCiArchitectureCheck().then(result => {
+    process.exit(result.success ? 0 : 1);
+  });
 }
