@@ -21,9 +21,11 @@ function lcgRandom(seed) {
  * @returns {number} Signal noise intensity (AU)
  */
 export function getBaselineNoise(time, sensitivity, wavelengthNm = 254, baseSeed = 42) {
-  // Deterministic Gaussian white noise component (~0.00015 AU RMS)
-  const prngVal = lcgRandom(baseSeed + Math.floor(time * 6000));
-  const whiteNoise = (prngVal - 0.5) * 0.0003;
+  // Deterministic Box-Muller Gaussian white noise component (~0.0001 AU RMS)
+  const u1 = Math.max(1e-10, lcgRandom(baseSeed + Math.floor(time * 6000)));
+  const u2 = lcgRandom(baseSeed + Math.floor(time * 6000) + 1);
+  const gaussianVal = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+  const whiteNoise = gaussianVal * 0.0001;
 
   // Thermal drift (slow 8-minute sinusoidal period, amplitude 0.0002 AU)
   const thermalDrift = Math.sin((2 * Math.PI * time) / 8.0) * 0.0002;

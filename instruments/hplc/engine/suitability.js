@@ -12,7 +12,7 @@ export function calculatePeakWidths(sigma) {
   return {
     widthBase: 4 * sigma,
     widthHalf: 2.3548 * sigma,
-    widthFivePercent: 4.30 * sigma
+    widthFivePercent: 4.8955 * sigma // Theoretical Gaussian width at 5% height: 2 * sqrt(2 * ln(20)) * sigma
   };
 }
 
