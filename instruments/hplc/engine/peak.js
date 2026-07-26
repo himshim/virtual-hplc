@@ -1,18 +1,24 @@
-import { getTemperatureVanDeemterParams } from './temperature.js';
+import { TransportEngine } from './transportEngine.js';
 
 export const COLUMN_LENGTH_MM = 150;
 
 /**
- * Calculates Peak Broadening (Sigma) using physical Van Deemter model with temperature scaling.
+ * Calculates Peak Broadening (Sigma) using Phase C TransportEngine (Van Deemter + Extra-Column Volume Dispersion).
  * @param {number} tR - Retention time in minutes
  * @param {number} flowRate - mL/min
  * @param {number} [tempCelsius=25] - Column temperature in °C
+ * @param {number} [columnLengthMm=150] - Column length in mm
  * @returns {number} Standard deviation sigma in minutes
  */
-export function getPeakSigma(tR, flowRate, tempCelsius = 25) {
-  const H = getTemperatureVanDeemterParams(tempCelsius, flowRate);
-  const N = COLUMN_LENGTH_MM / H;
-  return tR / Math.sqrt(N);
+export function getPeakSigma(tR, flowRate, tempCelsius = 25, columnLengthMm = 150) {
+  const engine = new TransportEngine();
+  const patch = engine.process({
+    tR,
+    flowRate,
+    temperature: tempCelsius,
+    columnLengthMm
+  });
+  return patch.sigmaTotal;
 }
 
 /**
