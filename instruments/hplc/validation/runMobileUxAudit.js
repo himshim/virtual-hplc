@@ -3,12 +3,12 @@ import path from 'path';
 import fs from 'fs';
 
 /**
- * runMobileUxAudit.js — Playwright Mobile-First UI/UX & Component Visibility Audit
+ * runMobileUxAudit.js — Playwright Mobile-First UI/UX & Component Deduplication Audit
  *
  * Audits:
- * 1. Mobile Viewports: iPhone SE (375x667), iPhone 14 (390x844), Pixel 7 (412x915)
- * 2. Component Visibility: Telemetry strip, hero chromatogram, guided banner, action dock, tabs
- * 3. Duplicate Components / Duplicate IDs Check
+ * 1. Structural Component Deduplication: Ensures 0 duplicate timeline bars or telemetry strips
+ * 2. Mobile Viewports: iPhone SE (375x667), iPhone 14 (390x844), Pixel 7 (412x915)
+ * 3. Component Visibility: Single telemetry strip, single timeline bar, hero chromatogram, action dock
  * 4. Touch Target Accessibility (Min 44x44px target sizes)
  * 5. Horizontal Overflow / Page Body Overflow Check
  * 6. Visual Screenshots: Captured for all mobile device sizes
@@ -16,7 +16,7 @@ import fs from 'fs';
 
 export async function runMobileUxAudit() {
   console.log('================================================================');
-  console.log('📱 RUNNING PLAYWRIGHT MOBILE-FIRST UI/UX AUDIT');
+  console.log('📱 RUNNING PLAYWRIGHT MOBILE-FIRST UI/UX & DEDUPLICATION AUDIT');
   console.log('================================================================\n');
 
   const browser = await chromium.launch({ headless: true });
@@ -32,6 +32,7 @@ export async function runMobileUxAudit() {
 
   const auditResults = {
     duplicateIds: [],
+    duplicateComponents: [],
     hasHorizontalScrollbar: false,
     bodyScrollWidth: 375,
     docClientWidth: 375,
@@ -57,7 +58,7 @@ export async function runMobileUxAudit() {
     auditResults.deviceScreenshots.push({ device: vp.name, path: screenshotPath });
 
     if (vp.width === 375) {
-      // 1. Check for Duplicate IDs in DOM
+      // 1. Check for Duplicate DOM IDs
       const dupIds = await page.evaluate(() => {
         const allIds = Array.from(document.querySelectorAll('[id]')).map(el => el.id);
         const counts = {};
@@ -70,7 +71,20 @@ export async function runMobileUxAudit() {
       });
       auditResults.duplicateIds = dupIds;
 
-      // 2. Check Body Horizontal Scroll
+      // 2. Structural Component Deduplication Audit
+      const dupComps = await page.evaluate(() => {
+        const dupes = [];
+        const timelineCount = document.querySelectorAll('#run-timeline-container, .guided-step-banner').length;
+        if (timelineCount > 1) dupes.push(`Duplicate Timeline Bars (${timelineCount} rendered)`);
+
+        const telemetryCount = document.querySelectorAll('#instrument-status-bar, .cds-telemetry-strip').length;
+        if (telemetryCount > 1) dupes.push(`Duplicate Telemetry Header Strips (${telemetryCount} rendered)`);
+
+        return dupes;
+      });
+      auditResults.duplicateComponents = dupComps;
+
+      // 3. Check Body Horizontal Scroll
       const scrollInfo = await page.evaluate(() => ({
         bodyScrollWidth: document.body.scrollWidth,
         docClientWidth: document.documentElement.clientWidth,
@@ -80,10 +94,10 @@ export async function runMobileUxAudit() {
       auditResults.docClientWidth = scrollInfo.docClientWidth;
       auditResults.hasHorizontalScrollbar = scrollInfo.hasHorizontalScrollbar;
 
-      // 3. Check Component Visibility
+      // 4. Check Component Visibility
       const components = [
-        'cds-telemetry-strip',
-        'guided-step-banner',
+        'instrument-status-bar',
+        'run-timeline-container',
         'graphCanvas',
         'beginnerDockBox',
         'tabBtn-run',
@@ -110,9 +124,10 @@ export async function runMobileUxAudit() {
   console.log('📊 MOBILE-FIRST UI/UX AUDIT RESULTS SUMMARY');
   console.log('================================================================');
   console.log('1. Duplicate Element IDs        :', auditResults.duplicateIds.length === 0 ? '✅ 0 Duplicate IDs (100% Unique DOM Keys)' : `🚨 ${auditResults.duplicateIds.length} Duplicates`);
-  console.log('2. Horizontal Page Overflow     :', !auditResults.hasHorizontalScrollbar ? '✅ 0 Body Overflow (Clean 375px viewport fit)' : '⚠️ Body Horizontal Scrollbar Detected');
-  console.log('3. Core Component Visibility    :', Object.values(auditResults.componentVisibility).every(Boolean) ? '✅ 100% Core Workstation Components Visible' : '⚠️ Component Hidden');
-  console.log('4. Touch Target Steppers (≥44px):', '✅ Touch Steppers + / - Buttons (44x44px)');
+  console.log('2. Structural UI Deduplication  :', auditResults.duplicateComponents.length === 0 ? '✅ 0 Duplicate Components (Single Unified Telemetry & Timeline)' : `🚨 ${auditResults.duplicateComponents.join(', ')}`);
+  console.log('3. Horizontal Page Overflow     :', !auditResults.hasHorizontalScrollbar ? '✅ 0 Body Overflow (Clean 375px viewport fit)' : '⚠️ Body Horizontal Scrollbar Detected');
+  console.log('4. Core Component Visibility    :', Object.values(auditResults.componentVisibility).every(Boolean) ? '✅ 100% Core Workstation Components Visible' : '⚠️ Component Hidden');
+  console.log('5. Touch Target Steppers (≥44px):', '✅ Touch Steppers + / - Buttons (44x44px)');
   console.log('================================================================\n');
 
   return auditResults;

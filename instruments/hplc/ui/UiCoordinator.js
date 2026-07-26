@@ -35,14 +35,11 @@ export class UiCoordinator {
       if (this.views.controlsView) this.views.controlsView.updateControlsForState(newState);
       if (this.views.statusBar)    this.views.statusBar.update({ status: newState });
       if (this.views.runTimeline)  this._updateTimelinePhase(newState);
-      this._updateCdsStateVal(newState);
-      this._updateStepHighlight(newState);
     });
 
     bus.on(HPLC_EVENTS.PRESSURE_CHANGED, ({ pressure }) => {
       if (this.views.displayView)  this.views.displayView.setPressure(pressure);
       if (this.views.statusBar)    this.views.statusBar.update({ pressureBar: pressure });
-      this._updateCdsPressureVal(pressure);
     });
 
     bus.on(HPLC_EVENTS.WAVELENGTH_CHANGED, ({ wavelengthNm }) => {
@@ -142,16 +139,6 @@ export class UiCoordinator {
     if (acqLabel) acqLabel.textContent = text;
   }
 
-  _updateCdsStateVal(state) {
-    const cdsState = document.getElementById('cdsStateVal');
-    if (cdsState) cdsState.textContent = `● ${state}`;
-  }
-
-  _updateCdsPressureVal(pressure) {
-    const cdsP = document.getElementById('cdsPressureVal');
-    if (cdsP) cdsP.textContent = `${pressure.toFixed(1)} bar`;
-  }
-
   _updateTimelinePhase(state) {
     if (!this.views.runTimeline) return;
     const phaseMap = {
@@ -163,19 +150,5 @@ export class UiCoordinator {
       COMPLETED:    'complete'
     };
     if (phaseMap[state]) this.views.runTimeline.setPhase(phaseMap[state]);
-  }
-
-  _updateStepHighlight(state) {
-    const stepMap = {
-      PRIMING: 1, EQUILIBRATING: 2, READY: 3, INJECTING: 3, RUNNING: 4, COMPLETED: 5
-    };
-    const activeNum = stepMap[state] || 1;
-    for (let i = 1; i <= 5; i++) {
-      const el = document.getElementById(`gstep-${i}`);
-      if (!el) continue;
-      el.classList.remove('active', 'complete');
-      if (i < activeNum)        el.classList.add('complete');
-      else if (i === activeNum) el.classList.add('active');
-    }
   }
 }

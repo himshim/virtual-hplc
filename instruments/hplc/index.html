@@ -61,59 +61,10 @@
   <!-- TAB 1: RUN (Primary Landing View) -->
   <div id="tab-run" class="tab-panel active" role="tabpanel" aria-label="Run View">
 
-    <!-- Sprint U1: Workstation Telemetry Header Strip -->
-    <div class="cds-telemetry-strip" id="cds-telemetry-strip" role="region" aria-label="CDS Telemetry Dashboard">
-      <div class="cds-telemetry-item">
-        <span class="cds-telemetry-label">System State</span>
-        <span id="cdsStateVal" class="cds-telemetry-val">● IDLE</span>
-      </div>
-      <div class="cds-telemetry-item">
-        <span class="cds-telemetry-label">Pressure</span>
-        <span id="cdsPressureVal" class="cds-telemetry-val">0.0 bar</span>
-      </div>
-      <div class="cds-telemetry-item">
-        <span class="cds-telemetry-label">Flow Rate</span>
-        <span id="cdsFlowVal" class="cds-telemetry-val">1.00 mL/min</span>
-        <span class="cds-badge-on">Flow Stable ✓</span>
-      </div>
-      <div class="cds-telemetry-item">
-        <span class="cds-telemetry-label">UV Wavelength</span>
-        <span id="cdsUvVal" class="cds-telemetry-val">254 nm</span>
-        <span class="cds-badge-on">UV Lamp ● ON</span>
-      </div>
-      <div class="cds-telemetry-item">
-        <span class="cds-telemetry-label">Column Oven</span>
-        <span id="cdsTempVal" class="cds-telemetry-val">25.0 °C</span>
-      </div>
-    </div>
-
-    <!-- Sprint U4: Guided Step Unlock Banner -->
-    <div class="guided-step-banner" id="guided-step-banner" role="progressbar" aria-label="Guided experiment progress">
-      <div class="guided-step-item active" id="gstep-1">
-        <span>① Start Pump</span>
-      </div>
-      <span class="guided-step-arrow">➔</span>
-      <div class="guided-step-item" id="gstep-2">
-        <span>② Wait for Ready</span>
-      </div>
-      <span class="guided-step-arrow">➔</span>
-      <div class="guided-step-item" id="gstep-3">
-        <span>③ Inject Sample</span>
-      </div>
-      <span class="guided-step-arrow">➔</span>
-      <div class="guided-step-item" id="gstep-4">
-        <span>④ Watch Separation</span>
-      </div>
-      <span class="guided-step-arrow">➔</span>
-      <div class="guided-step-item" id="gstep-5">
-        <span>⑤ View Report</span>
-      </div>
-    </div>
-
-    <!-- P7: Instrument Status Bar Strip -->
+    <!-- Single Authoritative Instrument Telemetry Bar -->
     <div id="instrument-status-bar" style="margin-bottom:10px;" aria-live="polite" aria-label="Instrument status"></div>
 
-    <!-- P7: Run Acquisition Timeline -->
+    <!-- Single Authoritative Method Acquisition Timeline -->
     <div id="run-timeline-container"></div>
 
     <!-- Replay Strip (shown after first run) -->
