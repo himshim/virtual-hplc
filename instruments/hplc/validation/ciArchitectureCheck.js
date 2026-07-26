@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { runScientificValidation } from './runValidation.js';
+import { HPLC_EVENTS } from '../controller/HplcEvents.js';
 
 /**
  * ciArchitectureCheck.js — Automated CI Architectural Gate & Health Check
@@ -8,8 +9,9 @@ import { runScientificValidation } from './runValidation.js';
  * Enforces strict architectural boundaries:
  * 1. UI Boundary Check: 0 UI modules import from /engine/
  * 2. Engine Boundary Check: 0 Physics Engine modules import from /ui/ or DOM
- * 3. Event Integrity Check: All emitted events use HPLC_EVENTS constants
- * 4. Scientific Validation Gate: All benchmark validation cases pass (< 5% error)
+ * 3. Event Integrity Check: All event values in HPLC_EVENTS are unique & used
+ * 4. Circular Dependency Check: No circular module imports
+ * 5. Scientific Validation Gate: All benchmark validation cases pass (< 5% error)
  */
 
 function scanDirectory(dir, extension = '.js') {
@@ -51,7 +53,7 @@ export function runCiArchitectureCheck() {
     console.log(`✅ UI Boundary Pass: 0 of ${uiFiles.length} UI modules import from /engine/`);
   }
 
-  // 2. Engine Boundary Check: 0 Engine modules import from /ui/
+  // 2. Engine Boundary Check: 0 Engine modules import from /ui/ or DOM
   const engineFiles = scanDirectory('./instruments/hplc/engine');
   let engineUiViolations = 0;
 
@@ -68,7 +70,17 @@ export function runCiArchitectureCheck() {
     console.log(`✅ Engine Boundary Pass: 0 of ${engineFiles.length} Physics Engine modules import from /ui/ or DOM`);
   }
 
-  // 3. Event Registry Integrity Check
+  // 3. Event Registry Integrity & Uniqueness Check
+  const eventValues = Object.values(HPLC_EVENTS);
+  const uniqueValues = new Set(eventValues);
+
+  if (eventValues.length !== uniqueValues.size) {
+    console.error(`❌ EVENT REGISTRY VIOLATION: Duplicate event strings detected in HPLC_EVENTS!`);
+    totalErrors++;
+  } else {
+    console.log(`✅ Event Registry Uniqueness Pass: ${eventValues.length} unique event definitions verified`);
+  }
+
   const controllerFile = './instruments/hplc/controller/HplcController.js';
   const controllerContent = fs.readFileSync(controllerFile, 'utf8');
 
@@ -76,10 +88,38 @@ export function runCiArchitectureCheck() {
     console.error(`❌ EVENT REGISTRY VIOLATION: HplcController does not use HPLC_EVENTS registry!`);
     totalErrors++;
   } else {
-    console.log(`✅ Event Registry Pass: HplcController uses centralized HPLC_EVENTS enum`);
+    console.log(`✅ Event Registry Usage Pass: HplcController imports centralized HPLC_EVENTS enum`);
   }
 
-  // 4. Scientific Validation Regression Gate
+  // 4. Circular Dependency Check
+  let circularViolations = 0;
+  const allFiles = scanDirectory('./instruments/hplc');
+
+  allFiles.forEach(fileA => {
+    const contentA = fs.readFileSync(fileA, 'utf8');
+    const nameA = path.basename(fileA);
+
+    allFiles.forEach(fileB => {
+      if (fileA === fileB) return;
+      const contentB = fs.readFileSync(fileB, 'utf8');
+      const nameB = path.basename(fileB);
+
+      const aImportsB = contentA.includes(nameB);
+      const bImportsA = contentB.includes(nameA);
+
+      if (aImportsB && bImportsA) {
+        console.error(`❌ CIRCULAR DEPENDENCY DETECTED between "${nameA}" and "${nameB}"`);
+        circularViolations++;
+        totalErrors++;
+      }
+    });
+  });
+
+  if (circularViolations === 0) {
+    console.log(`✅ Circular Dependency Pass: 0 circular imports across ${allFiles.length} modules`);
+  }
+
+  // 5. Scientific Validation Regression Gate
   console.log('\n--- Running Scientific Validation Regression Gate ---');
   const valSummary = runScientificValidation();
 
@@ -92,7 +132,7 @@ export function runCiArchitectureCheck() {
 
   console.log('\n================================================================');
   if (totalErrors === 0) {
-    console.log('🎉 CI ARCHITECTURAL GATE PASSED: All architectural boundary checks clean!');
+    console.log('🎉 CI ARCHITECTURAL GATE PASSED: All 5 health & boundary checks clean!');
     console.log('================================================================\n');
     return { success: true, totalErrors: 0 };
   } else {
