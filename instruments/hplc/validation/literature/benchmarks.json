@@ -1,0 +1,85 @@
+{
+  "suite": "HPLC Physical Physics & Literature Method Validation Suite",
+  "version": "1.4.0",
+  "date": "2026-07-26",
+  "passThresholdPercent": 5.0,
+  "benchmarks": [
+    {
+      "id": "USP_ANALGESIC_MIXTURE",
+      "paper": "USP-NF Method for Analgesic Mixture (C18, 150x4.6mm, 5um, 40% B, pH 3.0, 1.0 mL/min, 25°C, 254nm)",
+      "method": {
+        "columnLengthMm": 150,
+        "particleSizeUm": 5.0,
+        "innerDiameterMm": 4.6,
+        "flowRate": 1.0,
+        "organicPercent": 40.0,
+        "pH": 3.0,
+        "temperature": 25.0,
+        "wavelengthNm": 254
+      },
+      "compounds": [
+        {
+          "name": "Paracetamol (Acetaminophen)",
+          "kw": 9.5,
+          "S": 2.72,
+          "expectedRetentionTime": 2.45,
+          "expectedPeakWidth": 0.08,
+          "expectedTailingFactor": 1.05,
+          "expectedPlates": 8200
+        },
+        {
+          "name": "Caffeine",
+          "kw": 51.0,
+          "S": 3.65,
+          "expectedRetentionTime": 3.82,
+          "expectedPeakWidth": 0.10,
+          "expectedTailingFactor": 1.08,
+          "expectedPlates": 9100
+        },
+        {
+          "name": "Aspirin (Acetylsalicylic Acid)",
+          "kw": 185.5,
+          "S": 4.58,
+          "expectedRetentionTime": 5.15,
+          "expectedPeakWidth": 0.12,
+          "expectedTailingFactor": 1.12,
+          "expectedPlates": 8800
+        }
+      ]
+    },
+    {
+      "id": "NSAID_SEPARATION",
+      "paper": "Journal of Chromatography A: RP-HPLC of NSAIDs (C18, 150x4.6mm, 5um, 55% B, pH 2.5, 1.2 mL/min, 30°C, 230nm)",
+      "method": {
+        "columnLengthMm": 150,
+        "particleSizeUm": 5.0,
+        "innerDiameterMm": 4.6,
+        "flowRate": 1.2,
+        "organicPercent": 55.0,
+        "pH": 2.5,
+        "temperature": 30.0,
+        "wavelengthNm": 230
+      },
+      "compounds": [
+        {
+          "name": "Naproxen",
+          "kw": 222.0,
+          "S": 3.85,
+          "expectedRetentionTime": 3.10,
+          "expectedPeakWidth": 0.08,
+          "expectedTailingFactor": 1.06,
+          "expectedPlates": 10500
+        },
+        {
+          "name": "Ibuprofen",
+          "kw": 1380.0,
+          "S": 4.70,
+          "expectedRetentionTime": 5.40,
+          "expectedPeakWidth": 0.11,
+          "expectedTailingFactor": 1.10,
+          "expectedPlates": 9800
+        }
+      ]
+    }
+  ]
+}
