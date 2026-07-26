@@ -6,19 +6,18 @@ import { getBaselineNoise } from './detector.js';
  * Calculates instantaneous combined detector signal at time t for a given sample composition.
  * @param {number} t - Current time in minutes
  * @param {Object} sampleObj - Sample schema object from database
- * @param {Object} params - { flowRate, organicPercent, sensitivity }
- * @returns {{ signal: number, peakContributions: Array<{compound: string, tR: number, signal: number}> }}
+ * @param {Object} params - { flowRate, organicPercent, sensitivity, temperature }
  */
-export function synthesizeInstantSignal(t, sampleObj, { flowRate, organicPercent, sensitivity }) {
+export function synthesizeInstantSignal(t, sampleObj, { flowRate, organicPercent, sensitivity, temperature = 25 }) {
   const t0 = getDeadTime(flowRate);
   let totalPeakSignal = 0;
   const peakContributions = [];
 
   if (sampleObj && Array.isArray(sampleObj.peaks)) {
     for (const peakDef of sampleObj.peaks) {
-      const k = getRetentionFactor(peakDef.kw, peakDef.S, organicPercent);
+      const k = getRetentionFactor(peakDef.kw, peakDef.S, organicPercent, temperature);
       const tR = getRetentionTime(t0, k);
-      const sigma = getPeakSigma(tR, flowRate);
+      const sigma = getPeakSigma(tR, flowRate, temperature);
       const peakVal = getGaussianHeight(t, tR, sigma, peakDef.height) * sensitivity;
 
       totalPeakSignal += peakVal;

@@ -3,6 +3,8 @@ import { SimulationState } from '../models/SimulationState.js';
 import { Chromatogram } from '../models/Chromatogram.js';
 import { RunResult } from '../models/RunResult.js';
 import { Peak } from '../models/Peak.js';
+import { MethodHistory } from '../models/MethodHistory.js';
+import { MethodComparison } from '../models/MethodComparison.js';
 import { getSample } from '../data/samples.js';
 import { getSystemPressure } from '../engine/pressure.js';
 import { getDeadTime, getRetentionFactor, getRetentionTime } from '../engine/retention.js';
@@ -10,6 +12,9 @@ import { getPeakSigma } from '../engine/peak.js';
 import { isDetectorSaturated } from '../engine/detector.js';
 import { synthesizeInstantSignal } from '../engine/chromatogramEngine.js';
 import { evaluateSystemSuitability, calculatePeakWidths } from '../engine/suitability.js';
+import { getMethodExercise } from '../engine/methodProfiles.js';
+import { analyzeMethodBottlenecks } from '../engine/optimizationEngine.js';
+import { scoreMethodExercise } from '../engine/scoringEngine.js';
 import { MAX_PRESSURE_BAR, TICK_MS, DEFAULT_SPEED, DEBUG } from '../engine/constants.js';
 
 const HPLC_TRANSITION_RULES = {
@@ -33,8 +38,11 @@ export class HplcController extends SimulationController {
     });
 
     this.simState = new SimulationState();
+    this.simState.temperature = 25; // Default 25°C
     this.chromatogram = new Chromatogram();
+    this.methodHistory = new MethodHistory();
     this.criteriaProfile = "USP";
+    this.exerciseProfileId = "QC_ASSAY";
     this.maxRunTimeMinutes = 5.0;
 
     this.updatePressure();
@@ -54,6 +62,11 @@ export class HplcController extends SimulationController {
     this.updatePressure();
   }
 
+  setTemperature(tempCelsius) {
+    this.simState.temperature = Number(tempCelsius);
+    this.updatePressure();
+  }
+
   setSensitivity(sensitivity) {
     this.simState.sensitivity = Number(sensitivity);
   }
@@ -67,8 +80,17 @@ export class HplcController extends SimulationController {
     this.eventBus.emit('criteriaChanged', { criteriaProfile: profileKey });
   }
 
+  setExerciseProfile(exerciseId) {
+    this.exerciseProfileId = exerciseId;
+    this.eventBus.emit('exerciseChanged', { exerciseProfileId: exerciseId });
+  }
+
   updatePressure() {
-    const p = getSystemPressure(this.simState.flowRate, this.simState.organicPercent);
+    const p = getSystemPressure(
+      this.simState.flowRate,
+      this.simState.organicPercent,
+      this.simState.temperature
+    );
     this.simState.pressure = p;
     this.eventBus.emit('pressureChanged', { pressure: p });
 
@@ -110,7 +132,7 @@ export class HplcController extends SimulationController {
 
     if (sampleObj && sampleObj.peaks) {
       for (const p of sampleObj.peaks) {
-        const k = getRetentionFactor(p.kw, p.S, this.simState.organicPercent);
+        const k = getRetentionFactor(p.kw, p.S, this.simState.organicPercent, this.simState.temperature);
         const tR = getRetentionTime(t0, k);
         if (tR > maxTR) maxTR = tR;
       }
@@ -140,7 +162,8 @@ export class HplcController extends SimulationController {
       const synth = synthesizeInstantSignal(this.simState.time, sampleObj, {
         flowRate: this.simState.flowRate,
         organicPercent: this.simState.organicPercent,
-        sensitivity: this.simState.sensitivity
+        sensitivity: this.simState.sensitivity,
+        temperature: this.simState.temperature
       });
 
       this.simState.detectorSignal = synth.signal;
@@ -176,11 +199,11 @@ export class HplcController extends SimulationController {
   completeRun(sampleObj) {
     const t0 = getDeadTime(this.simState.flowRate);
 
-    // 1. Create raw Peak model instances sorted by retention time tR
+    // 1. Create Peak instances sorted by retention time tR
     let peaks = sampleObj.peaks.map(pDef => {
-      const k = getRetentionFactor(pDef.kw, pDef.S, this.simState.organicPercent);
+      const k = getRetentionFactor(pDef.kw, pDef.S, this.simState.organicPercent, this.simState.temperature);
       const tR = getRetentionTime(t0, k);
-      const sigma = getPeakSigma(tR, this.simState.flowRate);
+      const sigma = getPeakSigma(tR, this.simState.flowRate, this.simState.temperature);
       const widths = calculatePeakWidths(sigma);
 
       return new Peak({
@@ -196,27 +219,46 @@ export class HplcController extends SimulationController {
 
     peaks.sort((a, b) => a.tR - b.tR);
 
-    // 2. Evaluate System Suitability & compute k', N, Rs, alpha
+    // 2. Evaluate System Suitability
     const systemSuitability = evaluateSystemSuitability(peaks, this.simState.flowRate, this.criteriaProfile);
 
-    // 3. Compile RunResult
+    // 3. Evaluate Method Development Exercise Profile Optimization & Scoring
+    const exerciseProfile = getMethodExercise(this.exerciseProfileId);
+    const exerciseScore = scoreMethodExercise({ maxPressure: this.simState.pressure, elapsedTime: this.simState.time, peaks }, exerciseProfile);
+    const bottleneckAnalysis = analyzeMethodBottlenecks({ maxPressure: this.simState.pressure, elapsedTime: this.simState.time, methodParams: { flowRate: this.simState.flowRate, organicPercent: this.simState.organicPercent, temperature: this.simState.temperature }, peaks }, exerciseProfile);
+
+    // 4. Compile RunResult
     const runResult = new RunResult({
       sampleName: sampleObj.name,
       methodParams: {
         flowRate: this.simState.flowRate,
         organicPercent: this.simState.organicPercent,
+        temperature: this.simState.temperature,
         sensitivity: this.simState.sensitivity,
         speedMultiplier: this.clock.speedMultiplier,
-        criteriaProfile: this.criteriaProfile
+        criteriaProfile: this.criteriaProfile,
+        exerciseProfileId: this.exerciseProfileId
       },
       peaks,
       elapsedTime: this.simState.time,
       maxPressure: this.simState.pressure,
       warnings: this.simState.warnings,
-      systemSuitability
+      systemSuitability,
+      exerciseScore,
+      bottleneckAnalysis
     });
 
+    // 5. Update Session Run History & Method Comparison
+    const prevRun = this.methodHistory.getLastRun();
+    this.methodHistory.addRun(runResult);
+    const methodComparison = prevRun ? new MethodComparison(prevRun, runResult) : null;
+
     this.stateMachine.transitionTo('COMPLETED');
-    this.eventBus.emit('runCompleted', { runResult });
+    this.eventBus.emit('runCompleted', {
+      runResult,
+      exerciseProfile,
+      methodComparison,
+      methodHistory: this.methodHistory.getRuns()
+    });
   }
 }

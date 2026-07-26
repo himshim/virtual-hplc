@@ -10,11 +10,14 @@ export class ControlsView {
     this.flowVal = document.getElementById("flowVal");
     this.organicInput = document.getElementById("organicInput");
     this.organicVal = document.getElementById("organicVal");
+    this.tempInput = document.getElementById("tempInput");
+    this.tempVal = document.getElementById("tempVal");
     this.sensitivityInput = document.getElementById("sensitivityInput");
     this.sensitivityVal = document.getElementById("sensitivityVal");
     this.compoundSelect = document.getElementById("compoundSelect");
     this.speedSelect = document.getElementById("speedSelect");
     this.profileSelect = document.getElementById("profileSelect");
+    this.exerciseSelect = document.getElementById("exerciseSelect");
     this.pumpBtn = document.getElementById("pumpBtn");
     this.injectBtn = document.getElementById("injectBtn");
 
@@ -35,6 +38,14 @@ export class ControlsView {
         const val = e.target.value;
         if (this.organicVal) this.organicVal.textContent = `${val}%`;
         this.controller.setOrganicPercent(val);
+      };
+    }
+
+    if (this.tempInput) {
+      this.tempInput.oninput = (e) => {
+        const val = e.target.value;
+        if (this.tempVal) this.tempVal.textContent = `${val}°C`;
+        this.controller.setTemperature(val);
       };
     }
 
@@ -64,6 +75,12 @@ export class ControlsView {
       };
     }
 
+    if (this.exerciseSelect) {
+      this.exerciseSelect.onchange = (e) => {
+        this.controller.setExerciseProfile(e.target.value);
+      };
+    }
+
     if (this.pumpBtn) {
       this.pumpBtn.onclick = () => {
         const state = this.controller.getState();
@@ -87,6 +104,7 @@ export class ControlsView {
     
     if (this.flowInput) this.flowInput.disabled = !isPumpOff;
     if (this.organicInput) this.organicInput.disabled = !isPumpOff;
+    if (this.tempInput) this.tempInput.disabled = !isPumpOff;
     if (this.compoundSelect) this.compoundSelect.disabled = (state === 'RUNNING');
     if (this.injectBtn) this.injectBtn.disabled = (state !== 'READY');
     if (this.pumpBtn) {
