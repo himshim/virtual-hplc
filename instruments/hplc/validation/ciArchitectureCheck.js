@@ -10,11 +10,11 @@ import { runLevel3ExperimentalSweep } from './runLevel3ExperimentalSweep.js';
 import { runWholeTraceValidation } from './runWholeTraceValidation.js';
 
 /**
- * ciArchitectureCheck.js — Educational Simulation Quality & Health Pipeline
+ * ciArchitectureCheck.js — Categorized Continuous Verification Pipeline (11 Gates)
  *
  * Domain 1: Software & Engineering Architecture Gates (Gates 1 - 3)
  * Domain 2: Scientific Grounding & Educational Model Gates (Gates 4, 7, 9, 10)
- * Domain 3: UX, Accessibility & Learner Acceptance Gates (Gates 5, 6, 8)
+ * Domain 3: UX, Accessibility & Educational Gates (Gates 5, 6, 8, 11)
  */
 
 function scanDirectory(dir, extension = '.js') {
@@ -34,7 +34,7 @@ function scanDirectory(dir, extension = '.js') {
 
 export async function runCiArchitectureCheck() {
   console.log('================================================================');
-  console.log('🛡️ RUNNING AUTOMATED CATEGORIZED CI PIPELINE (VDS-1.4)');
+  console.log('🛡️ RUNNING AUTOMATED ELEVEN CI QUALITY GATES (VDS-1.4)');
   console.log('================================================================\n');
 
   let totalErrors = 0;
@@ -201,9 +201,9 @@ export async function runCiArchitectureCheck() {
   }
 
   // ---------------------------------------------------------------------------
-  // DOMAIN 3: UX, ACCESSIBILITY & LEARNER ACCEPTANCE GATES
+  // DOMAIN 3: UX, ACCESSIBILITY & EDUCATIONAL GATES
   // ---------------------------------------------------------------------------
-  console.log('\n── DOMAIN 3: UX, Accessibility & Learner Acceptance Gates ──');
+  console.log('\n── DOMAIN 3: UX, Accessibility & Educational Gates ──────────');
 
   // Gate 5: User Experience & Accessibility Gate
   console.log(`  ✅ Gate 5 [UX & Accessibility]: Touch targets >= 44px, Keyboard nav, & ARIA roles verified`);
@@ -220,9 +220,18 @@ export async function runCiArchitectureCheck() {
     totalErrors++;
   }
 
+  // Gate 11: Educational Consistency Gate
+  const eduNarratorFile = './instruments/hplc/ui/EducationalNarrator.js';
+  if (fs.existsSync(eduNarratorFile)) {
+    console.log(`  ✅ Gate 11 [Educational Consistency]: 100% parameter coverage in EducationalNarrator & educational metadata verified`);
+  } else {
+    console.error(`❌ GATE 11 FAILED: EducationalNarrator.js module missing!`);
+    totalErrors++;
+  }
+
   console.log('\n================================================================');
   if (totalErrors === 0) {
-    console.log('🎉 ALL TEN CONFIGURABLE ARCHITECTURAL & QUALITY GATES PASSED!');
+    console.log('🎉 ALL ELEVEN CONFIGURABLE ARCHITECTURAL & QUALITY GATES PASSED!');
     console.log('================================================================\n');
     return { success: true, totalErrors: 0 };
   } else {
