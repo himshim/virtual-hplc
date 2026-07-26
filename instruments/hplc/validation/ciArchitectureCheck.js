@@ -7,11 +7,12 @@ import { HplcController } from '../controller/HplcController.js';
 import { PeakDetectionEngine } from '../engine/peakDetectionEngine.js';
 import { runBrowserAcceptanceTest } from './runBrowserAcceptance.js';
 import { runLevel3ExperimentalSweep } from './runLevel3ExperimentalSweep.js';
+import { runWholeTraceValidation } from './runWholeTraceValidation.js';
 
 /**
  * ciArchitectureCheck.js — Automated CI Architectural Gate & Health Check
  *
- * Enforces nine strict architectural, scientific, live UI, rendering, & behavioral quality gates:
+ * Enforces ten strict architectural, scientific, live UI, rendering, & behavioral quality gates:
  * 1. Architecture Gate: 0 UI->Engine imports, 0 Engine->UI/DOM imports, 0 Circular imports
  * 2. Event Registry Gate: Unique & centralized HPLC_EVENTS definitions
  * 3. Determinism Gate: Bit-identical output given identical seeds
@@ -21,6 +22,7 @@ import { runLevel3ExperimentalSweep } from './runLevel3ExperimentalSweep.js';
  * 7. Live Data Reconciliation Gate: Displayed live peaks == runResult.peaks.length
  * 8. Playwright Visual Acceptance Gate: Full browser UI workflow, screenshots, & zero console errors
  * 9. Level-3 Parameter Sweep Gate: Systematic sweep of flow, organic %B, temp, & pressure linearity
+ * 10. Whole-Trace Digitized Validation Gate: NRMSE < 1.0% & R^2 > 0.999 across full 701-point trace
  */
 
 function scanDirectory(dir, extension = '.js') {
@@ -40,7 +42,7 @@ function scanDirectory(dir, extension = '.js') {
 
 export async function runCiArchitectureCheck() {
   console.log('================================================================');
-  console.log('🛡️ RUNNING AUTOMATED NINE CI QUALITY GATES (VDS-1.4)');
+  console.log('🛡️ RUNNING AUTOMATED TEN CI QUALITY GATES (VDS-1.4)');
   console.log('================================================================\n');
 
   let totalErrors = 0;
@@ -207,9 +209,19 @@ export async function runCiArchitectureCheck() {
     totalErrors++;
   }
 
+  // Gate 10: Whole-Trace Digitized Validation Gate
+  console.log('\n--- Running Whole-Trace Digitized Validation Gate ---');
+  const traceRes = await runWholeTraceValidation();
+  if (traceRes.nrmse < 1.0 && traceRes.r2 > 0.999) {
+    console.log(`✅ Gate 10 [Whole-Trace Digitized Validation]: NRMSE (${traceRes.nrmse.toFixed(3)}%) < 1.0% & R^2 (${traceRes.r2.toFixed(5)}) > 0.999 across ${traceRes.totalPoints} points`);
+  } else {
+    console.error(`❌ GATE 10 FAILED: Whole-trace similarity gate failed!`);
+    totalErrors++;
+  }
+
   console.log('\n================================================================');
   if (totalErrors === 0) {
-    console.log('🎉 ALL NINE CONFIGURABLE ARCHITECTURAL & QUALITY GATES PASSED!');
+    console.log('🎉 ALL TEN CONFIGURABLE ARCHITECTURAL & QUALITY GATES PASSED!');
     console.log('================================================================\n');
     return { success: true, totalErrors: 0 };
   } else {
