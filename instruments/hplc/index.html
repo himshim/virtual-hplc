@@ -344,6 +344,8 @@
     <div id="peakTableContainer"></div>
     <div id="compareContainer"></div>
     <div id="historyContainer"></div>
+    <!-- Sprint E2: Experiment Notebook -->
+    <div id="experiment-notebook-container" style="margin-top:20px;"></div>
   </div>
 
   <!-- TAB 5: LEARN & SCHEMATIC -->
@@ -390,7 +392,8 @@
   import { InteractiveChromatogram } from './ui/InteractiveChromatogram.js';
   // P10 Educational Narrator
   import { EducationalNarrator } from './ui/EducationalNarrator.js';
-  // v1.x Method Replay
+  // Sprint E2 Experiment Notebook & Method Replay
+  import { ExperimentNotebook } from './ui/ExperimentNotebook.js';
   import { MethodReplay } from './ui/MethodReplay.js';
   import { HPLC_EVENTS } from './controller/HplcEvents.js';
   import { UiCoordinator } from './ui/UiCoordinator.js';
@@ -408,8 +411,8 @@
     }
   }
 
-  document.addEventListener("DOMContentLoaded", async () => {
-    await injectDiagramSVG();
+  document.addEventListener("DOMContentLoaded", () => {
+    injectDiagramSVG();
 
     const controller = new HplcController();
     const graphView = new GraphView("graphCanvas");
@@ -418,6 +421,7 @@
     const compareView = new CompareView("compareContainer");
     const historyView = new HistoryView("historyContainer");
     const spectrumView = new SpectrumView("spectrumCanvas");
+    const notebook = new ExperimentNotebook("experiment-notebook-container");
     
     // P3 Registry-Driven Sample Card Browser & Validation Dashboard
     const sampleBrowser = new SampleBrowserComponent("compoundSelect", "sampleGridContainer");
@@ -473,7 +477,7 @@
     const uiCoordinator = new UiCoordinator(controller, {
       graphView, controlsView, displayView, compareView, historyView,
       spectrumView, statusBar, runTimeline, paramImpact, reportCard,
-      validationDashboard, interactiveChromatogram, narrator, methodReplay
+      validationDashboard, interactiveChromatogram, narrator, methodReplay, notebook
     });
 
     // Sync Beginner quick sample dropdown with primary compoundSelect

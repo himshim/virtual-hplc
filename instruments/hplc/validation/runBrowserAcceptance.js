@@ -35,7 +35,11 @@ export async function runBrowserAcceptanceTest() {
     // 1. Startup & Page Load
     console.log('1. Navigating to http://localhost:8000/instruments/hplc/index.html...');
     await page.goto('http://localhost:8000/instruments/hplc/index.html', { waitUntil: 'networkidle' });
-    console.log('   - Page loaded successfully');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload({ waitUntil: 'networkidle' });
+    const runTabBtn = await page.$('#tabBtn-run');
+    if (runTabBtn) await runTabBtn.click();
+    console.log('   - Page loaded & localStorage cleared');
 
     if (consoleErrors.length > 0) {
       console.error('❌ Startup Console Errors:', consoleErrors);
@@ -45,21 +49,13 @@ export async function runBrowserAcceptanceTest() {
 
     // Switch to Standard Mode for full workflow control
     console.log('2. Switching to 🟡 Standard Mode...');
-    const stdBtn = await page.$('.mode-btn[data-mode="standard"]');
-    if (stdBtn) {
-      await stdBtn.click();
-      console.log('   - Mode switched to Standard');
-    }
-    await page.waitForTimeout(300);
+    await page.click('[data-mode="standard"]');
+    await page.waitForSelector('#pumpBtn', { state: 'visible', timeout: 5000 });
+    console.log('   - Mode switched to Standard');
 
     // Select Mixture (4-component assay mixture)
     console.log('3. Selecting Sample...');
-    const beginnerSel = await page.$('#beginnerCompoundSelect');
-    if (beginnerSel && await beginnerSel.isVisible()) {
-      await page.selectOption('#beginnerCompoundSelect', 'mixture');
-    } else {
-      await page.selectOption('#compoundSelect', 'mixture', { force: true });
-    }
+    await page.selectOption('#compoundSelect', 'mixture', { force: true });
     console.log('   - Sample selected: Mixture (all four)');
 
     // 4. Pump START -> Priming

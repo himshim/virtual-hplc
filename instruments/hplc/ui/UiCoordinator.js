@@ -127,6 +127,7 @@ export class UiCoordinator {
       }
 
       if (this.views.narrator) this.views.narrator.onRunCompleted(runResult);
+      if (this.views.notebook) this.views.notebook.attachRunResult(runResult?.id || Date.now(), runResult);
 
       const replayPoints = [...(this.views.graphView?.chart?.data?.datasets?.[0]?.data || [])];
       if (replayPoints.length && runResult?.peaks && this.views.methodReplay) {
