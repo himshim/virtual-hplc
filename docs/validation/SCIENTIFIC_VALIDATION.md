@@ -1,6 +1,15 @@
 # Scientific Validation & Quality Assurance (`VDS-1.4`)
 
-## Educational Fidelity Statement
+## Independent Versioning System
+
+- **Physics Engine Version**: `v1.0` (Public API Frozen)
+- **Validation Dataset Identifier**: `VDS-1.4` (Validation Date: `2026-07-26`)
+- **UI Experience Version**: `v1.1.1` (Active Sprint)
+- **Architecture Constitution**: `v3.0` (`docs/architecture/ARCHITECTURE_CONSTITUTION.md`)
+
+---
+
+## 1. Educational Fidelity Statement
 
 > **Educational Fidelity & Intended Purpose**
 > This simulator is designed to reproduce the qualitative and quantitative behavior of routine RP-HPLC experiments within the validated scope. It is intended for teaching, training, and experimentation in pharmacy, chemistry, and analytical science education.
@@ -9,7 +18,19 @@
 
 ---
 
-## Benchmark Validation Metrics (`VDS-1.4`)
+## 2. Validation Confidence Levels
+
+| Level | Definition | Scope Status |
+| :--- | :--- | :---: |
+| **Implemented** | Model logic exists and runs in codebase | All 24 Engines |
+| **Smoke Tested** | Automated unit tests verify output integrity | All 24 Engines |
+| **Calibrated** | Parameters tuned using published literature constants | Isocratic & LSS Models |
+| **Validated** | Quantitatively compared against literature within benchmark dataset | **5 Analytes (`VDS-1.4`)** |
+| **Cross-Validated**| Verified against multiple independent lab/literature datasets | Planned (`VDS-2.0`) |
+
+---
+
+## 3. Benchmark Validation Metrics (`VDS-1.4`)
 
 | Statistical Metric | Observed Value | Validation Criteria | Status |
 | :--- | :--- | :--- | :---: |
@@ -22,7 +43,19 @@
 
 ---
 
-## Six Automated Continuous Verification Gates
+## 4. Known Deviations & Model Limitations
+
+- **LSS Gradient Model**:
+  - *Confidence Level*: Implemented & Calibrated (Linear Solvent Strength $S, k_0$ model).
+  - *Validation Status*: Partial / Benchmark expansion pending (`VDS-2.0`).
+  - *Expected Behavior*: High accuracy for low-slope linear gradients; non-linear organic modifiers exhibit minor retention deviation.
+- **PDA Photodiode Array**:
+  - *Confidence Level*: Implemented & Calibrated (3D absorbance matrix $A(\lambda, t)$).
+  - *Validation Status*: Spectral shape verified against compound $\lambda_{\max}$; full 3D contour matrix validation pending.
+
+---
+
+## 5. Six Automated Continuous Verification Gates
 
 Automated CLI execution via `node instruments/hplc/validation/ciArchitectureCheck.js`:
 
