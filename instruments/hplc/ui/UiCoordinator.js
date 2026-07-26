@@ -39,6 +39,7 @@ export class UiCoordinator {
       if (this.views.runTimeline)  this._updateTimelinePhase(newState);
       this._updateCdsStateVal(newState);
       this._updateStepHighlight(newState);
+      this._updateFabDockForState(newState);
       const pipState = document.getElementById('pipStateVal');
       if (pipState) pipState.textContent = `● ${newState}`;
     });
@@ -234,24 +235,43 @@ export class UiCoordinator {
     }
   }
 
-  /** Render EducationalExplanation payload in modal */
+  /** Render EducationalExplanation payload in contextual Bottom Sheet */
   showWhyModal(paramId) {
     const exp = EducationalEngine.getParameterExplanation(paramId);
-    const overlay = document.getElementById('whyModalOverlay');
-    if (!overlay || !exp) return;
+    if (!exp) return;
 
-    document.getElementById('whyParamName').textContent = exp.parameter;
-    document.getElementById('whyPhysicalEffect').textContent = exp.physicalEffect;
-    document.getElementById('whyObservedEffect').textContent = exp.observedEffect;
-    document.getElementById('whyLearnerOutcome').textContent = exp.learnerOutcome;
-    document.getElementById('whyPracticalTip').textContent = exp.practicalTip || 'N/A';
+    const htmlContent = `
+      <div style="space-y:12px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+        <div style="margin-bottom:12px;">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--brand-primary); font-weight:700; margin-bottom:4px;">Physical Effect</div>
+          <p style="margin:0; font-size:0.9rem; color:var(--text-secondary); line-height:1.5;">${exp.physicalEffect}</p>
+        </div>
 
-    const refList = document.getElementById('whyReferences');
-    if (refList) {
-      refList.innerHTML = (exp.references || []).map(r => `<li>${r}</li>`).join('');
-    }
+        <div style="margin-bottom:12px;">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:#8b5cf6; font-weight:700; margin-bottom:4px;">Observed Effect</div>
+          <p style="margin:0; font-size:0.9rem; color:var(--text-secondary); line-height:1.5;">${exp.observedEffect}</p>
+        </div>
 
-    overlay.style.display = 'flex';
+        <div style="margin-bottom:12px;">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--brand-success); font-weight:700; margin-bottom:4px;">Learner Outcome</div>
+          <p style="margin:0; font-size:0.9rem; color:var(--text-secondary); line-height:1.5;">${exp.learnerOutcome}</p>
+        </div>
+
+        <div style="margin-bottom:12px; background:#f0f9ff; border-left:3px solid var(--brand-primary); padding:10px 12px; border-radius:4px;">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--brand-primary); font-weight:700; margin-bottom:2px;">💡 Practical Tip</div>
+          <p style="margin:0; font-size:0.85rem; color:var(--text-primary);">${exp.practicalTip || 'N/A'}</p>
+        </div>
+
+        <div>
+          <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:700; margin-bottom:4px;">References</div>
+          <ul style="margin:0; padding-left:18px; font-size:0.78rem; color:var(--text-secondary); font-family:var(--font-mono);">
+            ${(exp.references || []).map(r => `<li>${r}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    `;
+
+    this.openBottomSheet(`Why? ${exp.parameter}`, '❓', htmlContent);
   }
 
   /** Sprint E3: Bind Floating Quick Action Dock & Off-Canvas Drawers */
@@ -328,13 +348,14 @@ export class UiCoordinator {
     drawer.classList.add('active');
   }
 
-  /** Sprint U5: Persistent Context Sticky Telemetry & Live PiP Card */
+  /** Sprint U5 & U6: Morphing Single-Graph PiP & Contextual Bottom Sheets */
   bindStickyObserverAndPip() {
     this.pipDataPoints = [];
     const heroStrip = document.getElementById('cds-telemetry-strip');
-    const heroGraph = document.getElementById('graphCanvas');
+    const chromContainer = document.querySelector('.chromatogram-container');
     const stickyPip = document.getElementById('stickyTelemetryPip');
-    const livePip = document.getElementById('liveChromatogramPip');
+    const bottomSheetBackdrop = document.getElementById('bottomSheetBackdrop');
+    const closeBottomSheetBtn = document.getElementById('closeBottomSheetBtn');
 
     if (heroStrip && stickyPip && 'IntersectionObserver' in window) {
       const observer = new IntersectionObserver((entries) => {
@@ -349,26 +370,60 @@ export class UiCoordinator {
       observer.observe(heroStrip);
     }
 
-    if (heroGraph && livePip && 'IntersectionObserver' in window) {
-      const graphObserver = new IntersectionObserver((entries) => {
+    // Single GraphView Morphing PiP Observer
+    if (chromContainer && 'IntersectionObserver' in window) {
+      const morphObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           const isRunning = this.controller.getState() === 'RUNNING';
           if (!entry.isIntersecting && isRunning) {
-            livePip.classList.add('visible');
+            chromContainer.classList.add('morph-pip-active');
           } else {
-            livePip.classList.remove('visible');
+            chromContainer.classList.remove('morph-pip-active');
           }
         });
-      }, { threshold: 0.2 });
-      graphObserver.observe(heroGraph);
-    }
+      }, { threshold: 0.1 });
+      morphObserver.observe(chromContainer);
 
-    if (livePip) {
-      livePip.addEventListener('click', () => {
-        const graph = document.getElementById('graphCanvas');
-        if (graph) graph.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      chromContainer.addEventListener('click', (e) => {
+        if (chromContainer.classList.contains('morph-pip-active')) {
+          e.stopPropagation();
+          chromContainer.classList.remove('morph-pip-active');
+          chromContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       });
     }
+
+    const closeSheet = () => {
+      const sheet = document.getElementById('bottomSheet');
+      if (sheet) sheet.classList.remove('active');
+      if (bottomSheetBackdrop) bottomSheetBackdrop.classList.remove('active');
+    };
+
+    if (closeBottomSheetBtn) closeBottomSheetBtn.addEventListener('click', closeSheet);
+    if (bottomSheetBackdrop) bottomSheetBackdrop.addEventListener('click', closeSheet);
+  }
+
+  openBottomSheet(title, icon, contentHtmlOrElement) {
+    const sheet = document.getElementById('bottomSheet');
+    const backdrop = document.getElementById('bottomSheetBackdrop');
+    const titleText = document.getElementById('bottomSheetTitleText');
+    const iconEl = document.getElementById('bottomSheetIcon');
+    const sheetBody = document.getElementById('bottomSheetBody');
+
+    if (!sheet || !backdrop || !sheetBody) return;
+
+    if (titleText) titleText.textContent = title;
+    if (iconEl) iconEl.textContent = icon;
+
+    sheetBody.innerHTML = '';
+    if (typeof contentHtmlOrElement === 'string') {
+      sheetBody.innerHTML = contentHtmlOrElement;
+    } else if (contentHtmlOrElement) {
+      sheetBody.appendChild(contentHtmlOrElement.cloneNode(true));
+    }
+
+    backdrop.classList.add('active');
+    sheet.classList.add('active');
   }
 
   /** Render real-time mini sparkline trace inside PiP Canvas */
@@ -396,5 +451,30 @@ export class UiCoordinator {
       else ctx.lineTo(x, y);
     });
     ctx.stroke();
+  }
+
+  /** Update Floating Quick Dock labeled chips dynamically based on experiment state */
+  _updateFabDockForState(state) {
+    const fabMethod = document.getElementById('fabMethodBtn');
+    const fabSample = document.getElementById('fabSampleBtn');
+    const fabWhy = document.getElementById('fabWhyBtn');
+    const fabNotebook = document.getElementById('fabNotebookBtn');
+
+    if (state === 'RUNNING' || state === 'INJECTING') {
+      if (fabMethod) fabMethod.style.display = 'none';
+      if (fabSample) fabSample.style.display = 'none';
+      if (fabWhy)    fabWhy.style.display = 'inline-flex';
+      if (fabNotebook) fabNotebook.style.display = 'inline-flex';
+    } else if (state === 'COMPLETED') {
+      if (fabMethod) fabMethod.style.display = 'inline-flex';
+      if (fabSample) fabSample.style.display = 'inline-flex';
+      if (fabWhy)    fabWhy.style.display = 'inline-flex';
+      if (fabNotebook) fabNotebook.style.display = 'inline-flex';
+    } else {
+      if (fabMethod) fabMethod.style.display = 'inline-flex';
+      if (fabSample) fabSample.style.display = 'inline-flex';
+      if (fabWhy)    fabWhy.style.display = 'inline-flex';
+      if (fabNotebook) fabNotebook.style.display = 'inline-flex';
+    }
   }
 }

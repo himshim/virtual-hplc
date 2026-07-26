@@ -961,5 +961,19 @@
     <canvas id="pipSparklineCanvas" class="pip-sparkline" width="200" height="48"></canvas>
   </div>
 
+  <!-- Sprint U6: Contextual Bottom Sheet Overlay -->
+  <div id="bottomSheetBackdrop" class="bottom-sheet-backdrop" aria-hidden="true"></div>
+  <div id="bottomSheet" class="bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="bottomSheetTitle">
+    <div class="bottom-sheet-handle"></div>
+    <div class="bottom-sheet-header">
+      <h3 id="bottomSheetTitle" style="margin:0; font-size:1.05rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+        <span id="bottomSheetIcon">❓</span>
+        <span id="bottomSheetTitleText">Educational Explanation</span>
+      </h3>
+      <button id="closeBottomSheetBtn" class="drawer-close-btn" aria-label="Close sheet">✕</button>
+    </div>
+    <div id="bottomSheetBody" class="bottom-sheet-body"></div>
+  </div>
+
 </body>
 </html>
