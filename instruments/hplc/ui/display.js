@@ -93,17 +93,21 @@ export class DisplayView {
       `;
 
       runResult.peaks.forEach((peak, index) => {
-        const rsDisplay = peak.resolution !== null ? peak.resolution.toFixed(2) : "—";
-        const alphaDisplay = peak.selectivity !== null ? peak.selectivity.toFixed(2) : "—";
+        const tRVal = (peak.tR !== undefined && peak.tR !== null) ? peak.tR.toFixed(2) : "0.00";
+        const heightVal = (peak.height !== undefined && peak.height !== null) ? peak.height.toFixed(3) : "0.000";
+        const kVal = (peak.kPrime !== undefined && peak.kPrime !== null) ? peak.kPrime.toFixed(2) : "0.00";
+        const platesVal = (peak.plates !== undefined && peak.plates !== null) ? Math.round(peak.plates) : 0;
+        const rsDisplay = (peak.resolution !== undefined && peak.resolution !== null) ? peak.resolution.toFixed(2) : "—";
+        const alphaDisplay = (peak.selectivity !== undefined && peak.selectivity !== null) ? peak.selectivity.toFixed(2) : "—";
 
         html += `
           <tr style="border-bottom:1px solid var(--border-subtle);">
             <td style="padding:8px;">${index + 1}</td>
             <td style="padding:8px; font-weight:600;">${peak.compound}</td>
-            <td style="padding:8px;">${peak.tR.toFixed(2)}</td>
-            <td style="padding:8px;">${peak.height.toFixed(3)}</td>
-            <td style="padding:8px;">${peak.kPrime.toFixed(2)}</td>
-            <td style="padding:8px;">${Math.round(peak.plates)}</td>
+            <td style="padding:8px;">${tRVal}</td>
+            <td style="padding:8px;">${heightVal}</td>
+            <td style="padding:8px;">${kVal}</td>
+            <td style="padding:8px;">${platesVal}</td>
             <td style="padding:8px; font-weight:${peak.resolution && peak.resolution < 1.5 ? 'bold' : 'normal'}; color:${peak.resolution && peak.resolution < 1.5 ? 'var(--brand-danger)' : 'inherit'};">
               ${rsDisplay}
             </td>

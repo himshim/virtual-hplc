@@ -18,6 +18,7 @@ import { evaluateSystemSuitability, calculatePeakWidths } from '../engine/suitab
 import { getMethodExercise } from '../engine/methodProfiles.js';
 import { analyzeMethodBottlenecks } from '../engine/optimizationEngine.js';
 import { scoreMethodExercise } from '../engine/scoringEngine.js';
+import { PeakDetectionEngine } from '../engine/peakDetectionEngine.js';
 import { MAX_PRESSURE_BAR, TICK_MS, DEFAULT_SPEED, DEBUG } from '../engine/constants.js';
 
 const HPLC_TRANSITION_RULES = {
@@ -234,35 +235,24 @@ export class HplcController extends SimulationController {
     let peaks = [];
     const educationalExplanations = [];
 
+    const expectedAnalytes = [];
     if (sampleEntity && sampleEntity.components) {
-      peaks = sampleEntity.components.map(compDef => {
+      sampleEntity.components.forEach(compDef => {
         const compound = compDef.compound;
         const k = getObservedRetentionFactor(compound, this.simState.organicPercent, this.simState.temperature, this.simState.pH, bufferEntity);
         const tR = getRetentionTime(t0, k);
         const sigma = getPeakSigma(tR, this.simState.flowRate, this.simState.temperature);
-        const widths = calculatePeakWidths(sigma);
-        const height = UV_DETECTOR_PLUGIN.detect(compound, {
-          wavelengthNm: this.simState.wavelengthNm,
-          sensitivity: this.simState.sensitivity,
-          concentration: compDef.concentration || 1.0
-        });
+        expectedAnalytes.push({ compound, expectedTR: tR, sigma });
 
-        // Solution chemistry evaluation & educational explanations
         const solEval = SolutionChemistryEngine.evaluateSolution(compound, k, this.simState.pH, bufferEntity, this.simState.wavelengthNm);
         if (solEval.explanation) educationalExplanations.push(solEval.explanation);
         if (solEval.warnings) solEval.warnings.forEach(w => this.simState.addWarning(w));
-
-        return new Peak({
-          compound: compound.name,
-          tR,
-          sigma,
-          height,
-          widthBase: widths.widthBase,
-          widthHalf: widths.widthHalf,
-          widthFivePercent: widths.widthFivePercent
-        });
       });
     }
+
+    // CDS Signal-First Peak Detection Engine
+    const points = this.chromatogram.getPoints();
+    peaks = PeakDetectionEngine.detectPeaks(points, expectedAnalytes);
 
     peaks.sort((a, b) => a.tR - b.tR);
 
