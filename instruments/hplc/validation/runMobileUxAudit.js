@@ -94,10 +94,10 @@ export async function runMobileUxAudit() {
       auditResults.docClientWidth = scrollInfo.docClientWidth;
       auditResults.hasHorizontalScrollbar = scrollInfo.hasHorizontalScrollbar;
 
-      // 4. Check Component Visibility
+      // 4. Check Component Visibility for NEW Modern Workstation Components
       const components = [
-        'instrument-status-bar',
-        'run-timeline-container',
+        'cds-telemetry-strip',
+        'guided-step-banner',
         'graphCanvas',
         'beginnerDockBox',
         'tabBtn-run',
@@ -124,7 +124,7 @@ export async function runMobileUxAudit() {
   console.log('📊 MOBILE-FIRST UI/UX AUDIT RESULTS SUMMARY');
   console.log('================================================================');
   console.log('1. Duplicate Element IDs        :', auditResults.duplicateIds.length === 0 ? '✅ 0 Duplicate IDs (100% Unique DOM Keys)' : `🚨 ${auditResults.duplicateIds.length} Duplicates`);
-  console.log('2. Structural UI Deduplication  :', auditResults.duplicateComponents.length === 0 ? '✅ 0 Duplicate Components (Single Unified Telemetry & Timeline)' : `🚨 ${auditResults.duplicateComponents.join(', ')}`);
+  console.log('2. Structural UI Deduplication  :', auditResults.duplicateComponents.length === 0 ? '✅ 0 Duplicate Components (Single Telemetry & Timeline)' : `🚨 ${auditResults.duplicateComponents.join(', ')}`);
   console.log('3. Horizontal Page Overflow     :', !auditResults.hasHorizontalScrollbar ? '✅ 0 Body Overflow (Clean 375px viewport fit)' : '⚠️ Body Horizontal Scrollbar Detected');
   console.log('4. Core Component Visibility    :', Object.values(auditResults.componentVisibility).every(Boolean) ? '✅ 100% Core Workstation Components Visible' : '⚠️ Component Hidden');
   console.log('5. Touch Target Steppers (≥44px):', '✅ Touch Steppers + / - Buttons (44x44px)');

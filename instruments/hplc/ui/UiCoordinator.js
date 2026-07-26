@@ -4,10 +4,7 @@ import { HPLC_EVENTS } from '../controller/HplcEvents.js';
  * UiCoordinator.js — Central UI Presentation Coordinator
  *
  * Single Source of Truth for UI event subscriptions & component lifecycle coordination.
- * Prevents fragmented event subscriptions, listener leaks, and duplicate re-renders.
- *
- * Data Flow Architecture:
- * Physics Engine → Controller (HplcController) → ResultModel → UiCoordinator → Child Views
+ * Directs events to the NEW Sprint U1 CDS Telemetry Strip & Sprint U4 Guided Step Unlock Banner.
  */
 export class UiCoordinator {
   /**
@@ -28,6 +25,7 @@ export class UiCoordinator {
       if (this.views.graphView)   this.views.graphView.reset();
       if (this.views.runTimeline) this.views.runTimeline.setPhase('prime');
       this._setAcqPhaseLabel('⚡ PRIMING: Ramping pressure...');
+      this._updateStepHighlight('PRIMING');
     });
 
     bus.on(HPLC_EVENTS.STATUS_CHANGED, ({ newState }) => {
@@ -35,22 +33,27 @@ export class UiCoordinator {
       if (this.views.controlsView) this.views.controlsView.updateControlsForState(newState);
       if (this.views.statusBar)    this.views.statusBar.update({ status: newState });
       if (this.views.runTimeline)  this._updateTimelinePhase(newState);
+      this._updateCdsStateVal(newState);
+      this._updateStepHighlight(newState);
     });
 
     bus.on(HPLC_EVENTS.PRESSURE_CHANGED, ({ pressure }) => {
       if (this.views.displayView)  this.views.displayView.setPressure(pressure);
       if (this.views.statusBar)    this.views.statusBar.update({ pressureBar: pressure });
+      this._updateCdsPressureVal(pressure);
     });
 
     bus.on(HPLC_EVENTS.WAVELENGTH_CHANGED, ({ wavelengthNm }) => {
       if (this.views.spectrumView) {
         this.views.spectrumView.renderSpectrum(this.controller.simState.sampleKey, wavelengthNm);
       }
+      this._updateCdsUvVal(wavelengthNm);
     });
 
     bus.on(HPLC_EVENTS.INJECTING_STARTED, () => {
       if (this.views.runTimeline) this.views.runTimeline.setPhase('inject');
       this._setAcqPhaseLabel('💉 INJECTING SAMPLE (Valve turning...)');
+      this._updateStepHighlight('INJECTING');
     });
 
     bus.on(HPLC_EVENTS.RUN_STARTED, ({ expectedAnalytes }) => {
@@ -61,6 +64,8 @@ export class UiCoordinator {
       if (this.views.interactiveChromatogram) this.views.interactiveChromatogram.reset();
       if (this.views.narrator)                this.views.narrator.clear();
       if (this.views.methodReplay)            this.views.methodReplay.reset();
+
+      this._updateStepHighlight('RUNNING');
 
       if (expectedAnalytes && expectedAnalytes.length && this.views.interactiveChromatogram) {
         this.views.interactiveChromatogram.setExpectedMarkers(expectedAnalytes);
@@ -102,6 +107,7 @@ export class UiCoordinator {
       if (this.views.compareView)  this.views.compareView.render(methodComparison);
       if (this.views.historyView)  this.views.historyView.render(methodHistory);
       if (this.views.runTimeline)   this.views.runTimeline.setPhase('complete');
+      this._updateStepHighlight('COMPLETED');
 
       if (this.views.statusBar) {
         this.views.statusBar.update({
@@ -132,11 +138,26 @@ export class UiCoordinator {
     });
   }
 
-  /* ── DOM Update Helpers ─────────────────────────────────────────────────── */
+  /* ── DOM Update Helpers for NEW Modern CDS UI ───────────────────────────── */
 
   _setAcqPhaseLabel(text) {
     const acqLabel = document.getElementById('acqPhaseLabel');
     if (acqLabel) acqLabel.textContent = text;
+  }
+
+  _updateCdsStateVal(state) {
+    const cdsState = document.getElementById('cdsStateVal');
+    if (cdsState) cdsState.textContent = `● ${state}`;
+  }
+
+  _updateCdsPressureVal(pressure) {
+    const cdsP = document.getElementById('cdsPressureVal');
+    if (cdsP) cdsP.textContent = `${pressure.toFixed(1)} bar`;
+  }
+
+  _updateCdsUvVal(wavelengthNm) {
+    const cdsUv = document.getElementById('cdsUvVal');
+    if (cdsUv) cdsUv.textContent = `${wavelengthNm} nm`;
   }
 
   _updateTimelinePhase(state) {
@@ -150,5 +171,19 @@ export class UiCoordinator {
       COMPLETED:    'complete'
     };
     if (phaseMap[state]) this.views.runTimeline.setPhase(phaseMap[state]);
+  }
+
+  _updateStepHighlight(state) {
+    const stepMap = {
+      PRIMING: 1, EQUILIBRATING: 2, READY: 3, INJECTING: 3, RUNNING: 4, COMPLETED: 5
+    };
+    const activeNum = stepMap[state] || 1;
+    for (let i = 1; i <= 5; i++) {
+      const el = document.getElementById(`gstep-${i}`);
+      if (!el) continue;
+      el.classList.remove('active', 'complete');
+      if (i < activeNum)        el.classList.add('complete');
+      else if (i === activeNum) el.classList.add('active');
+    }
   }
 }
