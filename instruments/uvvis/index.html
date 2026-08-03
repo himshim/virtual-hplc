@@ -339,15 +339,15 @@
 
 <!-- Header Bar -->
 <header class="app-header" role="banner">
-  <h1 class="app-title">Virtual Analytical Lab — UV-Vis Spectrophotometer</h1>
-  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-    <!-- Header Mode Selector -->
-    <div class="mode-selector" id="uvModeSelector" role="radiogroup" aria-label="Expertise Operating Mode">
-      <button class="mode-btn active" id="modeBtnBeginner" data-mode="beginner" role="radio" aria-checked="true">🟢 Beginner</button>
-      <button class="mode-btn" id="modeBtnStandard" data-mode="standard" role="radio" aria-checked="false">🟡 Standard</button>
-      <button class="mode-btn" id="modeBtnAdvanced" data-mode="advanced" role="radio" aria-checked="false">🔴 Advanced</button>
-    </div>
-    <a href="../hplc/index.html" aria-label="Switch to HPLC instrument" style="color:var(--brand-info); font-size:0.85rem; text-decoration:none; font-family:var(--font-sans); font-weight:500;">← Switch to HPLC</a>
+  <h1 class="app-title">
+    <a href="../../index.html" class="nav-home-link" aria-label="Virtual Analytical Lab Home">🏠 Home</a>
+    <span class="nav-separator">/</span>
+    <span class="instrument-title-name">UV-Vis Spectrophotometer</span>
+  </h1>
+  <div class="mode-selector" id="uvModeSelector" role="radiogroup" aria-label="Expertise Operating Mode">
+    <button class="mode-btn active" id="modeBtnBeginner" data-mode="beginner" role="radio" aria-checked="true" title="Guided baseline & Beer-Lambert Law (1 Solvent)">🟢 Beginner</button>
+    <button class="mode-btn" id="modeBtnStandard" data-mode="standard" role="radio" aria-checked="false" title="Unlocks 5 Solvents, Cuvettes, IQ/OQ Tab & Mixture Analysis">🟡 Standard</button>
+    <button class="mode-btn" id="modeBtnAdvanced" data-mode="advanced" role="radio" aria-checked="false" title="Unlocks all 11 Solvents, SBW Slit Width, Lab Errors & Stray Light">🔴 Advanced</button>
   </div>
 </header>
 

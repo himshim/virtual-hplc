@@ -17,16 +17,22 @@
 
 <!-- Header Bar with Mode Selector -->
 <header class="app-header" role="banner">
-  <h1 class="app-title">Virtual Analytical Lab — HPLC</h1>
+  <h1 class="app-title">
+    <a href="../../index.html" class="nav-home-link" aria-label="Virtual Analytical Lab Home">🏠 Home</a>
+    <span class="nav-separator">/</span>
+    <span class="instrument-title-name">HPLC Chromatograph</span>
+  </h1>
 
-  <!-- Mode Selector: Beginner, Standard, Advanced -->
-  <div class="mode-selector" id="modeSelector" role="radiogroup" aria-label="Expertise Mode">
-    <button class="mode-btn active" data-mode="beginner" role="radio" aria-checked="true">🟢 Beginner</button>
-    <button class="mode-btn" data-mode="standard" role="radio" aria-checked="false">🟡 Standard</button>
-    <button class="mode-btn" data-mode="advanced" role="radio" aria-checked="false">🔴 Advanced</button>
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+    <!-- Mode Selector: Beginner, Standard, Advanced -->
+    <div class="mode-selector" id="modeSelector" role="radiogroup" aria-label="Expertise Mode">
+      <button class="mode-btn active" data-mode="beginner" role="radio" aria-checked="true" title="Guided baseline & core chromatography">🟢 Beginner</button>
+      <button class="mode-btn" data-mode="standard" role="radio" aria-checked="false" title="Gradient elution, column temperature & peak integration">🟡 Standard</button>
+      <button class="mode-btn" data-mode="advanced" role="radio" aria-checked="false" title="Pump dwell volume, extra-column band broadening & system suitability">🔴 Advanced</button>
+    </div>
+
+    <button id="guidedDemoBtn" class="demo-badge-btn">⚡ 60s Demo</button>
   </div>
-
-  <button id="guidedDemoBtn" class="demo-badge-btn">⚡ 60s Demo</button>
 </header>
 
 <!-- Universal 5-Tab Navigation Bar -->

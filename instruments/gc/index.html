@@ -23,16 +23,15 @@
 
 <!-- Header Bar -->
 <header class="app-header" role="banner">
-  <h1 class="app-title">Virtual Analytical Lab — Gas Chromatograph (GC-FID)</h1>
-  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-    <div class="mode-selector" id="gcModeSelector" role="radiogroup" aria-label="Expertise Mode">
-      <button class="mode-btn active" id="modeBtnBeginner" data-mode="beginner">🟢 Beginner</button>
-      <button class="mode-btn" id="modeBtnStandard" data-mode="standard">🟡 Standard</button>
-      <button class="mode-btn" id="modeBtnAdvanced" data-mode="advanced">🔴 Advanced</button>
-    </div>
-    <a href="../hplc/index.html" style="color:var(--brand-primary); font-size:0.85rem; text-decoration:none; font-family:'JetBrains Mono',monospace;">← Switch to HPLC</a>
-    <a href="../uvvis/index.html" style="color:var(--brand-primary); font-size:0.85rem; text-decoration:none; font-family:'JetBrains Mono',monospace;">← Switch to UV-Vis</a>
-    <a href="../ftir/index.html" style="color:var(--brand-primary); font-size:0.85rem; text-decoration:none; font-family:'JetBrains Mono',monospace;">← Switch to FTIR</a>
+  <h1 class="app-title">
+    <a href="../../index.html" class="nav-home-link" aria-label="Virtual Analytical Lab Home">🏠 Home</a>
+    <span class="nav-separator">/</span>
+    <span class="instrument-title-name">Gas Chromatograph (GC-FID)</span>
+  </h1>
+  <div class="mode-selector" id="gcModeSelector" role="radiogroup" aria-label="Expertise Mode">
+    <button class="mode-btn active" id="modeBtnBeginner" data-mode="beginner" title="Isothermal separation & FID detector baseline">🟢 Beginner</button>
+    <button class="mode-btn" id="modeBtnStandard" data-mode="standard" title="Oven temperature programming, Kovats retention index & carrier flow">🟡 Standard</button>
+    <button class="mode-btn" id="modeBtnAdvanced" data-mode="advanced" title="Split vs Splitless injection ratio & van Deemter carrier gas velocity">🔴 Advanced</button>
   </div>
 </header>
 
