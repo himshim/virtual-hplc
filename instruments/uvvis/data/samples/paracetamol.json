@@ -1,0 +1,24 @@
+{
+  "id": "paracetamol",
+  "displayName": "Paracetamol (Acetaminophen)",
+  "formula": "C8H9NO2",
+  "mw": 151.16,
+  "epsilonMax": 9800,
+  "pKa": 9.5,
+  "peaksHA": [
+    { "lambdaMax": 243, "bandwidth": 22, "epsilonFraction": 1.00 },
+    { "lambdaMax": 293, "bandwidth": 18, "epsilonFraction": 0.07 }
+  ],
+  "peaksA_minus": [
+    { "lambdaMax": 257, "bandwidth": 24, "epsilonFraction": 1.15 },
+    { "lambdaMax": 293, "bandwidth": 18, "epsilonFraction": 0.07 }
+  ],
+  "peaks": [
+    { "lambdaMax": 243, "bandwidth": 22, "epsilonFraction": 1.00 },
+    { "lambdaMax": 293, "bandwidth": 18, "epsilonFraction": 0.07 }
+  ],
+  "description": "Phenolic chromophore: π→π* at 243 nm (neutral HA), shifts to phenolate 257 nm (alkaline A⁻).",
+  "chromophore": "Phenolic aromatic ring + Amide auxochrome",
+  "transition": "π → π* electronic transition",
+  "clinicalNote": "Assayed in QC labs per BP/USP UV assay. Phenolate red shift at pH > 9.5."
+}

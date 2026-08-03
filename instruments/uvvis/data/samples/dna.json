@@ -1,0 +1,15 @@
+{
+  "id": "dna",
+  "displayName": "Double-Stranded DNA (dsDNA)",
+  "formula": "Nucleic Acid Polymer",
+  "mw": 650.0,
+  "epsilonMax": 6600,
+  "peaks": [
+    { "lambdaMax": 260, "bandwidth": 26, "epsilonFraction": 1.00 },
+    { "lambdaMax": 280, "bandwidth": 14, "epsilonFraction": 0.36 }
+  ],
+  "description": "Purine and pyrimidine base stacking: strong peak at 260 nm (A260/A280 purity ratio standard).",
+  "chromophore": "Heterocyclic purine (A, G) & pyrimidine (C, T) bases",
+  "transition": "π → π* aromatic base stacking transition",
+  "clinicalNote": "Standard molecular biology quantification. Pure dsDNA exhibits A260/A280 ratio of 1.80 ± 0.05."
+}

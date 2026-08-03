@@ -1,0 +1,8 @@
+{
+  "id": "acetonitrile",
+  "displayName": "Acetonitrile (HPLC/UV Grade)",
+  "uvCutoff": 190,
+  "kBelow": 0.005,
+  "baselineOffset": 0.003,
+  "description": "Polar aprotic solvent. Excellent low-UV transmittance down to 190 nm."
+}

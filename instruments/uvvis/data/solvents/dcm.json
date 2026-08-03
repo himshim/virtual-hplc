@@ -1,0 +1,8 @@
+{
+  "id": "dcm",
+  "displayName": "Dichloromethane (DCM)",
+  "uvCutoff": 235,
+  "kBelow": 0.05,
+  "baselineOffset": 0.012,
+  "description": "Organochlorine solvent. UV cutoff at 235 nm."
+}

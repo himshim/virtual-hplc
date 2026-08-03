@@ -1,0 +1,8 @@
+{
+  "id": "hexane",
+  "displayName": "n-Hexane (Non-Polar UV Grade)",
+  "uvCutoff": 195,
+  "kBelow": 0.01,
+  "baselineOffset": 0.005,
+  "description": "Non-polar hydrocarbon solvent. Low UV cutoff (195 nm) and minimal solute-solvent interaction."
+}

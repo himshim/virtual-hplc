@@ -1,0 +1,29 @@
+{
+  "id": "ibuprofen",
+  "displayName": "Ibuprofen",
+  "formula": "C13H18O2",
+  "mw": 206.28,
+  "epsilonMax": 15300,
+  "pKa": 4.4,
+  "peaks": [
+    { "lambdaMax": 264, "bandwidth": 18, "epsilonFraction": 1.00 },
+    { "lambdaMax": 272, "bandwidth": 16, "epsilonFraction": 0.82 },
+    { "lambdaMax": 222, "bandwidth": 14, "epsilonFraction": 0.45 }
+  ],
+  "description": "Isobutylphenyl propionic acid: fine benzenoid structure with peaks at 264 nm and 272 nm in methanol/ethanol.",
+  "chromophore": "Phenyl propionic acid aromatic chromophore",
+  "transition": "π → π* aromatic benzenoid transition",
+  "clinicalNote": "Nonsteroidal anti-inflammatory drug (NSAID). Assayed by UV spectrophotometry at 264 nm.",
+  "sources": [
+    {
+      "type": "PubChem",
+      "cid": 3672,
+      "purpose": "Chemical identity and molecular weight"
+    },
+    {
+      "type": "PubMed",
+      "pmid": "28549102",
+      "purpose": "UV-Vis spectrum parameters in methanol"
+    }
+  ]
+}

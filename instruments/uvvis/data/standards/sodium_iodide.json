@@ -1,0 +1,10 @@
+{
+  "id": "sodium_iodide",
+  "testKey": "stray_light",
+  "testName": "Stray Light Rejection Ratio (Stray Radiant Energy)",
+  "standardName": "10 g/L Sodium Iodide (NaI) Aqueous Solution",
+  "certifiedValue": "Absorbance > 2.0 AU @ 220 nm (Transmittance < 1.0%)",
+  "tolerance": "T ≤ 1.0% (A ≥ 2.0 AU)",
+  "targetLambda": 220,
+  "limitDescription": "A ≥ 2.0 AU at 220 nm"
+}

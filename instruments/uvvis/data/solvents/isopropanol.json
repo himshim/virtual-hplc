@@ -1,0 +1,8 @@
+{
+  "id": "isopropanol",
+  "displayName": "Isopropanol (2-Propanol / IPA)",
+  "uvCutoff": 210,
+  "kBelow": 0.04,
+  "baselineOffset": 0.010,
+  "description": "Secondary alcohol solvent. UV cutoff at 210 nm."
+}

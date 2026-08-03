@@ -1,19 +1,26 @@
 /**
- * RunTimeline.js — P7 Live Acquisition Phase Timeline
+ * RunTimeline.js — CDS Workflow Timeline
  *
- * Shows students where they are in the chromatographic workflow.
- * Mirrors the acquisition queue concept from commercial CDS software.
+ * Positioned above the chromatogram. Shows the full laboratory workflow
+ * from pump start through to report, so students understand where they
+ * are in the experiment at all times.
+ *
+ * Phases: prime → equilibrate → inject → separation → integrate → report
+ *
+ * v2.0: Added integrate + report phases (fire after RUN_COMPLETED).
+ *       Added progress-bar fill for the 'separation' (acquire) phase.
  */
 export class RunTimeline {
   constructor(containerId = 'run-timeline-container') {
-    this.containerId = containerId;
+    this.containerId  = containerId;
+    this._progress    = 0; // 0–1 for the active acquire phase
     this.phases = [
-      { id: 'prime',       label: 'Prime',       icon: '💧' },
-      { id: 'equilibrate', label: 'Equilibrate', icon: '⚖️' },
-      { id: 'inject',      label: 'Inject',      icon: '💉' },
-      { id: 'separation',  label: 'Separation',  icon: '📈' },
-      { id: 'wash',        label: 'Wash',        icon: '🧹' },
-      { id: 'complete',    label: 'Complete',    icon: '✅' }
+      { id: 'prime',       label: 'Pump',       abbr: 'Pump'  },
+      { id: 'equilibrate', label: 'Equilibrate', abbr: 'Equil' },
+      { id: 'inject',      label: 'Inject',      abbr: 'Inject' },
+      { id: 'separation',  label: 'Acquire',     abbr: 'Acq'   },
+      { id: 'integrate',   label: 'Integrate',   abbr: 'Int'   },
+      { id: 'report',      label: 'Report',      abbr: 'Rep'   }
     ];
     this.currentPhase = null;
   }
@@ -22,8 +29,16 @@ export class RunTimeline {
     return this.phases.findIndex(p => p.id === phaseId);
   }
 
-  setPhase(phaseId) {
+  setPhase(phaseId, progress = 0) {
     this.currentPhase = phaseId;
+    this._progress    = Math.min(1, Math.max(0, progress));
+    this.render();
+  }
+
+  /** Update acquisition progress (0–1) without changing phase label */
+  setAcquireProgress(fraction) {
+    if (this.currentPhase !== 'separation') return;
+    this._progress = Math.min(1, Math.max(0, fraction));
     this.render();
   }
 
@@ -34,42 +49,30 @@ export class RunTimeline {
     const currentIdx = this._phaseIndex(this.currentPhase);
 
     el.innerHTML = `
-      <div style="
-        background: #0f172a; border-radius: 10px;
-        border: 1px solid rgba(56,189,248,0.15);
-        padding: 12px 14px; margin-bottom: 10px;
-      ">
-        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; margin-bottom: 10px; font-family: 'JetBrains Mono', monospace;">
-          Method Timeline
-        </div>
-        <div style="display: flex; align-items: center; gap: 0; overflow-x: auto; scrollbar-width: none;">
+      <div class="cds-timeline-wrap">
+        <div class="cds-timeline-label">Method Timeline</div>
+        <div class="cds-timeline-phases">
           ${this.phases.map((phase, i) => {
             const isDone    = currentIdx > i;
             const isActive  = currentIdx === i;
-            const isPending = currentIdx < i;
-            const isLast    = i === this.phases.length - 1;
+            const isAcquire = phase.id === 'separation';
 
-            const dotColor  = isDone ? '#22c55e' : isActive ? '#38bdf8' : '#1e293b';
-            const dotBorder = isDone ? '#22c55e' : isActive ? '#38bdf8' : '#334155';
-            const textColor = isDone ? '#22c55e' : isActive ? '#f1f5f9' : '#475569';
-            const prefix    = isDone ? '✓' : isActive ? '▶' : '○';
+            const dotCls  = isDone ? 'done' : isActive ? 'active' : 'pending';
+            const marker  = isDone ? '✓' : isActive ? '▶' : '○';
+            const isLast  = i === this.phases.length - 1;
+
+            const progressBar = (isActive && isAcquire) ? `
+              <div class="cds-tl-progress-track">
+                <div class="cds-tl-progress-fill" style="width:${(this._progress * 100).toFixed(1)}%"></div>
+              </div>` : '';
 
             return `
-              <div style="display: flex; align-items: center; flex-shrink: 0;">
-                <div style="text-align: center; min-width: 72px;">
-                  <div style="
-                    width: 28px; height: 28px; border-radius: 50%;
-                    background: ${dotColor}22; border: 2px solid ${dotBorder};
-                    display: flex; align-items: center; justify-content: center;
-                    margin: 0 auto 4px auto; font-size: 0.7rem; color: ${dotColor};
-                    transition: all 200ms ease;
-                  ">${prefix}</div>
-                  <div style="font-size: 0.65rem; color: ${textColor}; font-weight: ${isActive ? '700' : '500'}; white-space: nowrap; font-family: 'JetBrains Mono', monospace;">
-                    ${phase.icon} ${phase.label}
-                  </div>
-                </div>
-                ${!isLast ? `<div style="width: 20px; height: 2px; background: ${isDone ? '#22c55e44' : '#1e293b'}; flex-shrink: 0; margin: 0 2px;"></div>` : ''}
+              <div class="cds-tl-step">
+                <div class="cds-tl-dot ${dotCls}">${marker}</div>
+                <div class="cds-tl-name ${dotCls}">${phase.label}</div>
+                ${progressBar}
               </div>
+              ${!isLast ? `<div class="cds-tl-connector ${isDone ? 'done' : ''}"></div>` : ''}
             `;
           }).join('')}
         </div>
@@ -79,6 +82,7 @@ export class RunTimeline {
 
   reset() {
     this.currentPhase = null;
+    this._progress    = 0;
     this.render();
   }
 }

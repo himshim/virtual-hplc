@@ -1,5 +1,7 @@
 import { HPLC_EVENTS } from '../controller/HplcEvents.js';
 import { EducationalEngine } from '../education/EducationalEngine.js';
+import { formatPressureDecimal, formatTimeDecimal, formatWavelength, formatFlowRate } from '../utils/formatting.js';
+
 
 /**
  * UiCoordinator.js — Central UI Presentation Coordinator
@@ -13,59 +15,62 @@ export class UiCoordinator {
    * @param {Object} views - Bag of initialized UI view instances
    */
   constructor(controller, views = {}) {
-    this.controller = controller;
-    this.views = views;
+    this.controller  = controller;
+    this.views       = views;
+    this._isBlankRun = false;
+    this._maxRunTime = 0;
     this.bindEvents();
     this.bindWhyModal();
     this.bindFloatingDockAndDrawers();
     this.bindStickyObserverAndPip();
+    // Expose globally so CDS toolbar Compare button can call toggleCompareOverlay
+    window._uiCoordinator = this;
   }
 
   /** Centralized Event Subscriptions */
   bindEvents() {
     const bus = this.controller.eventBus;
 
+    // Initial state sync on load
+    const initState = this.controller.getState();
+    if (initState) {
+      this._updateTimelinePhase(initState);
+      this.renderTelemetry({ state: initState });
+    }
+
     bus.on(HPLC_EVENTS.PUMP_STARTED, () => {
+
       if (this.views.graphView)   this.views.graphView.reset();
       if (this.views.runTimeline) this.views.runTimeline.setPhase('prime');
       this._setAcqPhaseLabel('⚡ PRIMING: Ramping pressure...');
-      this._updateStepHighlight('PRIMING');
     });
 
     bus.on(HPLC_EVENTS.STATUS_CHANGED, ({ newState }) => {
       if (this.views.displayView)  this.views.displayView.setStatus(newState);
       if (this.views.controlsView) this.views.controlsView.updateControlsForState(newState);
-      if (this.views.statusBar)    this.views.statusBar.update({ status: newState });
       if (this.views.runTimeline)  this._updateTimelinePhase(newState);
-      this._updateCdsStateVal(newState);
-      this._updateStepHighlight(newState);
+      this.renderTelemetry({ state: newState });
       this._updateFabDockForState(newState);
-      const pipState = document.getElementById('pipStateVal');
-      if (pipState) pipState.textContent = `● ${newState}`;
     });
 
     bus.on(HPLC_EVENTS.PRESSURE_CHANGED, ({ pressure }) => {
-      if (this.views.displayView)  this.views.displayView.setPressure(pressure);
-      if (this.views.statusBar)    this.views.statusBar.update({ pressureBar: pressure });
-      this._updateCdsPressureVal(pressure);
-      const pipP = document.getElementById('pipPressureVal');
-      if (pipP) pipP.textContent = `${pressure.toFixed(1)} bar`;
+      if (this.views.displayView) this.views.displayView.setPressure(pressure);
+      this.renderTelemetry({ pressure });
     });
 
     bus.on(HPLC_EVENTS.WAVELENGTH_CHANGED, ({ wavelengthNm }) => {
       if (this.views.spectrumView) {
         this.views.spectrumView.renderSpectrum(this.controller.simState.sampleKey, wavelengthNm);
       }
-      this._updateCdsUvVal(wavelengthNm);
+      this.renderTelemetry({ wavelength: wavelengthNm });
     });
 
     bus.on(HPLC_EVENTS.INJECTING_STARTED, () => {
       if (this.views.runTimeline) this.views.runTimeline.setPhase('inject');
       this._setAcqPhaseLabel('💉 INJECTING SAMPLE (Valve turning...)');
-      this._updateStepHighlight('INJECTING');
     });
 
-    bus.on(HPLC_EVENTS.RUN_STARTED, ({ expectedAnalytes }) => {
+    bus.on(HPLC_EVENTS.RUN_STARTED, ({ expectedAnalytes, isBlank, sampleName, estimatedMaxTime }) => {
       if (this.views.graphView)               this.views.graphView.reset();
       if (this.views.displayView)             this.views.displayView.renderPeakTable(null);
       if (this.views.runTimeline)             this.views.runTimeline.setPhase('separation');
@@ -74,8 +79,25 @@ export class UiCoordinator {
       if (this.views.narrator)                this.views.narrator.clear();
       if (this.views.methodReplay)            this.views.methodReplay.reset();
 
-      this.pipDataPoints = [];
-      this._updateStepHighlight('RUNNING');
+      this.pipDataPoints  = [];
+      this._isBlankRun    = !!isBlank;
+      this._maxRunTime    = estimatedMaxTime || 0;
+
+      // Update CDS metadata strip
+      this._updateMetaStrip({ sampleName: sampleName || '—', estimatedMaxTime });
+
+      // Blank injection badge
+      const badge = document.getElementById('blankInjectionBadge');
+      if (badge) badge.style.display = isBlank ? 'inline-block' : 'none';
+
+      // Clear previous integration status
+      const cdsStatus = document.getElementById('cdsIntegrationStatus');
+      if (cdsStatus) { cdsStatus.textContent = ''; cdsStatus.style.display = 'none'; }
+
+      // Re-show PiP sparkline card in case user had closed it
+      const pipCard = document.getElementById('liveChromatogramPip');
+      if (pipCard) pipCard.style.display = '';
+
 
       if (expectedAnalytes && expectedAnalytes.length && this.views.interactiveChromatogram) {
         this.views.interactiveChromatogram.setExpectedMarkers(expectedAnalytes);
@@ -93,21 +115,30 @@ export class UiCoordinator {
 
     bus.on(HPLC_EVENTS.TICK, ({ time, signal, pressure, phase }) => {
       if (this.views.displayView) this.views.displayView.setTimeDisplay(time);
-      const pipTimer = document.getElementById('pipTimerVal');
-      if (pipTimer) pipTimer.textContent = `${time.toFixed(2)} min`;
+      this.renderTelemetry({ time });
 
       const state = this.controller.getState();
       if (state === 'PRIMING' || state === 'EQUILIBRATING' || state === 'READY' || state === 'RUNNING') {
         if (this.views.graphView) this.views.graphView.addPoint(time, signal);
 
         if (state === 'RUNNING') {
-          this._updatePipSparkline(time, signal);
-          if (this.views.runTimeline) {
-            if (time < 0.3)      this.views.runTimeline.setPhase('prime');
-            else if (time < 0.8) this.views.runTimeline.setPhase('equilibrate');
-            else if (time < 1.5) this.views.runTimeline.setPhase('inject');
-            else                 this.views.runTimeline.setPhase('separation');
+          if (this.views.interactiveChromatogram) {
+            this.views.interactiveChromatogram.setCurrentAcquisitionTime(time);
           }
+          // Auto-collapse pre-run prediction card during acquisition
+          const predCard = document.getElementById('preRunPredictionCard');
+          if (predCard && predCard.style.display !== 'none') predCard.style.display = 'none';
+
+          this._updatePipSparkline(time, signal);
+
+          // Update timeline acquire progress bar
+          if (this.views.runTimeline && this._maxRunTime > 0) {
+            this.views.runTimeline.setAcquireProgress(time / this._maxRunTime);
+          }
+
+          // Update run time in metadata strip
+          const metaRunTime = document.getElementById('metaRunTime');
+          if (metaRunTime) metaRunTime.textContent = time.toFixed(2) + ' min';
         }
       }
     });
@@ -117,41 +148,235 @@ export class UiCoordinator {
     });
 
     bus.on(HPLC_EVENTS.RUN_COMPLETED, ({ runResult, exerciseProfile, methodComparison, methodHistory }) => {
-      if (this.views.displayView)  this.views.displayView.renderPeakTable(runResult);
-      if (this.views.reportCard)   this.views.reportCard.render(runResult, exerciseProfile);
-      if (this.views.compareView)  this.views.compareView.render(methodComparison);
-      if (this.views.historyView)  this.views.historyView.render(methodHistory);
-      if (this.views.runTimeline)   this.views.runTimeline.setPhase('complete');
-      this._updateStepHighlight('COMPLETED');
+      if (this.views.runTimeline) this.views.runTimeline.setPhase('report');
 
-      if (this.views.statusBar) {
-        this.views.statusBar.update({
-          status: 'COMPLETED',
-          flowRate: this.controller.simState.flowRate || 1.0,
-          wavelengthNm: this.controller.simState.wavelengthNm || 254,
-          temperatureC: this.controller.simState.temperature || 25
-        });
-      }
+
+      // Capture run trace for comparison overlay
+      const snapshot = [...(this.views.graphView?.chart?.data?.datasets?.[0]?.data || [])];
+      if (this.currentRunTrace) this.previousRunTrace = this.currentRunTrace;
+      this.currentRunTrace = {
+        params:      { ...this.controller.simState },
+        data:        snapshot,
+        peaks:       runResult?.peaks || [],
+        maxPressure: runResult?.maxPressure || 0,
+        elapsedTime: runResult?.elapsedTime || 0
+      };
 
       if (runResult?.peaks && this.views.interactiveChromatogram) {
         this.views.interactiveChromatogram.setPeaks(runResult.peaks);
-        const snapshot = [...(this.views.graphView?.chart?.data?.datasets?.[0]?.data || [])];
-        if (snapshot.length) this.views.interactiveChromatogram.setReferenceRun(snapshot);
       }
 
-      if (this.views.narrator) this.views.narrator.onRunCompleted(runResult);
-      if (this.views.notebook) this.views.notebook.attachRunResult(runResult?.id || Date.now(), runResult);
+      if (this.previousRunTrace && snapshot.length) {
+        if (this.views.interactiveChromatogram) {
+          this.views.interactiveChromatogram.setReferenceRun(this.previousRunTrace.data);
+        }
+        this._generateTeacherSummary(this.previousRunTrace, this.currentRunTrace);
+      }
 
       const replayPoints = [...(this.views.graphView?.chart?.data?.datasets?.[0]?.data || [])];
       if (replayPoints.length && runResult?.peaks && this.views.methodReplay) {
         this.views.methodReplay.loadRun(replayPoints, runResult.peaks);
       }
 
+      // Clear blank badge
+      const badge = document.getElementById('blankInjectionBadge');
+      if (badge) badge.style.display = 'none';
+
       const resultsBtn = document.getElementById('tabBtn-results');
       const badgeDot   = document.getElementById('resultsBadge');
       if (resultsBtn) resultsBtn.disabled = false;
       if (badgeDot)   badgeDot.style.display = 'inline-block';
+
+      // ── Post-run CDS integration animation (≤1.1s total) ──────────────────
+      const cdsStatus = document.getElementById('cdsIntegrationStatus');
+      const showCds = (msg) => { if (cdsStatus) { cdsStatus.textContent = msg; cdsStatus.style.display = 'inline'; } };
+
+      if (this.views.runTimeline) this.views.runTimeline.setPhase('integrate');
+      showCds('Processing peaks...');
+
+      setTimeout(() => {
+        if (this.views.compareView)  this.views.compareView.render(methodComparison);
+        if (this.views.historyView)  this.views.historyView.render(methodHistory);
+        if (this.views.reportCard)   this.views.reportCard.render(runResult, exerciseProfile);
+        if (this.views.narrator)     this.views.narrator.onRunCompleted(runResult);
+        if (this.views.notebook)     this.views.notebook.attachRunResult(runResult?.id || Date.now(), runResult);
+
+        showCds('✓ Integration complete');
+        if (this.views.runTimeline) this.views.runTimeline.setPhase('report');
+
+        setTimeout(() => {
+          if (this.views.displayView) this.views.displayView.renderPeakTable(runResult);
+          const obsCard = document.getElementById('inlineObservationCard');
+          if (obsCard) obsCard.style.display = 'block';
+          this._evaluatePrediction(runResult);
+          if (cdsStatus) { cdsStatus.textContent = ''; cdsStatus.style.display = 'none'; }
+        }, 400);
+      }, 700);
     });
+  }
+
+  /* ── CDS Metadata Strip ─────────────────────────────────────────────────── */
+
+  _updateMetaStrip({ sampleName, estimatedMaxTime } = {}) {
+    const s = this.controller.simState;
+    const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+
+    set('metaSample',     sampleName || '—');
+    set('metaFlow',       formatFlowRate(s.flowRate || 1.0));
+    set('metaWavelength', formatWavelength(s.wavelengthNm || 254));
+    set('metaTemp',       (s.temperature  || 25)  + ' °C');
+    set('metaRunTime',    estimatedMaxTime ? formatTimeDecimal(estimatedMaxTime, 2) : '—');
+  }
+
+  /* ── Compare Overlay Toggle (for CDS toolbar "Compare" button) ───────────── */
+
+  toggleCompareOverlay() {
+    const card = document.getElementById('teacherSummaryCard');
+    if (!card) return;
+    const isHidden = card.style.display === 'none' || !card.style.display;
+    card.style.display = isHidden ? 'block' : 'none';
+    // C1.4: track user intent so _generateTeacherSummary won't re-open
+    this._compareCardUserDismissed = !isHidden;
+    const btn = document.getElementById('toolCompare');
+    if (btn) btn.classList.toggle('active', isHidden);
+  }
+
+  _updateTimelinePhase(state) {
+    if (!this.views.runTimeline) return;
+    const phaseMap = {
+      PRIMING:      'prime',
+      EQUILIBRATING:'equilibrate',
+      READY:        'inject',
+      INJECTING:    'inject',
+      RUNNING:      'separation',
+      COMPLETED:    'report'
+    };
+    if (phaseMap[state]) this.views.runTimeline.setPhase(phaseMap[state]);
+  }
+
+
+  /* ── 4-Step Structured Teacher Summary & Prediction Evaluator ──────────── */
+
+  _evaluatePrediction(runResult) {
+    const selectedRad = document.querySelector('input[name="prediction"]:checked');
+    const fbBox = document.getElementById('predictionFeedbackBox');
+    if (!selectedRad || !fbBox) return;
+
+    const val = selectedRad.value;
+    let text = '';
+    let isCorrect = false;
+
+    if (this.previousRunTrace) {
+      const prevTR = this.previousRunTrace.peaks?.[0]?.tR || 0;
+      const currTR = runResult?.peaks?.[0]?.tR || 0;
+      const deltaTR = currTR - prevTR;
+
+      if (val === 'earlier' && deltaTR < -0.05) isCorrect = true;
+      else if (val === 'later' && deltaTR > 0.05) isCorrect = true;
+      else if (val === 'pressure' && (runResult.maxPressure > this.previousRunTrace.maxPressure)) isCorrect = true;
+      else if (val === 'resolution') {
+        const prevRs = this.previousRunTrace.peaks?.[1]?.resolution || 0;
+        const currRs = runResult?.peaks?.[1]?.resolution || 0;
+        if (currRs > prevRs) isCorrect = true;
+      }
+    } else {
+      isCorrect = true; // First run baseline hypothesis validated
+    }
+
+    fbBox.style.display = 'block';
+    if (isCorrect) {
+      fbBox.style.background = 'rgba(34,197,94,0.15)';
+      fbBox.style.color = '#4ade80';
+      fbBox.style.border = '1px solid rgba(34,197,94,0.3)';
+      fbBox.textContent = '✓ You predicted correctly! Observed chromatographic trends match your hypothesis.';
+    } else {
+      fbBox.style.background = 'rgba(234,179,8,0.15)';
+      fbBox.style.color = '#facc15';
+      fbBox.style.border = '1px solid rgba(234,179,8,0.3)';
+      fbBox.textContent = '💡 Hypothesis note: Parameter shifts altered retention dynamics differently than predicted.';
+    }
+  }
+
+  _generateTeacherSummary(prevRun, currRun) {
+    const summaryCard = document.getElementById('teacherSummaryCard');
+    if (!summaryCard) return;
+
+    if (!prevRun || !prevRun.params || !currRun || !currRun.params) {
+      const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+      set('tsParamChanged', 'Initial Baseline Run Completed.');
+      set('tsObservedEffect', 'No previous run trace available for comparison yet.');
+      set('tsScientificReason', 'Change a parameter (e.g., %B or Flow Rate) and run a 2nd experiment to see side-by-side trace comparison!');
+      set('tsSuggestedNext', 'Try adjusting %B on the Method tab to observe retention shift.');
+      if (!this._compareCardUserDismissed) summaryCard.style.display = 'block';
+      return;
+    }
+
+    const pA = prevRun.params;
+    const pB = currRun.params;
+
+
+    // Detect primary changed parameter
+    let changedText = 'Method parameters were adjusted.';
+    let scientificReason = 'Solute distribution equilibrium shifted based on modified conditions.';
+    let suggestedNext = 'Try fine-tuning flow rate or %B to optimize resolution.';
+
+    if (pB.flowRate !== pA.flowRate) {
+      const diff = (pB.flowRate - pA.flowRate).toFixed(1);
+      changedText = `Flow rate ${diff > 0 ? 'increased' : 'decreased'} from ${pA.flowRate} to ${pB.flowRate} mL/min.`;
+      scientificReason = diff > 0 
+        ? 'Higher mobile phase linear velocity reduces solute residence time inside the column.'
+        : 'Lower linear velocity increases residence time, allowing longer interaction with stationary phase.';
+      suggestedNext = diff > 0 
+        ? 'If peaks overlap, reduce flow to 1.1–1.2 mL/min to improve separation.' 
+        : 'If analysis is too slow, increase flow to 1.0–1.2 mL/min.';
+    } else if (pB.organicPercent !== pA.organicPercent) {
+      const diff = pB.organicPercent - pA.organicPercent;
+      changedText = `Mobile phase %B ${diff > 0 ? 'increased' : 'decreased'} from ${pA.organicPercent}% to ${pB.organicPercent}%.`;
+      scientificReason = diff > 0 
+        ? 'Higher organic solvent strength weakens hydrophobic retention on C18 stationary phase.'
+        : 'Lower organic solvent strength strengthens hydrophobic retention on C18 stationary phase.';
+      suggestedNext = 'Adjust %B by ±5% increments to fine-tune retention factor (k\').';
+    } else if (pB.temperature !== pA.temperature) {
+      const diff = pB.temperature - pA.temperature;
+      changedText = `Column temperature ${diff > 0 ? 'increased' : 'decreased'} from ${pA.temperature}°C to ${pB.temperature}°C.`;
+      scientificReason = 'Temperature alters mobile phase viscosity and mass transfer diffusion rate.';
+      suggestedNext = 'Keep column temperature around 25°C–30°C for reproducible HPLC runs.';
+    }
+
+    // Quantitative observed effect
+    const prevTR = prevRun.peaks?.[0]?.tR || 0;
+    const currTR = currRun.peaks?.[0]?.tR || 0;
+    const pctDiff = prevTR > 0 ? (((currTR - prevTR) / prevTR) * 100).toFixed(1) : 0;
+    const observedEffect = `Retention time ${pctDiff < 0 ? 'decreased' : 'increased'} by ${Math.abs(pctDiff)}% (ΔtR = ${(currTR - prevTR).toFixed(2)} min).`;
+
+    // Check for multi-parameter shifts (One-Parameter-at-a-Time Rule)
+    const changedParams = [];
+    if (pB.flowRate !== pA.flowRate) changedParams.push('Flow Rate');
+    if (pB.organicPercent !== pA.organicPercent) changedParams.push('Mobile Phase %B');
+    if (pB.temperature !== pA.temperature) changedParams.push('Column Temperature');
+    if (pB.pH !== pA.pH) changedParams.push('pH');
+
+    let multiParamNotice = '';
+    if (changedParams.length > 1) {
+      multiParamNotice = ` ⚠️ Note: You changed ${changedParams.length} parameters at once (${changedParams.join(', ')}). For authentic cause-and-effect learning, try changing only ONE parameter per experiment!`;
+    }
+
+    // C3B: Integrate EducationalEngine diagnostic evaluation
+    const evaluation = EducationalEngine.evaluateRunResult(currRun);
+    if (evaluation.recommendations && evaluation.recommendations.length > 0) {
+      suggestedNext += ` (Tutor Tip: ${evaluation.recommendations[0]})`;
+    }
+
+    document.getElementById('tsParamChanged').textContent = changedText + multiParamNotice;
+    document.getElementById('tsObservedEffect').textContent = observedEffect;
+    document.getElementById('tsScientificReason').textContent = scientificReason;
+    document.getElementById('tsSuggestedNext').textContent = suggestedNext;
+
+
+    // C1.4: only open if user hasn't explicitly dismissed it
+    if (!this._compareCardUserDismissed) {
+      summaryCard.style.display = 'block';
+    }
   }
 
   /* ── DOM Update Helpers for NEW Modern CDS UI ───────────────────────────── */
@@ -161,20 +386,30 @@ export class UiCoordinator {
     if (acqLabel) acqLabel.textContent = text;
   }
 
-  _updateCdsStateVal(state) {
-    const cdsState = document.getElementById('cdsStateVal');
-    if (cdsState) cdsState.textContent = `● ${state}`;
+  /**
+   * C2.5: Single telemetry renderer. Pass only what changed.
+   * Fans updates to: CDS strip (FULL) + sticky PiP (COMPACT).
+   * @param {object} patch - { state?, pressure?, wavelength?, time? }
+   */
+  renderTelemetry(patch = {}) {
+    const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    if (patch.state     !== undefined) {
+      set('cdsStateVal',   `● ${patch.state}`);
+      set('pipStateVal',   `● ${patch.state}`);
+    }
+    if (patch.pressure  !== undefined) {
+      set('cdsPressureVal', `${patch.pressure.toFixed(1)} bar`);
+      set('pipPressureVal', `${patch.pressure.toFixed(1)} bar`);
+    }
+    if (patch.wavelength !== undefined) {
+      set('cdsUvVal', `${patch.wavelength} nm`);
+    }
+    if (patch.time !== undefined) {
+      set('pipTimerVal', `${patch.time.toFixed(2)} min`);
+    }
   }
 
-  _updateCdsPressureVal(pressure) {
-    const cdsP = document.getElementById('cdsPressureVal');
-    if (cdsP) cdsP.textContent = `${pressure.toFixed(1)} bar`;
-  }
-
-  _updateCdsUvVal(wavelengthNm) {
-    const cdsUv = document.getElementById('cdsUvVal');
-    if (cdsUv) cdsUv.textContent = `${wavelengthNm} nm`;
-  }
+  // _updateCdsStateVal / _updateCdsPressureVal / _updateCdsUvVal replaced by renderTelemetry — C2.5
 
   _updateTimelinePhase(state) {
     if (!this.views.runTimeline) return;
@@ -189,30 +424,20 @@ export class UiCoordinator {
     if (phaseMap[state]) this.views.runTimeline.setPhase(phaseMap[state]);
   }
 
-  _updateStepHighlight(state) {
-    const stepMap = {
-      PRIMING: 1, EQUILIBRATING: 2, READY: 3, INJECTING: 3, RUNNING: 4, COMPLETED: 5
-    };
-    const activeNum = stepMap[state] || 1;
-    for (let i = 1; i <= 5; i++) {
-      const el = document.getElementById(`gstep-${i}`);
-      if (!el) continue;
-      el.classList.remove('active', 'complete');
-      if (i < activeNum)        el.classList.add('complete');
-      else if (i === activeNum) el.classList.add('active');
-    }
-  }
+  // _updateStepHighlight removed C2.1 — guided-step-banner deleted; RunTimeline is sole workflow indicator.
 
-  /** Sprint E1: Bind 'Why?' explanation triggers */
+  /** C1.1: Bind 'Why?' explanation triggers — Bottom Sheet is the ONLY educational overlay */
   bindWhyModal() {
     const paramMap = {
-      infoFlow: 'flowRate',
-      infoOrganic: 'organicPercent',
-      infoTemp: 'temperature',
-      infoPh: 'ph',
+      infoFlow:       'flowRate',
+      infoOrganic:    'organicPercent',
+      infoTemp:       'temperature',
+      infoPh:         'ph',
+      infoBuffer:     'buffer',
       infoWavelength: 'wavelength'
     };
 
+    // Info icons (ⓘ buttons beside each parameter slider)
     Object.entries(paramMap).forEach(([elementId, paramId]) => {
       const el = document.getElementById(elementId);
       if (el) {
@@ -225,14 +450,10 @@ export class UiCoordinator {
       }
     });
 
-    const closeBtn = document.getElementById('closeWhyModal');
-    const overlay = document.getElementById('whyModalOverlay');
-    if (closeBtn && overlay) {
-      closeBtn.addEventListener('click', () => overlay.style.display = 'none');
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.style.display = 'none';
-      });
-    }
+    // Why-chips (context bubbles from controls.js steppers) — C1.1
+    document.addEventListener('whyRequested', (e) => {
+      this.showWhyModal(e.detail?.paramId);
+    });
   }
 
   /** Render EducationalExplanation payload in contextual Bottom Sheet */

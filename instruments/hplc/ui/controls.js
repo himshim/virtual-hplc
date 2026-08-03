@@ -1,4 +1,5 @@
-import { globalModal } from '../../../ui/components/Modal.js';
+// globalModal import removed — C1.1. Educational overlays route through UiCoordinator.showWhyModal().
+
 
 /**
  * controls.js - DOM Inputs, User Action Bindings, Steppers & Educational Tooltips ⓘ
@@ -36,7 +37,9 @@ export class ControlsView {
 
     this.bindEvents();
     this.bindSteppers();
-    this.bindTooltips();
+    // NOTE: educational info-icon tooltips are handled exclusively by
+    // UiCoordinator.bindWhyModal() → bottom sheet. Do NOT register onclick
+    // here to avoid double-handler bug (C1.1).
   }
 
   bindEvents() {
@@ -150,6 +153,29 @@ export class ControlsView {
       };
     }
 
+    const runExpBtn = document.getElementById('runExperimentBtn');
+    if (runExpBtn) {
+      runExpBtn.onclick = () => {
+        const state = this.controller.getState();
+        if (state === 'IDLE' || state === 'STOPPED' || state === 'COMPLETED' || state === 'OVERPRESSURE') {
+          this.controller.startPump();
+          const checkReady = setInterval(() => {
+            const currentState = this.controller.getState();
+            if (currentState === 'READY') {
+              clearInterval(checkReady);
+              this.controller.injectSample();
+            } else if (currentState === 'OVERPRESSURE' || currentState === 'STOPPED') {
+              clearInterval(checkReady);
+            }
+          }, 150);
+        } else if (state === 'READY') {
+          this.controller.injectSample();
+        } else {
+          this.controller.stopPump();
+        }
+      };
+    }
+
     if (this.stopBtn) {
       this.stopBtn.onclick = () => {
         this.controller.stopPump();
@@ -182,46 +208,93 @@ export class ControlsView {
 
         targetInput.value = next;
         targetInput.dispatchEvent(new Event('input'));
+
+        // Contextual Why Micro-Chip 2.0s Debounce
+        this._triggerContextWhyChip(param, current, next);
       };
     });
+
+    // Save Inline Observation Button Event Binding
+    const saveObsBtn = document.getElementById('saveObservationBtn');
+    if (saveObsBtn) {
+      saveObsBtn.onclick = () => {
+        const input = document.getElementById('inlineObservationInput');
+        const obs = input ? input.value.trim() : '';
+        if (!obs) return;
+
+        saveObsBtn.textContent = '✓ Saved';
+        saveObsBtn.style.background = '#22c55e';
+        if (this.controller.notebook) {
+          this.controller.notebook.addEntry({
+            title: 'Observation Note',
+            content: obs,
+            timestamp: new Date().toLocaleTimeString()
+          });
+        }
+        setTimeout(() => {
+          saveObsBtn.textContent = 'Save';
+          saveObsBtn.style.background = '#16a34a';
+        }, 2000);
+      };
+    }
   }
 
-  bindTooltips() {
-    const tooltipMap = {
-      infoFlow: {
-        title: "ⓘ Flow Rate (mL/min)",
-        body: "<strong>What is this?</strong> Speed at which mobile phase solvent is pumped through the column.<br><strong>What happens?</strong> Higher flow rate speeds up analysis (shorter run time) but increases system backpressure ($P \\propto F$).<br><strong>Lab Note:</strong> Standard $4.6\\text{ mm}$ columns operate at $1.0 - 1.5\\text{ mL/min}$."
-      },
-      infoOrganic: {
-        title: "ⓘ Mobile Phase %B (Organic Solvent)",
-        body: "<strong>What is this?</strong> Percentage of strong organic solvent (Methanol/Acetonitrile) in mobile phase.<br><strong>What happens?</strong> Higher %B reduces solute retention on hydrophobic C18 column ($t_R \\downarrow$).<br><strong>Lab Note:</strong> 10% change in %B typically shifts retention by $2\\times - 3\\times$."
-      },
-      infoTemp: {
-        title: "ⓘ Column Temperature (°C)",
-        body: "<strong>What is this?</strong> Thermostatic column oven temperature.<br><strong>What happens?</strong> Higher temperature lowers mobile phase viscosity, reducing system backpressure by ~28% @ 50°C while slightly accelerating elution.<br><strong>Lab Note:</strong> Used to manage high backpressure without sacrificing flow rate."
-      },
-      infoPh: {
-        title: "ⓘ Mobile Phase pH",
-        body: "<strong>What is this?</strong> Acidity/alkalinity of mobile phase aqueous buffer.<br><strong>What happens?</strong> Alters ionization state of weak acids and bases. Ionized species ($\text{COO}^-$) are hydrophilic and elute much faster.<br><strong>Lab Note:</strong> Maintain $\\text{pH} = \\text{p}K_a \\pm 2$ for robust un-ionized or fully ionized method control."
-      },
-      infoBuffer: {
-        title: "ⓘ Buffer System Entity",
-        body: "<strong>What is this?</strong> Weak acid/conjugate base solution maintaining constant mobile phase pH.<br><strong>What happens?</strong> Prevents pH drift during sample injection.<br><strong>Lab Note:</strong> Ensure selected pH falls within buffer's effective buffering range ($\text{p}K_a \\pm 1.0$)."
-      },
-      infoWavelength: {
-        title: "ⓘ UV Wavelength λ (nm)",
-        body: "<strong>What is this?</strong> Optical wavelength of UV/Vis detector cell.<br><strong>What happens?</strong> Peak height depends on analyte extinction coefficient $\\epsilon(\\lambda)$ at selected wavelength according to Beer-Lambert Law.<br><strong>Lab Note:</strong> Set $\\lambda = \\lambda_{\\max}$ for maximum sensitivity or selective detection."
-      }
+  _triggerContextWhyChip(param, prevVal, newVal) {
+    if (this._whyDebounceTimer) clearTimeout(this._whyDebounceTimer);
+
+    const inputMap = {
+      flow: this.flowInput,
+      organic: this.organicInput,
+      temp: this.tempInput,
+      ph: this.phInput
     };
+    const inputEl = inputMap[param];
+    if (!inputEl) return;
 
-    Object.keys(tooltipMap).forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.style.cursor = "pointer";
-        el.onclick = () => globalModal.show(tooltipMap[id].title, tooltipMap[id].body);
+    this._whyDebounceTimer = setTimeout(() => {
+      let chipId = `whyChip_${param}`;
+      let chipEl = document.getElementById(chipId);
+      if (!chipEl) {
+        chipEl = document.createElement('div');
+        chipEl.id = chipId;
+        chipEl.className = 'context-why-chip';
+        chipEl.style.cssText = `
+          margin-top: 6px; padding: 6px 12px; background: rgba(56, 189, 248, 0.15);
+          border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; color: #38bdf8;
+          font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex;
+          align-items: center; gap: 6px; transition: all 0.3s ease; opacity: 0;
+        `;
+        inputEl.parentElement.appendChild(chipEl);
       }
-    });
+
+      const questions = {
+        flow: newVal > prevVal ? '❓ Why did retention time decrease?' : '❓ Why did retention time increase?',
+        organic: newVal > prevVal ? '❓ Why did peaks elute faster at higher %B?' : '❓ Why did peaks retain longer at lower %B?',
+        temp: newVal > prevVal ? '❓ Why did system backpressure decrease?' : '❓ Why did system backpressure increase?',
+        ph: '❓ Why did ionizable compounds shift retention?'
+      };
+
+      const explanations = {
+        flow: 'Higher flow rate increases mobile phase linear velocity (u), decreasing residence time in the column.',
+        organic: 'Higher organic %B solvent strength weakens hydrophobic solute adsorption on C18 stationary phase.',
+        temp: 'Higher temperature lowers mobile phase viscosity, dropping column backpressure without reducing flow.',
+        ph: 'pH shifts change solute ionization (pK_a). Charged ions elute earlier in reverse-phase HPLC.'
+      };
+
+      chipEl.innerHTML = `<span>${questions[param]}</span> <span style="font-size:0.7rem; opacity:0.8;">▶</span>`;
+      chipEl.style.opacity = '1';
+
+      // Route through UiCoordinator bottom sheet (C1.1 — single educational overlay).
+      // Dispatch a custom event that UiCoordinator.bindWhyModal() can intercept.
+      chipEl.onclick = () => {
+        const paramIdMap = { flow: 'flowRate', organic: 'organicPercent', temp: 'temperature', ph: 'ph' };
+        document.dispatchEvent(new CustomEvent('whyRequested', { detail: { paramId: paramIdMap[param] || param } }));
+      };
+    }, 2000);
   }
+
+  // bindTooltips() removed — C1.1 cleanup.
+  // All info-icon educational overlays are handled by UiCoordinator.bindWhyModal().
 
   updateControlsForState(state) {
     const isOff = (state === 'IDLE' || state === 'STOPPED' || state === 'COMPLETED' || state === 'OVERPRESSURE');

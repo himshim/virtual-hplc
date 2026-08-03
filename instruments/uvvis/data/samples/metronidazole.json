@@ -1,0 +1,28 @@
+{
+  "id": "metronidazole",
+  "displayName": "Metronidazole",
+  "formula": "C6H9N3O3",
+  "mw": 171.15,
+  "epsilonMax": 14900,
+  "pKa": 2.4,
+  "peaks": [
+    { "lambdaMax": 320, "bandwidth": 25, "epsilonFraction": 1.00 },
+    { "lambdaMax": 277, "bandwidth": 28, "epsilonFraction": 0.28 }
+  ],
+  "description": "5-Nitroimidazole chromophore: strong UV peak at 320 nm (π→π* nitro conjugation) in acidic/neutral media.",
+  "chromophore": "5-Nitroimidazole ring system",
+  "transition": "π → π* nitro chromophore transition",
+  "clinicalNote": "Antimicrobial & antiprotozoal API. Official BP/IP assay at 320 nm in 0.1 M HCl.",
+  "sources": [
+    {
+      "type": "PubChem",
+      "cid": 4173,
+      "purpose": "Chemical identity and molecular weight"
+    },
+    {
+      "type": "PubMed",
+      "pmid": "31284920",
+      "purpose": "Experimental λmax (320 nm) and molar absorptivity in 0.1 M HCl"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "potassium_dichromate",
+  "testKey": "photometric_accuracy",
+  "testName": "Photometric Accuracy & Linearity (Absorbance Scale)",
+  "standardName": "Potassium Dichromate K2Cr2O7 in 0.005M H2SO4",
+  "certifiedValue": "0.570 AU @ 257 nm, 0.748 AU @ 350 nm",
+  "tolerance": "± 0.010 AU",
+  "targetLambda": 257,
+  "certifiedAbsorbance": 0.570,
+  "limitDescription": "|ΔA| ≤ 0.010 AU"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "gc-spectrometer",
+  "name": "Gas Chromatography (GC-FID)",
+  "category": "chromatography",
+  "version": "1.0.0",
+
+  "sdkVersion": "1.0.0",
+  "pluginVersion": "1.0.0",
+  "entry": "GcPlugin.js",
+  "description": "Gas Chromatography plugin with Kovats Retention Index, thermal programming, carrier gas velocity, and Flame Ionization Detector (FID).",
+  "features": {
+    "graph": {
+      "type": "chromatogram",
+      "xAxis": "Retention Time (min)",
+      "yAxis": "FID Response (pA)"
+    }
+  },
+  "contributes": {
+    "hero": "gc-chromatogram-canvas",
+    "telemetry": ["carrierGas", "flowRate", "splitRatio", "ovenTemp", "detectorState"]
+  }
+}

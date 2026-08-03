@@ -10,17 +10,17 @@ export class Mixture extends Entity {
     name,
     description = "",
     components = [], // Array of { compoundId, concentration, role }
-    reactionRules = [], // Future Reaction Engine rules
-    compatibilityRules = [], // Future Compatibility rules
+    reactionRules = [],
+    compatibilityRules = [],
     schemaVersion = 1,
     entityVersion = "1.0.0",
     metadata = {}
   }) {
     super({ id, name, type: "MIXTURE", schemaVersion, entityVersion, metadata });
 
-    this.description = description;
-    this.components = [...components];
-    this.reactionRules = [...reactionRules];
+    this.description        = description;
+    this.components         = [...components];
+    this.reactionRules      = [...reactionRules];
     this.compatibilityRules = [...compatibilityRules];
   }
 

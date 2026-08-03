@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="../../css/global.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
 </head>
 
 <body>
@@ -87,63 +89,55 @@
       </div>
     </div>
 
-    <!-- NEW Guided Step Unlock Banner (Sprint U4) -->
-    <div class="guided-step-banner" id="guided-step-banner" role="progressbar" aria-label="Guided experiment progress">
-      <div class="guided-step-item active" id="gstep-1">
-        <span>① Start Pump</span>
-      </div>
-      <span class="guided-step-arrow">➔</span>
-      <div class="guided-step-item" id="gstep-2">
-        <span>② Wait for Ready</span>
-      </div>
-      <span class="guided-step-arrow">➔</span>
-      <div class="guided-step-item" id="gstep-3">
-        <span>③ Inject Sample</span>
-      </div>
-      <span class="guided-step-arrow">➔</span>
-      <div class="guided-step-item" id="gstep-4">
-        <span>④ Watch Separation</span>
-      </div>
-      <span class="guided-step-arrow">➔</span>
-      <div class="guided-step-item" id="gstep-5">
-        <span>⑤ View Report</span>
-      </div>
-    </div>
 
     <!-- Replay Strip (shown after first run) -->
     <div id="replay-strip" style="display:none;" class="replay-strip-enter"></div>
 
-    <!-- Primary Chromatogram Card (Top Position) -->
-    <div class="instrument-card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-        <h2 style="margin:0; font-size:1.1rem; color:var(--brand-primary);" id="chromatogram-heading">Live Chromatogram</h2>
-        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-          <!-- Zoom control strip (P5) -->
-          <div id="zoom-controls" style="display:flex; gap:4px;" role="group" aria-label="Zoom controls">
-            <button onclick="window._graphViewInstance?.fitAll?.()" title="Fit All Data"
-              style="background:#1e293b; border:1px solid #334155; color:#38bdf8; border-radius:6px; padding:4px 10px; font-size:0.75rem; font-weight:600; cursor:pointer; min-height:36px;"
-              aria-label="Fit all data in view">🔍 Fit All</button>
-            <button onclick="window._graphViewInstance?.fitPeaks?.()" title="Fit Peaks Window"
-              style="background:#1e293b; border:1px solid #334155; color:#34d399; border-radius:6px; padding:4px 10px; font-size:0.75rem; font-weight:600; cursor:pointer; min-height:36px;"
-              aria-label="Fit peaks in view">🎯 Fit Peaks</button>
-            <button onclick="window._graphViewInstance?.resetZoom?.()" title="Reset Graph View"
-              style="background:#1e293b; border:1px solid #334155; color:#94a3b8; border-radius:6px; padding:4px 10px; font-size:0.75rem; font-weight:600; cursor:pointer; min-height:36px;"
-              aria-label="Reset zoom to full range">↺ Reset View</button>
-          </div>
-          <div role="status" aria-live="polite" aria-label="Instrument warnings">
-            <span id="status" class="status-badge" aria-label="Instrument status">IDLE</span>
-            <span id="satWarning" class="status-badge error" style="display: none;" role="alert">⚠️ SATURATED</span>
-            <span id="pressureWarning" class="status-badge error" style="display: none;" role="alert">🚨 OVERPRESSURE</span>
-          </div>
+    <!-- Run Timeline (above chromatogram) -->
+    <div id="run-timeline-container" style="margin-bottom:6px;"></div>
+
+    <!-- Primary Chromatogram Card -->
+    <div class="instrument-card" style="padding:10px 12px;">
+
+      <!-- Chromatogram header row -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h2 style="margin:0; font-size:1rem; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;" id="chromatogram-heading">Chromatogram</h2>
+          <!-- Blank Injection Badge (subtle, shown only during blank runs) -->
+          <span id="blankInjectionBadge" style="display:none; font-size:0.68rem; font-weight:700; color:#f59e0b; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); padding:2px 7px; border-radius:4px; font-family:'JetBrains Mono',monospace; letter-spacing:0.04em;">BLANK</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span id="status" class="status-badge" aria-label="Instrument status">IDLE</span>
+          <span id="satWarning" class="status-badge error" style="display:none;" role="alert">⚠ SATURATED</span>
+          <span id="pressureWarning" class="status-badge error" style="display:none;" role="alert">OVERPRESSURE</span>
         </div>
       </div>
 
+      <!-- CDS Run Metadata Strip -->
+      <div id="cds-run-meta" style="display:flex; flex-wrap:wrap; gap:10px 20px; font-size:0.68rem; color:#64748b; font-family:'JetBrains Mono',monospace; padding:5px 0 8px 0; border-bottom:1px solid rgba(255,255,255,0.06); margin-bottom:8px;">
+        <span>Sample: <span id="metaSample" style="color:#94a3b8;">—</span></span>
+        <span>Flow: <span id="metaFlow" style="color:#94a3b8;">1.00 mL/min</span></span>
+        <span>λ: <span id="metaWavelength" style="color:#94a3b8;">254 nm</span></span>
+        <span>T: <span id="metaTemp" style="color:#94a3b8;">25 °C</span></span>
+        <span>Run Time: <span id="metaRunTime" style="color:#94a3b8;">—</span></span>
+      </div>
+
+      <!-- CDS Toolbar -->
+      <div id="cds-toolbar" class="cds-toolbar" role="group" aria-label="Chromatogram toolbar">
+        <button class="cds-tool-btn" id="toolFitAll"    onclick="window._graphViewInstance?.fitAll?.()">Fit All</button>
+        <button class="cds-tool-btn" id="toolFitPeaks"  onclick="window._graphViewInstance?.fitPeaks?.()">Fit Peaks</button>
+        <button class="cds-tool-btn" id="toolReset"     onclick="window._graphViewInstance?.resetZoom?.()">Reset</button>
+        <button class="cds-tool-btn" id="toolCompare"   onclick="window._uiCoordinator?.toggleCompareOverlay?.()">Compare</button>
+        <!-- CDS integration status (appears post-run) -->
+        <span id="cdsIntegrationStatus" style="display:none; font-size:0.7rem; color:#34d399; font-family:'JetBrains Mono',monospace; margin-left:auto;"></span>
+      </div>
+
       <!-- Beginner Mode Quick Sample Selector -->
-      <div id="beginnerSampleBox" style="margin-bottom: 12px; padding: 10px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
-        <label for="beginnerCompoundSelect" style="font-size: 0.85rem; font-weight: 700; color: #0369a1; display: block; margin-bottom: 4px;">
-          🧪 Select Sample to Analyze:
+      <div id="beginnerSampleBox" style="margin-bottom: 10px; padding: 8px 10px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
+        <label for="beginnerCompoundSelect" style="font-size: 0.82rem; font-weight: 700; color: #0369a1; display: block; margin-bottom: 4px;">
+          Select Sample:
         </label>
-        <select id="beginnerCompoundSelect" style="width:100%; padding:8px; border-radius:6px; border:1px solid #7dd3fc; background:white; font-size:0.9rem;">
+        <select id="beginnerCompoundSelect" style="width:100%; padding:6px; border-radius:6px; border:1px solid #7dd3fc; background:white; font-size:0.85rem;">
           <!-- Mirror of compoundSelect -->
         </select>
       </div>
@@ -159,17 +153,76 @@
           </div>
         </div>
       </div>
+
+      <!-- Pre-Run Prediction Mode Prompt (Before Injection) -->
+      <div id="preRunPredictionCard" class="card-glass-subtle" style="display:none; margin-top:10px; padding:12px 16px; border:1px solid rgba(56,189,248,0.25); border-radius:var(--radius-md); background:rgba(15,23,42,0.85);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <strong style="color:#38bdf8; font-size:0.85rem;">🔮 Pre-Run Prediction (Optional)</strong>
+          <span style="font-size:0.75rem; color:#94a3b8;">Form your hypothesis!</span>
+        </div>
+        <div style="font-size:0.82rem; color:#e2e8f0; margin-bottom:8px;">What do you think will happen in this run?</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.8rem;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:6px;">
+            <input type="radio" name="prediction" value="earlier"> <span>Peaks elute earlier</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:6px;">
+            <input type="radio" name="prediction" value="later"> <span>Peaks elute later</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:6px;">
+            <input type="radio" name="prediction" value="pressure"> <span>Pressure increases</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:6px;">
+            <input type="radio" name="prediction" value="resolution"> <span>Resolution increases</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Tiny Post-Run Inline Observation Prompt -->
+      <div id="inlineObservationCard" class="card-glass-subtle" style="display:none; margin-top:10px; padding:10px 14px; border:1px solid rgba(34,197,94,0.3); border-radius:var(--radius-md); background:rgba(15,23,42,0.85);">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="font-size:0.85rem; font-weight:600; color:#86efac; white-space:nowrap;">What changed?</div>
+          <input id="inlineObservationInput" type="text" placeholder="E.g. Peaks eluted faster at higher flow..."
+            style="flex:1; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 10px; color:#f8fafc; font-size:0.8rem;">
+          <button id="saveObservationBtn" style="background:#16a34a; color:white; border:none; padding:6px 14px; border-radius:6px; font-weight:600; font-size:0.8rem; cursor:pointer;">Save</button>
+        </div>
+        <div id="predictionFeedbackBox" style="display:none; margin-top:8px; padding:6px 10px; border-radius:6px; font-size:0.78rem; font-weight:600;"></div>
+      </div>
+
+      <!-- 4-Step Structured Teacher Summary Card -->
+      <div id="teacherSummaryCard" class="card-glass-subtle" style="display:none; margin-top:10px; padding:14px 16px; border:1px solid rgba(56,189,248,0.3); border-radius:var(--radius-md); background:rgba(15,23,42,0.92);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px;">
+          <strong style="color:#38bdf8; font-size:0.88rem; display:flex; align-items:center; gap:6px;">
+            Compare Runs (Current vs. Previous)
+          </strong>
+          <span style="font-size:0.75rem; color:#94a3b8; font-family:'JetBrains Mono',monospace;">4-Step Educational Diagnosis</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr; gap:8px; font-size:0.8rem;">
+          <div style="display:flex; align-items:flex-start; gap:8px;">
+            <span style="background:rgba(56,189,248,0.15); color:#38bdf8; padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.75rem;">1. CHANGED</span>
+            <span id="tsParamChanged" style="color:#f8fafc;">Flow rate increased from 1.0 to 1.5 mL/min.</span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:8px;">
+            <span style="background:rgba(234,179,8,0.15); color:#facc15; padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.75rem;">2. OBSERVED</span>
+            <span id="tsObservedEffect" style="color:#f8fafc;">Retention time decreased by 18%.</span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:8px;">
+            <span style="background:rgba(168,85,247,0.15); color:#c084fc; padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.75rem;">3. REASON</span>
+            <span id="tsScientificReason" style="color:#f8fafc;">Higher mobile phase velocity reduces column residence time.</span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:8px;">
+            <span style="background:rgba(34,197,94,0.15); color:#4ade80; padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.75rem;">4. NEXT TRY</span>
+            <span id="tsSuggestedNext" style="color:#f8fafc;">Try 1.2 mL/min to balance speed and separation.</span>
+          </div>
+        </div>
+      </div>
     </div>
+
 
     <!-- Sticky Action Dock (Bottom Position) -->
     <div class="action-dock" role="group" aria-label="Experiment Controls">
-      <div class="dock-telemetry">
-        <div>
-          <span style="color:var(--text-secondary);">Pressure:</span>
-          <span id="pressureVal" style="font-weight:700;">0 bar</span>
-        </div>
-        <div id="rtDisplay" style="color:var(--text-secondary);">Elapsed: 00:00</div>
-      </div>
+      <!-- dock-telemetry removed C2.2 — pressure/time shown in top strip + sticky PiP -->
+
       <meter id="pressureMeter" min="0" max="400" low="250" high="350" optimum="150" value="0"
         aria-label="System pressure gauge"></meter>
 
@@ -219,9 +272,9 @@
           <div style="font-size:0.75rem; color:#64748b;">Standard: 1.0 mL/min</div>
         </div>
         <div class="stepper-btn-group">
-          <button class="step-btn" data-param="flow" data-step="-1" aria-label="Decrease flow rate">−</button>
+          <button class="step-btn" data-param="flow" data-step="-0.1" aria-label="Decrease flow rate">−</button>
           <span class="step-val-display" id="flowVal">1.0 mL/min</span>
-          <button class="step-btn" data-param="flow" data-step="1" aria-label="Increase flow rate">+</button>
+          <button class="step-btn" data-param="flow" data-step="0.1" aria-label="Increase flow rate">+</button>
         </div>
       </div>
       <input id="flowInput" type="range" min="0.5" max="5.0" step="0.1" value="1.0">
@@ -351,8 +404,7 @@
 
   <!-- TAB 5: LEARN & SCHEMATIC -->
   <div id="tab-learn" class="tab-panel">
-    <!-- Scientific Validation Suite Dashboard Card -->
-    <div id="validation-dashboard-container" style="margin-bottom: 20px;"></div>
+
 
     <div class="instrument-card">
       <h2 style="margin-top:0; color:var(--brand-primary);">HPLC Flow Schematic</h2>
@@ -379,10 +431,9 @@
   import { SpectrumView } from './ui/spectrumView.js';
   import { SampleBrowserComponent } from '../../ui/components/SampleBrowser.js';
   import { ReportCardComponent } from '../../ui/components/ReportCard.js';
-  import { ValidationDashboard } from '../../ui/components/ValidationDashboard.js';
-  import { globalModal } from '../../ui/components/Modal.js';
+  // globalModal import removed — C2.3. Educational overlays use bottom sheet (UiCoordinator.openBottomSheet).
   // P7 UI Modules
-  import { InstrumentStatusBar } from './ui/InstrumentStatusBar.js';
+  // InstrumentStatusBar removed — C1.3. Telemetry handled by cds-telemetry-strip + UiCoordinator.
   import { RunTimeline } from './ui/RunTimeline.js';
   import { ParameterImpact } from './ui/ParameterImpact.js';
   // P8 Workspace Polish
@@ -417,6 +468,7 @@
 
     const controller = new HplcController();
     const graphView = new GraphView("graphCanvas");
+    window._graphViewInstance = graphView;
     const controlsView = new ControlsView(controller);
     const displayView = new DisplayView();
     const compareView = new CompareView("compareContainer");
@@ -424,16 +476,13 @@
     const spectrumView = new SpectrumView("spectrumCanvas");
     const notebook = new ExperimentNotebook("experiment-notebook-container");
     
-    // P3 Registry-Driven Sample Card Browser & Validation Dashboard
+    // P3 Registry-Driven Sample Card Browser
     const sampleBrowser = new SampleBrowserComponent("compoundSelect", "sampleGridContainer");
     const reportCard = new ReportCardComponent("methodLabContainer");
-    const validationDashboard = new ValidationDashboard("validation-dashboard-container");
 
     // P7 Components
-    const statusBar = new InstrumentStatusBar('instrument-status-bar');
     const runTimeline = new RunTimeline('run-timeline-container');
     const paramImpact = new ParameterImpact('param-impact-panel');
-    statusBar.render();
     runTimeline.render();
 
     // P8: Persistent workspace memory — restore last session
@@ -465,21 +514,20 @@
       chart: graphView.chart,
       onPhase: (phaseId) => runTimeline.setPhase(phaseId),
       onScrub: (t, fraction) => {
-        // Update status bar time while scrubbing
-        statusBar.update({ status: fraction >= 0.98 ? 'COMPLETED' : 'REPLAYING' });
+        window._uiCoordinator?.renderTelemetry?.({ state: fraction >= 0.98 ? 'COMPLETED' : 'REPLAYING' });
       }
     });
 
-    validationDashboard.render();
     spectrumView.renderSpectrum(controller.simState.sampleKey, controller.simState.wavelengthNm);
 
     // Central Presentation Layer Coordinator (Single Source of UI Event Subscriptions)
     window._hplcControllerInstance = controller;
     const uiCoordinator = new UiCoordinator(controller, {
       graphView, controlsView, displayView, compareView, historyView,
-      spectrumView, statusBar, runTimeline, paramImpact, reportCard,
-      validationDashboard, interactiveChromatogram, narrator, methodReplay, notebook
+      spectrumView, runTimeline, paramImpact, reportCard,
+      validationDashboard: null, interactiveChromatogram, narrator, methodReplay, notebook
     });
+
 
     // Sync Beginner quick sample dropdown with primary compoundSelect
     const mainSampleSelect = document.getElementById("compoundSelect");
@@ -590,189 +638,20 @@
     const demoBtn = document.getElementById("guidedDemoBtn");
     if (demoBtn) {
       demoBtn.onclick = () => {
-        globalModal.show(
-          "⚡ 60-Second Guided HPLC Demo",
-          "Welcome to Virtual HPLC Simulator!<br><br>1. Select a sample from the dropdown.<br>2. Tap <strong>▶ Run Experiment</strong> for 1-tap automated analysis.<br>3. View your Method Evaluation Report in the Results tab!<br><br>Ready?"
+        // C2.3: use bottom sheet (single educational overlay)
+        window._uiCoordinator?.openBottomSheet?.(
+          '⚡ 60-Second Guided HPLC Demo', '⚡',
+          `Welcome to Virtual HPLC Simulator!<br><br>
+           1. Select a sample from the dropdown.<br>
+           2. Tap <strong>▶ Run Experiment</strong> for 1-tap automated analysis.<br>
+           3. View your Method Evaluation Report in the Results tab!<br><br>
+           Ready?`
         );
       };
     }
 
-    controller.eventBus.on(HPLC_EVENTS.STATUS_CHANGED, ({ newState }) => {
-      displayView.setStatus(newState);
-      controlsView.updateControlsForState(newState);
-      statusBar.update({ status: newState });
+    // Event subscriptions handled exclusively via UiCoordinator above.
 
-      const acqLabel = document.getElementById("acqPhaseLabel");
-      const cdsState = document.getElementById("cdsStateVal");
-      if (cdsState) cdsState.textContent = `● ${newState}`;
-
-      if (acqLabel) {
-        const phaseMap = {
-          PRIMING:      "⚡ PRIMING: Ramping pressure...",
-          EQUILIBRATING:"💧 EQUILIBRATING: Stabilizing baseline...",
-          READY:        "🟢 READY FOR INJECTION",
-          INJECTING:    "💉 INJECTING SAMPLE (Valve turning...)",
-          RUNNING:      "📈 ACQUIRING CHROMATOGRAM...",
-          COMPLETED:    "✅ ACQUISITION COMPLETE",
-          STOPPED:      "⏹ PUMP STOPPED",
-          IDLE:         "IDLE"
-        };
-        acqLabel.textContent = phaseMap[newState] || newState;
-      }
-
-      // Sprint U4: Update Guided Step Unlock Banner active highlight
-      const updateStepHighlight = (activeStepNum) => {
-        for (let i = 1; i <= 5; i++) {
-          const el = document.getElementById(`gstep-${i}`);
-          if (!el) continue;
-          el.classList.remove('active', 'complete');
-          if (i < activeStepNum) el.classList.add('complete');
-          else if (i === activeStepNum) el.classList.add('active');
-        }
-      };
-
-      if (newState === 'PRIMING') {
-        runTimeline.setPhase('prime');
-        updateStepHighlight(1);
-      } else if (newState === 'EQUILIBRATING') {
-        runTimeline.setPhase('equilibrate');
-        updateStepHighlight(2);
-      } else if (newState === 'READY') {
-        runTimeline.setPhase('ready');
-        updateStepHighlight(3);
-      } else if (newState === 'INJECTING') {
-        runTimeline.setPhase('inject');
-        updateStepHighlight(3);
-      } else if (newState === 'RUNNING') {
-        runTimeline.setPhase('separation');
-        updateStepHighlight(4);
-      } else if (newState === 'COMPLETED') {
-        runTimeline.setPhase('complete');
-        updateStepHighlight(5);
-      }
-
-      if (runExpBtn) {
-        if (newState === 'RUNNING') {
-          runExpBtn.textContent = "⏹ Stop Experiment";
-          runExpBtn.disabled = false;
-          runExpBtn.classList.add("running");
-        } else if (newState === 'IDLE' || newState === 'STOPPED' || newState === 'COMPLETED') {
-          runExpBtn.textContent = "▶ Run Experiment";
-          runExpBtn.disabled = false;
-          runExpBtn.classList.remove("running");
-        }
-      }
-    });
-
-    controller.eventBus.on(HPLC_EVENTS.PRESSURE_CHANGED, ({ pressure }) => {
-      displayView.setPressure(pressure);
-      statusBar.update({ pressureBar: pressure });
-      const cdsP = document.getElementById("cdsPressureVal");
-      if (cdsP) cdsP.textContent = `${pressure.toFixed(1)} bar`;
-    });
-
-    controller.eventBus.on(HPLC_EVENTS.WAVELENGTH_CHANGED, ({ wavelengthNm }) => {
-      spectrumView.renderSpectrum(controller.simState.sampleKey, wavelengthNm);
-    });
-
-    controller.eventBus.on(HPLC_EVENTS.INJECTING_STARTED, () => {
-      runTimeline.setPhase('inject');
-      const acqLabel = document.getElementById("acqPhaseLabel");
-      if (acqLabel) acqLabel.textContent = "💉 INJECTING SAMPLE (Valve turning...)";
-    });
-
-    controller.eventBus.on(HPLC_EVENTS.RUN_STARTED, ({ expectedAnalytes }) => {
-      graphView.reset();
-      displayView.renderPeakTable(null);
-      runTimeline.setPhase('separation');
-      paramImpact.reset();
-      interactiveChromatogram.reset();
-      narrator.clear();
-      methodReplay.reset();
-
-      if (expectedAnalytes && expectedAnalytes.length) {
-        interactiveChromatogram.setExpectedMarkers(expectedAnalytes);
-      }
-
-      const ghost = document.getElementById("ghostOverlay");
-      if (ghost) ghost.classList.add("hidden");
-    });
-
-    controller.eventBus.on(HPLC_EVENTS.PEAK_DETECTED_LIVE, ({ compound }) => {
-      interactiveChromatogram.markLiveDetected(compound);
-    });
-
-    controller.eventBus.on(HPLC_EVENTS.TICK, ({ time, signal, pressure, phase }) => {
-      displayView.setTimeDisplay(time);
-
-      const state = controller.getState();
-      if (state === 'PRIMING' || state === 'EQUILIBRATING' || state === 'READY' || state === 'RUNNING') {
-        graphView.addPoint(time, signal);
-
-        if (state === 'RUNNING') {
-          if (time < 0.3)      runTimeline.setPhase('prime');
-          else if (time < 0.8) runTimeline.setPhase('equilibrate');
-          else if (time < 1.5) runTimeline.setPhase('inject');
-          else                 runTimeline.setPhase('separation');
-        }
-      }
-    });
-
-    controller.eventBus.on(HPLC_EVENTS.WARNING_RAISED, ({ warnings }) => {
-      displayView.setWarnings(warnings);
-    });
-
-    controller.eventBus.on(HPLC_EVENTS.RUN_COMPLETED, ({ runResult, exerciseProfile, methodComparison, methodHistory }) => {
-      displayView.renderPeakTable(runResult);
-      reportCard.render(runResult, exerciseProfile);
-      compareView.render(methodComparison);
-      historyView.render(methodHistory);
-      // P7: Timeline -> complete phase + update status bar
-      runTimeline.setPhase('complete');
-      statusBar.update({
-        status: 'COMPLETED',
-        flowRate: controller.simState.flowRate || 1.0,
-        wavelengthNm: controller.simState.wavelengthNm || 254,
-        temperatureC: controller.simState.temperature || 25
-      });
-      // P9: Pin peak annotations onto chromatogram
-      if (runResult?.peaks) {
-        interactiveChromatogram.setPeaks(runResult.peaks);
-        // Store snapshot for ghost overlay on next run
-        const snapshot = [...(graphView.chart?.data?.datasets?.[0]?.data || [])];
-        if (snapshot.length) interactiveChromatogram.setReferenceRun(snapshot);
-      }
-      // P10: Narrator — post-run analysis
-      narrator.onRunCompleted(runResult);
-      // v1.x: Load completed run into replay
-      const replayPoints = [...(graphView.chart?.data?.datasets?.[0]?.data || [])];
-      if (replayPoints.length && runResult?.peaks) {
-        methodReplay.loadRun(replayPoints, runResult.peaks);
-      }
-      // P8: Persist workspace state
-      WorkspaceMemory.save({
-        flowRate: parseFloat(document.getElementById('flowInput')?.value || 1),
-        organicPercent: parseFloat(document.getElementById('organicInput')?.value || 40),
-        temperature: parseFloat(document.getElementById('tempInput')?.value || 25),
-        sampleKey: controller.simState?.sampleKey
-      });
-
-      // Unlock & Badge Results Tab on Run 1 Completion
-      const resultsBtn = document.getElementById("tabBtn-results");
-      const badgeDot = document.getElementById("resultsBadge");
-      if (resultsBtn) resultsBtn.disabled = false;
-      if (badgeDot) badgeDot.style.display = "inline-block";
-
-      // Encouraging First Run Completion Modal
-      if (currentMode === "beginner") {
-        setTimeout(() => {
-          globalModal.show(
-            "🎉 Great!",
-            "You completed your first experiment.<br><br>See how well your method performed in the Results tab!"
-          );
-        }, 500);
-      }
-    });
 
     if (mainSampleSelect) {
       mainSampleSelect.addEventListener("change", (e) => {
@@ -870,73 +749,10 @@
   });
 </script>
 
-  <!-- Sprint E1: Educational Engine 'Why?' Modal Dialog -->
-  <div id="whyModalOverlay" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.8); backdrop-filter:blur(4px); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#0f172a; border:1px solid rgba(56,189,248,0.3); border-radius:16px; max-width:540px; width:90%; padding:24px; color:#f8fafc; box-shadow:0 20px 50px rgba(0,0,0,0.5); font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px; margin-bottom:16px;">
-        <h3 id="whyModalTitle" style="margin:0; font-size:1.1rem; color:#38bdf8; display:flex; align-items:center; gap:8px;">
-          <span>❓ Why?</span> <span id="whyParamName" style="color:#f8fafc;">Parameter Explanation</span>
-        </h3>
-        <button id="closeWhyModal" style="background:none; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; padding:0; line-height:1;">✕</button>
-      </div>
+  <!-- whyModalOverlay removed C2.3 — bottom sheet is the single educational overlay -->
 
-      <div style="space-y:12px;">
-        <div style="margin-bottom:12px;">
-          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:#38bdf8; font-weight:700; margin-bottom:4px;">Physical Effect</div>
-          <p id="whyPhysicalEffect" style="margin:0; font-size:0.9rem; color:#cbd5e1; line-height:1.5;"></p>
-        </div>
 
-        <div style="margin-bottom:12px;">
-          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:#a78bfa; font-weight:700; margin-bottom:4px;">Observed Effect</div>
-          <p id="whyObservedEffect" style="margin:0; font-size:0.9rem; color:#cbd5e1; line-height:1.5;"></p>
-        </div>
 
-        <div style="margin-bottom:12px;">
-          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:#34d399; font-weight:700; margin-bottom:4px;">Learner Outcome</div>
-          <p id="whyLearnerOutcome" style="margin:0; font-size:0.9rem; color:#cbd5e1; line-height:1.5;"></p>
-        </div>
-
-        <div id="whyTipBox" style="margin-bottom:12px; background:rgba(56,189,248,0.1); border-left:3px solid #38bdf8; padding:10px 12px; border-radius:4px;">
-          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:#38bdf8; font-weight:700; margin-bottom:2px;">💡 Practical Tip</div>
-          <p id="whyPracticalTip" style="margin:0; font-size:0.85rem; color:#e2e8f0;"></p>
-        </div>
-
-        <div>
-          <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:#64748b; font-weight:700; margin-bottom:4px;">References</div>
-          <ul id="whyReferences" style="margin:0; padding-left:18px; font-size:0.78rem; color:#94a3b8; font-family:'JetBrains Mono',monospace;"></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Sprint E3: Context-Aware Floating Action Dock (Progressive Disclosure) -->
-  <div id="floatingQuickDock" class="floating-quick-dock" role="toolbar" aria-label="Quick Action Shortcuts">
-    <button id="fabMethodBtn" class="fab-btn" aria-label="Open Method Tuning Drawer">
-      <span>⚙️</span><span class="fab-label">Method</span>
-    </button>
-    <button id="fabSampleBtn" class="fab-btn" aria-label="Open Sample Selection Drawer">
-      <span>🧪</span><span class="fab-label">Sample</span>
-    </button>
-    <button id="fabWhyBtn" class="fab-btn" aria-label="Open Educational Explanation">
-      <span>❓</span><span class="fab-label">Why?</span>
-    </button>
-    <button id="fabNotebookBtn" class="fab-btn highlight" aria-label="Open Experiment Notebook Drawer">
-      <span>📝</span><span class="fab-label">Notebook</span>
-    </button>
-  </div>
-
-  <!-- Sprint E3: Slide-Over Off-Canvas Drawer -->
-  <div id="drawerBackdrop" class="drawer-backdrop" aria-hidden="true"></div>
-  <aside id="slideOverDrawer" class="slide-over-drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
-    <div class="drawer-header">
-      <h3 id="drawerTitle" class="drawer-title">
-        <span id="drawerIcon">📝</span>
-        <span id="drawerTitleText">Experiment Notebook</span>
-      </h3>
-      <button id="closeDrawerBtn" class="drawer-close-btn" aria-label="Close drawer">✕</button>
-    </div>
-    <div id="drawerBody" class="drawer-body"></div>
-  </aside>
 
   <!-- Sprint U5: Persistent Context Sticky Telemetry & Live PiP Card -->
   <div id="stickyTelemetryPip" class="sticky-telemetry-pip" role="region" aria-label="Sticky Telemetry Summary">
@@ -957,10 +773,32 @@
   <div id="liveChromatogramPip" class="live-chromatogram-pip" role="button" aria-label="Return to full chromatogram">
     <div class="pip-header">
       <span>📈 Live Chromatogram</span>
-      <span id="pipAcqStatus" style="font-size:0.68rem; color:#34d399;">RUNNING</span>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span id="pipAcqStatus" style="font-size:0.68rem; color:#34d399;">RUNNING</span>
+        <button
+          id="pipCloseBtn"
+          onclick="event.stopPropagation(); document.getElementById('liveChromatogramPip').style.display='none';"
+          aria-label="Close picture-in-picture"
+          title="Hide PiP"
+          style="
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 0.85rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 2px;
+            border-radius: 3px;
+            transition: color 120ms;
+          "
+          onmouseenter="this.style.color='#f1f5f9'"
+          onmouseleave="this.style.color='#64748b'"
+        >✕</button>
+      </div>
     </div>
     <canvas id="pipSparklineCanvas" class="pip-sparkline" width="200" height="48"></canvas>
   </div>
+
 
   <!-- Sprint U6: Contextual Bottom Sheet Overlay -->
   <div id="bottomSheetBackdrop" class="bottom-sheet-backdrop" aria-hidden="true"></div>

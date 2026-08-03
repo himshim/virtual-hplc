@@ -1,0 +1,18 @@
+{
+  "id": "kmno4",
+  "displayName": "Potassium Permanganate (KMnO₄)",
+  "formula": "KMnO4",
+  "mw": 158.03,
+  "epsilonMax": 2400,
+  "peaks": [
+    { "lambdaMax": 502, "bandwidth": 10, "epsilonFraction": 0.72 },
+    { "lambdaMax": 525, "bandwidth": 11, "epsilonFraction": 1.00 },
+    { "lambdaMax": 545, "bandwidth": 10, "epsilonFraction": 0.88 },
+    { "lambdaMax": 567, "bandwidth":  9, "epsilonFraction": 0.61 },
+    { "lambdaMax": 590, "bandwidth":  9, "epsilonFraction": 0.36 }
+  ],
+  "description": "LMCT vibronic progression: 5 resolved bands at 502, 525, 545, 567, 590 nm.",
+  "chromophore": "Permanganate ion [MnO₄]⁻",
+  "transition": "Ligand-to-Metal Charge Transfer (LMCT) vibronic series",
+  "clinicalNote": "Deep purple in visible light. Used as a redox titrant and water-treatment oxidant."
+}

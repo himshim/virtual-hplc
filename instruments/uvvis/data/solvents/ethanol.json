@@ -1,0 +1,8 @@
+{
+  "id": "ethanol",
+  "displayName": "Ethanol (96% UV Grade)",
+  "uvCutoff": 210,
+  "kBelow": 0.05,
+  "baselineOffset": 0.018,
+  "description": "Standard pharmacopoeial solvent. UV cutoff at 210 nm."
+}

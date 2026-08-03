@@ -1,0 +1,10 @@
+{
+  "datasetName": "USP <467> Residual Solvents Class 2 & 3",
+  "compounds": [
+    { "id": "methanol", "name": "Methanol", "formula": "CH3OH", "boilingPoint": 64.7, "kovatsIndex": 530 },
+    { "id": "ethanol", "name": "Ethanol", "formula": "CH3CH2OH", "boilingPoint": 78.37, "kovatsIndex": 590 },
+    { "id": "acetone", "name": "Acetone", "formula": "CH3COCH3", "boilingPoint": 56.05, "kovatsIndex": 610 },
+    { "id": "isopropanol", "name": "Isopropanol (IPA)", "formula": "CH3CH(OH)CH3", "boilingPoint": 82.6, "kovatsIndex": 640 },
+    { "id": "toluene", "name": "Toluene", "formula": "C6H5CH3", "boilingPoint": 110.6, "kovatsIndex": 780 }
+  ]
+}

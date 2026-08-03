@@ -1,0 +1,28 @@
+{
+  "id": "diclofenac_sodium",
+  "displayName": "Diclofenac Sodium",
+  "formula": "C14H10Cl2NNaO2",
+  "mw": 318.13,
+  "epsilonMax": 10500,
+  "pKa": 4.0,
+  "peaks": [
+    { "lambdaMax": 276, "bandwidth": 22, "epsilonFraction": 1.00 },
+    { "lambdaMax": 300, "bandwidth": 20, "epsilonFraction": 0.35 }
+  ],
+  "description": "Dichlorophenyl amino-phenylacetate: distinct UV absorbance peak at 276 nm with secondary band at 300 nm.",
+  "chromophore": "Diphenylamine conjugated aromatic system",
+  "transition": "π → π* aromatic transition",
+  "clinicalNote": "NSAID analgesic. Standard pharmacopoeial assay in methanol or 0.1 M NaOH at 276 nm.",
+  "sources": [
+    {
+      "type": "PubChem",
+      "cid": 5018304,
+      "purpose": "Chemical identity and molecular weight"
+    },
+    {
+      "type": "PubMed",
+      "pmid": "24982610",
+      "purpose": "UV spectrophotometric assay parameters"
+    }
+  ]
+}

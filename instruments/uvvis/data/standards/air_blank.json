@@ -1,0 +1,10 @@
+{
+  "id": "air_blank",
+  "testKey": "baseline_flatness",
+  "testName": "Baseline Flatness & Photometric Stability",
+  "standardName": "Air Baseline (Dual Beam Air Reference)",
+  "certifiedValue": "Absorbance 0.000 ± 0.003 AU across 200–800 nm",
+  "tolerance": "± 0.003 AU Peak-to-Peak Noise",
+  "targetLambda": 500,
+  "limitDescription": "Peak-to-Peak Noise ≤ 0.003 AU"
+}

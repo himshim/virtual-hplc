@@ -83,23 +83,19 @@ export class InteractiveChromatogram {
     Chart.register({
       id: pluginId,
       afterDraw(chart) {
-        if (!self._expectedMarkers.length) return;
-
         const ctx = chart.ctx;
         const xAxis = chart.scales.x;
         const yAxis = chart.scales.y;
-
         if (!xAxis || !yAxis) return;
 
         ctx.save();
 
+        // ── Expected analyte retention markers (dashed before elution, solid after) ──
         self._expectedMarkers.forEach(marker => {
           const xPixel = xAxis.getPixelForValue(marker.tR);
-
-          // Only draw if within current visible x-axis viewport
           if (xPixel < xAxis.left || xPixel > xAxis.right) return;
 
-          const topY    = yAxis.top + 10;
+          const topY    = yAxis.top + 24;
           const bottomY = yAxis.bottom;
 
           ctx.beginPath();
@@ -109,19 +105,22 @@ export class InteractiveChromatogram {
           ctx.moveTo(xPixel, topY);
           ctx.lineTo(xPixel, bottomY);
           ctx.stroke();
+          ctx.setLineDash([]);
 
-          // Label pill
-          const labelText = marker.detected ? `✓ ${marker.compound}` : `| ${marker.compound} (${marker.tR.toFixed(2)}m)`;
-          ctx.font = marker.detected ? 'bold 10px "JetBrains Mono", monospace' : '10px "JetBrains Mono", monospace';
+          const labelText = marker.detected
+            ? `✓ ${marker.compound}`
+            : `| ${marker.compound} (${marker.tR.toFixed(2)}m)`;
+          ctx.font = marker.detected
+            ? 'bold 10px "JetBrains Mono", monospace'
+            : '10px "JetBrains Mono", monospace';
 
           const textWidth = ctx.measureText(labelText).width;
           const pillX = Math.max(xAxis.left + 5, Math.min(xPixel - textWidth / 2 - 6, xAxis.right - textWidth - 12));
           const pillY = topY - 2;
 
-          ctx.fillStyle = marker.detected ? 'rgba(34, 197, 94, 0.9)' : 'rgba(15, 23, 42, 0.8)';
+          ctx.fillStyle   = marker.detected ? 'rgba(34, 197, 94, 0.9)' : 'rgba(15, 23, 42, 0.8)';
           ctx.strokeStyle = marker.detected ? '#16a34a' : 'rgba(56, 189, 248, 0.5)';
           ctx.lineWidth = 1;
-
           ctx.beginPath();
           ctx.roundRect(pillX, pillY, textWidth + 12, 16, 4);
           ctx.fill();
@@ -131,9 +130,61 @@ export class InteractiveChromatogram {
           ctx.fillText(labelText, pillX + 6, pillY + 11);
         });
 
+        // ── Priority 3: Injection marker at t = 0 ──
+        const injectX = xAxis.getPixelForValue(0);
+        if (injectX >= xAxis.left && injectX <= xAxis.right) {
+          ctx.beginPath();
+          ctx.setLineDash([]);
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 1.5;
+          ctx.moveTo(injectX, yAxis.top + 6);
+          ctx.lineTo(injectX, yAxis.bottom);
+          ctx.stroke();
+
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.fillStyle = '#ef4444';
+          ctx.fillText('▼ INJECT (0.00 min)', Math.max(xAxis.left + 2, injectX + 3), yAxis.top + 16);
+        }
+
+        // ── Priority 8: Live moving acquisition cursor ──
+        if (self._currentAcquisitionTime > 0) {
+          const cursorX = xAxis.getPixelForValue(self._currentAcquisitionTime);
+          if (cursorX >= xAxis.left && cursorX <= xAxis.right) {
+            ctx.beginPath();
+            ctx.setLineDash([3, 3]);
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.5;
+            ctx.moveTo(cursorX, yAxis.top);
+            ctx.lineTo(cursorX, yAxis.bottom);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            const cText = `⏱ ${self._currentAcquisitionTime.toFixed(2)} min`;
+            ctx.font = 'bold 9px "JetBrains Mono", monospace';
+            const cWidth = ctx.measureText(cText).width;
+            const tagX = Math.min(cursorX + 4, xAxis.right - cWidth - 8);
+
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(tagX, yAxis.top + 18, cWidth + 8, 14, 3);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText(cText, tagX + 4, yAxis.top + 28);
+          }
+        }
+
         ctx.restore();
       }
     });
+  }
+
+  setCurrentAcquisitionTime(t) {
+    this._currentAcquisitionTime = t;
+    if (this.chart) this.chart.update('none');
   }
 
   /* ── Peak Annotations on Chart ──────────────────────────────────────────── */

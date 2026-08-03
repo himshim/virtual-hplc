@@ -1,0 +1,10 @@
+{
+  "datasetName": "Fermentation Volatiles & Beverage Congeners",
+  "compounds": [
+    { "id": "acetaldehyde", "name": "Acetaldehyde", "formula": "CH3CHO", "boilingPoint": 20.2, "kovatsIndex": 410 },
+    { "id": "methanol", "name": "Methanol", "formula": "CH3OH", "boilingPoint": 64.7, "kovatsIndex": 530 },
+    { "id": "ethanol", "name": "Ethanol", "formula": "CH3CH2OH", "boilingPoint": 78.4, "kovatsIndex": 590 },
+    { "id": "n_propanol", "name": "n-Propanol", "formula": "CH3CH2CH2OH", "boilingPoint": 97.0, "kovatsIndex": 650 },
+    { "id": "isobutanol", "name": "Isobutanol", "formula": "(CH3)2CHCH2OH", "boilingPoint": 108.0, "kovatsIndex": 720 }
+  ]
+}

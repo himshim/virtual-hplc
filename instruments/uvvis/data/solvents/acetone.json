@@ -1,0 +1,8 @@
+{
+  "id": "acetone",
+  "displayName": "Acetone (High UV Cutoff)",
+  "uvCutoff": 330,
+  "kBelow": 0.08,
+  "baselineOffset": 0.040,
+  "description": "Ketone solvent with carbonyl n→π* absorption. Strong UV cutoff at 330 nm masks UV chromophores below 330 nm."
+}

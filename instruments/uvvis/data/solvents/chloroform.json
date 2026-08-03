@@ -1,0 +1,8 @@
+{
+  "id": "chloroform",
+  "displayName": "Chloroform (CHCl₃)",
+  "uvCutoff": 245,
+  "kBelow": 0.06,
+  "baselineOffset": 0.015,
+  "description": "Non-polar chlorinated solvent. UV cutoff at 245 nm masks solute absorption in the far-UV region."
+}

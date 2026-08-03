@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PlatformGraphConfig",
+  "type": "object",
+  "required": ["axes", "datasets"],
+  "properties": {
+    "axes": {
+      "type": "object",
+      "required": ["xAxis", "yAxis"],
+      "properties": {
+        "xAxis": {
+          "type": "object",
+          "required": ["label", "unit"],
+          "properties": {
+            "label": { "type": "string" },
+            "unit": { "type": "string" },
+            "inverted": { "type": "boolean" },
+            "min": { "type": "number" },
+            "max": { "type": "number" }
+          }
+        },
+        "yAxis": {
+          "type": "object",
+          "required": ["label", "unit"],
+          "properties": {
+            "label": { "type": "string" },
+            "unit": { "type": "string" },
+            "min": { "type": "number" },
+            "max": { "type": "number" }
+          }
+        }
+      }
+    },
+    "datasets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "data"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "color": { "type": "string" },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["x", "y"],
+              "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

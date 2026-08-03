@@ -1,41 +1,55 @@
-# Virtual Analytical Lab — Architecture Constitution 📜
+# Platform Architecture & Instrument Plugin Specification
 
-This document defines the strict architectural rules, boundaries, and design principles that all instrument simulations within **Virtual Analytical Lab** must follow.
-
----
-
-## 🏛️ Core Principles
-
-### 1. Pure Scientific Engine Layer (`engine/`)
-- Scientific calculation modules must be **pure functions**.
-- Scientific engine files must have **ZERO dependencies** on the DOM (`document`, `window`, HTML elements), UI libraries (Chart.js, D3), or UI controllers.
-- Given identical inputs, engine functions must return identical, deterministic outputs.
-
-### 2. Pure Domain Models (`models/`)
-- Domain model classes (e.g., `SimulationState`, `Chromatogram`, `RunResult`, `Peak`) contain **data structure definitions, getters, and setters only**.
-- Domain models do NOT contain scientific calculations or UI rendering logic.
-- Historical graph/time-series data (`Chromatogram`) is owned separately from instant real-time state (`SimulationState`).
-
-### 3. Decoupled Event-Driven UI (`ui/`)
-- UI components (`graph.js`, `controls.js`, `display.js`) interact with the simulation **exclusively through event listeners** (`EventBus`).
-- The UI never performs scientific calculations or directly updates mathematical models.
-- The UI renders view updates reactively upon receiving events from the controller.
-
-### 4. Controller Ownership (`controller/` & `core/`)
-- The `SimulationController` is the **sole orchestrator** of instrument state transitions and clock ticks.
-- State mutation is strictly restricted to controller action handlers.
-- Instruments extend or compose the shared generic `core/` framework (`SimulationClock`, `StateMachine`, `EventBus`, `SimulationController`).
-
-### 5. Multi-Instrument Isolation
-- Each instrument simulator (e.g., `instruments/hplc/`, `instruments/uv/`, `instruments/gc/`) operates in its own isolated directory structure while sharing generic `core/` utilities.
-- Instruments must not mutate or depend on private internal states of other instruments.
-
-### 6. Legacy Code Migration Policy
-- Legacy monolithic code may be preserved during active refactoring for verification.
-- Once modular implementations pass all functional, scientific, and regression verification tiers, legacy files must be completely removed.
+This document details the core architectural principles, module boundaries, and plugin contracts for the Virtual Analytical Laboratory platform.
 
 ---
 
-## 🏷️ Versioning & Telemetry
-- Every instrument must declare `SIMULATION_VERSION` and `MODEL_VERSION` constants.
-- Generated experiment reports (`RunResult`) must include complete metadata (timestamps, parameters, software version) for reproducibility.
+## 1. Core Architectural Principles
+
+1. **Strict UI / Engine Decoupling**:
+   - **UI Layer** (`/instruments/<name>/ui/`): Zero imports from physics simulation equations. Subscribes exclusively to `EventBus` signals.
+   - **Physics Engine Layer** (`/instruments/<name>/engine/`): Pure scientific calculations. Zero DOM references or UI state dependencies.
+2. **Centralized Event Registry (`HPLC_EVENTS`)**:
+   - All state transitions, parameter changes, warnings, and tick updates communicate via immutable event payloads across `EventBus`.
+3. **Single-Instance GPU Canvas**:
+   - Graph viewports use a single Chart.js / HTML5 2D canvas context. No duplicate canvas elements or desynchronized sparkline copies.
+4. **Instrument Plugin Contract**:
+   - Every instrument module implements 3 standard lifecycle endpoints:
+     - `initialize()`: Registers entities, state machines, and event subscribers.
+     - `reset()`: Returns instrument to initial baseline parameters.
+     - `getReportData()`: Exports standardized run data for validation and notebook storage.
+
+---
+
+## 2. Directory Hierarchy
+
+```text
+virtual-analytical-lab/
+├── index.html                    # Platform Instrument Catalog / Landing Page
+├── DESIGN.md                     # Semantic Design System & UI Specs
+├── ARCHITECTURE.md               # Core Engineering & Plugin Architecture
+├── README.md                     # Project Setup & Execution Guide
+├── css/
+│   └── global.css                # Platform-wide CSS variables & layout design tokens
+├── instruments/
+│   └── hplc/                     # High-Performance Liquid Chromatography Plugin
+│       ├── index.html            # HPLC Instrument Workspace
+│       ├── controller/           # State Coordinator & Event Orchestrator
+│       ├── engine/               # Retention, Pressure, Peak & Gradient Calculations
+│       ├── ui/                   # Graph, Telemetry, Steppers, & Notebook Components
+│       └── validation/           # Scientific Benchmarks & Playwright Test Suites
+└── docs/
+    └── validation/               # Supporting Validation Reports & Visual Screenshots
+```
+
+---
+
+## 3. Extending the Platform: Instrument Plugin Contract
+
+To introduce a new instrument (such as a **UV-Vis Spectrophotometer** or **Gas Chromatograph**):
+
+1. **Create Directory**: `instruments/<instrument_id>/`
+2. **Implement Engine**: Create pure physics simulation modules in `engine/`.
+3. **Implement Controller**: Create `Controller` extending core state machine and event bus.
+4. **Implement UI**: Use semantic design tokens from `DESIGN.md` for graph viewport, steppers, and telemetry.
+5. **Add Validation Gate**: Create `ciArchitectureCheck.js` enforcing UI/Engine boundaries and scientific accuracy benchmarks.

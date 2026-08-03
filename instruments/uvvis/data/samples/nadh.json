@@ -1,0 +1,28 @@
+{
+  "id": "nadh",
+  "displayName": "NADH (Reduced Nicotinamide Adenine Dinucleotide)",
+  "formula": "C21H29N7O14P2",
+  "mw": 665.4,
+  "epsilonMax": 14700,
+  "peaks": [
+    { "lambdaMax": 260, "bandwidth": 20, "epsilonFraction": 1.00 },
+    { "lambdaMax": 340, "bandwidth": 25, "epsilonFraction": 0.42 }
+  ],
+  "description": "NADH shows two UV absorption bands: a strong nucleotide band at ~260 nm (epsilon ~14700) from the adenine ring, and a diagnostic reduced-nicotinamide band at ~340 nm (epsilon ~6220) arising from the dihydropyridine chromophore that is absent in the oxidised NAD+ form.",
+  "chromophore": "Dihydronicotinamide (1,4-dihydropyridine) and adenine nucleobase",
+  "transition": "pi to pi* (dihydropyridine ring at 340 nm; adenine at 260 nm)",
+  "clinicalNote": "The 340 nm band is the universal diagnostic wavelength for coupled enzyme assays (e.g., LDH, MDH, pyruvate kinase) and metabolic flux quantification in clinical biochemistry.",
+  "sources": [
+    {
+      "type": "PubChem",
+      "cid": 439153,
+      "purpose": "Chemical identity, molecular formula (C21H29N7O14P2) and molecular weight (665.4 g/mol)"
+    },
+    {
+      "type": "PubMed",
+      "pmid": "13489747",
+      "doi": "10.1016/S0021-9258(18)65707-8",
+      "purpose": "lambda-max 340 nm (epsilon 6220) and lambda-max 260 nm (epsilon 14700) - Horecker BL, Kornberg A (1948) 'The extinction coefficients of the reduced band of pyridine nucleotides', J. Biol. Chem. 175(1):385-390"
+    }
+  ]
+}

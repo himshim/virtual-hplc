@@ -28,7 +28,18 @@ export class DisplayView {
 
   setPressure(bar) {
     if (this.pressureMeter) this.pressureMeter.value = bar;
-    if (this.pressureVal) this.pressureVal.textContent = formatPressure(bar);
+    if (this.pressureVal) {
+      this.pressureVal.textContent = formatPressure(bar);
+      if (bar < 250) {
+        this.pressureVal.style.color = '#34d399'; // 🟢 Normal
+      } else if (bar < 330) {
+        this.pressureVal.style.color = '#facc15'; // 🟡 High
+      } else if (bar < 390) {
+        this.pressureVal.style.color = '#fb923c'; // 🟠 Near Limit
+      } else {
+        this.pressureVal.style.color = '#f87171'; // 🔴 Dangerous / Overpressure Warning
+      }
+    }
   }
 
   setWarnings(warnings) {

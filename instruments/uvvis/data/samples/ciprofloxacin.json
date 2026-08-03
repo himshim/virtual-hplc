@@ -1,0 +1,29 @@
+{
+  "id": "ciprofloxacin",
+  "displayName": "Ciprofloxacin HCl",
+  "formula": "C17H18FN3O3",
+  "mw": 331.34,
+  "epsilonMax": 32000,
+  "pKa": 6.1,
+  "peaks": [
+    { "lambdaMax": 277, "bandwidth": 20, "epsilonFraction": 1.00 },
+    { "lambdaMax": 315, "bandwidth": 24, "epsilonFraction": 0.35 },
+    { "lambdaMax": 329, "bandwidth": 22, "epsilonFraction": 0.30 }
+  ],
+  "description": "Fluoroquinolone: intense primary π→π* absorption at 277 nm with characteristic double peaks at 315 nm and 329 nm in 0.1 M HCl.",
+  "chromophore": "4-Quinolone ring with fluorine substituent",
+  "transition": "π → π* conjugated carbonyl-quinoline transition",
+  "clinicalNote": "Broad-spectrum fluoroquinolone antibiotic. Assayed in 0.1 M HCl at 277 nm.",
+  "sources": [
+    {
+      "type": "PubChem",
+      "cid": 2764,
+      "purpose": "Chemical identity and MW"
+    },
+    {
+      "type": "PubMed",
+      "pmid": "19427610",
+      "purpose": "Spectrophotometric assay conditions and extinction coefficients"
+    }
+  ]
+}

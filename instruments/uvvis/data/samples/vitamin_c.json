@@ -1,0 +1,21 @@
+{
+  "id": "vitamin_c",
+  "displayName": "L-Ascorbic Acid (Vitamin C)",
+  "formula": "C6H8O6",
+  "mw": 176.12,
+  "epsilonMax": 10000,
+  "pKa": 4.1,
+  "peaksHA": [
+    { "lambdaMax": 245, "bandwidth": 20, "epsilonFraction": 1.00 }
+  ],
+  "peaksA_minus": [
+    { "lambdaMax": 265, "bandwidth": 24, "epsilonFraction": 1.25 }
+  ],
+  "peaks": [
+    { "lambdaMax": 245, "bandwidth": 20, "epsilonFraction": 1.00 }
+  ],
+  "description": "Ester lactone ring: neutral ascorbic acid absorbs at 245 nm, ascorbate anion exhibits bathochromic shift to 265 nm.",
+  "chromophore": "Ene-diol lactone system",
+  "transition": "π → π* enol resonance transition",
+  "clinicalNote": "Essential antioxidant. Assayed by UV spectrophotometry at 245 nm (pH < 2) or 265 nm (neutral pH)."
+}

@@ -1,0 +1,17 @@
+{
+  "id": "riboflavin",
+  "displayName": "Riboflavin (Vitamin B2)",
+  "formula": "C17H20N4O6",
+  "mw": 376.36,
+  "epsilonMax": 12500,
+  "pKa": 10.2,
+  "peaks": [
+    { "lambdaMax": 266, "bandwidth": 22, "epsilonFraction": 1.00 },
+    { "lambdaMax": 373, "bandwidth": 28, "epsilonFraction": 0.85 },
+    { "lambdaMax": 445, "bandwidth": 32, "epsilonFraction": 0.98 }
+  ],
+  "description": "Multi-band spectrum with 3 distinct absorbance maxima at 266 nm (UV), 373 nm (near-UV), and 445 nm (visible).",
+  "chromophore": "Isoalloxazine conjugated ring system",
+  "transition": "π → π* and n → π* electronic transitions",
+  "clinicalNote": "Water-soluble vitamin B complex coenzyme. Used in photo-degradation and food quality assays."
+}

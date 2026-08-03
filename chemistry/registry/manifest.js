@@ -3,6 +3,7 @@ import { CAFFEINE } from '../compounds/caffeine.js';
 import { ASPIRIN } from '../compounds/aspirin.js';
 import { IBUPROFEN } from '../compounds/ibuprofen.js';
 import { ASSAY_MIXTURE } from '../mixtures/assayMixture.js';
+import { BLANK_SAMPLE } from '../mixtures/blankSample.js';
 import { C18_COLUMN } from '../columns/c18_150x46.js';
 import { WATER_METHANOL } from '../mobilePhases/waterMethanol.js';
 import { UV_DETECTOR_PLUGIN } from '../detectors/uvDetector.js';
@@ -16,7 +17,7 @@ import { FORMATE_BUFFER } from '../buffers/formateBuffer.js';
  */
 export const CHEMISTRY_MANIFEST = {
   compounds: [PARACETAMOL, CAFFEINE, ASPIRIN, IBUPROFEN],
-  mixtures: [ASSAY_MIXTURE],
+  mixtures: [ASSAY_MIXTURE, BLANK_SAMPLE],
   columns: [C18_COLUMN],
   mobilePhases: [WATER_METHANOL],
   detectors: [UV_DETECTOR_PLUGIN],

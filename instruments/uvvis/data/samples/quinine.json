@@ -1,0 +1,40 @@
+{
+  "id": "quinine",
+  "displayName": "Quinine",
+  "formula": "C20H24N2O2",
+  "mw": 324.4,
+  "epsilonMax": 30000,
+  "pKa": 8.5,
+  "peaks": [
+    { "lambdaMax": 250, "bandwidth": 20, "epsilonFraction": 1.00 },
+    { "lambdaMax": 350, "bandwidth": 28, "epsilonFraction": 0.19 }
+  ],
+  "description": "Quinoline alkaloid with dual UV absorption bands at ~250 nm (pi-pi*, epsilon ~30 000) and ~350 nm (n-pi*, epsilon ~5 700) in 0.05 M H2SO4, where the molecule exists as a dication and emits intense blue fluorescence at ~450 nm.",
+  "chromophore": "6-Methoxyquinoline aromatic ring system",
+  "transition": "pi to pi* (250 nm) and n to pi* (350 nm) electronic transitions",
+  "clinicalNote": "Quinine sulfate in 0.05 M H2SO4 is the NIST/IUPAC primary fluorescence quantum yield standard (Phi = 0.546) and was the first antimalarial drug; monitored by UV-Vis in pharmaceutical quality control.",
+  "sources": [
+    {
+      "type": "PubChem",
+      "cid": 3034034,
+      "purpose": "Chemical identity and molecular weight"
+    },
+    {
+      "type": "Reference",
+      "citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics, 57th ed. CRC Press, 1976, p. C-481. [via PubChem HSDB record 2501]",
+      "purpose": "lambdaMax 347.5 nm, log epsilon = 3.74 (epsilon ~5 500) in water (hydrate)"
+    },
+    {
+      "type": "PubMed",
+      "pmid": "37725205",
+      "doi": "10.1007/s10895-023-03442-6",
+      "purpose": "UV-Vis and fluorescence spectroscopy of quinine sulfate in H2SO4; photophysical properties and quantum yield"
+    },
+    {
+      "type": "PubMed",
+      "pmid": "40024976",
+      "doi": "10.1007/s10895-025-04168-3",
+      "purpose": "Confirms quinine sulfate in 0.05 M H2SO4 as traceable fluorescence quantum yield reference standard"
+    }
+  ]
+}

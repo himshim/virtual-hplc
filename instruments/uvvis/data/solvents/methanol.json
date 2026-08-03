@@ -1,0 +1,8 @@
+{
+  "id": "methanol",
+  "displayName": "Methanol (Spectroscopy Grade)",
+  "uvCutoff": 205,
+  "kBelow": 0.05,
+  "baselineOffset": 0.012,
+  "description": "Polar protic organic solvent. UV absorption cutoff at 205 nm."
+}

@@ -1,0 +1,9 @@
+{
+  "datasetName": "Essential Oil Terpenes & Volatiles",
+  "compounds": [
+    { "id": "alpha_pinene", "name": "α-Pinene", "formula": "C10H16", "boilingPoint": 155.0, "kovatsIndex": 930 },
+    { "id": "limonene", "name": "D-Limonene", "formula": "C10H16", "boilingPoint": 176.0, "kovatsIndex": 1030 },
+    { "id": "linalool", "name": "Linalool", "formula": "C10H18O", "boilingPoint": 198.0, "kovatsIndex": 1100 },
+    { "id": "menthol", "name": "Menthol", "formula": "C10H20O", "boilingPoint": 212.0, "kovatsIndex": 1170 }
+  ]
+}

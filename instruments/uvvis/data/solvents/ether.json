@@ -1,0 +1,8 @@
+{
+  "id": "ether",
+  "displayName": "Diethyl Ether",
+  "uvCutoff": 215,
+  "kBelow": 0.04,
+  "baselineOffset": 0.010,
+  "description": "Volatile ether solvent. UV cutoff at 215 nm."
+}

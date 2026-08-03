@@ -202,11 +202,9 @@ export class MethodReplay {
     if (timeLabel) timeLabel.textContent = `${clampedT.toFixed(2)} min`;
 
     // Callback for RunTimeline phase
-    let phase = 'prime';
-    if (clampedT >= 0.3)  phase = 'equilibrate';
-    if (clampedT >= 0.8)  phase = 'inject';
-    if (clampedT >= 1.5)  phase = 'separation';
-    if (fraction >= 0.98) phase = 'complete';
+    let phase = 'separation';
+    if (fraction >= 0.95) phase = 'integrate';
+    if (fraction >= 0.99) phase = 'report';
     this.onPhase(phase);
 
     // Update column visualization

@@ -1,0 +1,41 @@
+{
+  "id": "phenol_red",
+  "displayName": "Phenol Red (Phenolsulfonphthalein)",
+  "formula": "C19H14O5S",
+  "mw": 354.4,
+  "epsilonMax": 22000,
+  "pKa": 7.4,
+  "peaks": [
+    { "lambdaMax": 433, "bandwidth": 30, "epsilonFraction": 1.00 }
+  ],
+  "peaksHA": [
+    { "lambdaMax": 433, "bandwidth": 30, "epsilonFraction": 1.00 }
+  ],
+  "peaksA_minus": [
+    { "lambdaMax": 558, "bandwidth": 35, "epsilonFraction": 1.00 },
+    { "lambdaMax": 478, "bandwidth": 28, "epsilonFraction": 0.18 }
+  ],
+  "description": "Phenol red displays a dramatic pH-dependent chromophore shift: the protonated acid form (HPS-) absorbs at ~433 nm (yellow, epsilon ~8,700 L/mol/cm) via a benzenoid pi->pi* transition, while deprotonation to the quinoid dianion (PS2-) red-shifts absorption to ~558 nm (red/violet, epsilon ~22,000 L/mol/cm) through extended conjugation across the sulfonphthalein chromophore.",
+  "chromophore": "Sulfonphthalein (benzenoid/quinoid triarylmethane dye)",
+  "transition": "pi->pi* (extended quinoid conjugation, pH-dependent)",
+  "clinicalNote": "Used as a non-toxic, cell-impermeant pH indicator in cell culture media (turning yellow at acidic pH and red/violet at alkaline pH) and historically as a renal function test agent (PSP test).",
+  "sources": [
+    {
+      "type": "PubChem",
+      "cid": 4766,
+      "purpose": "Chemical identity and molecular weight (C19H14O5S, MW 354.4)"
+    },
+    {
+      "type": "PubMed",
+      "pmid": "9414589",
+      "doi": "10.1248/yakushi1947.117.10-11_764",
+      "purpose": "Spectrophotometric characterization of HPS- and PS2- forms, pKa values and lambda-max determination for phenolsulfonphthalein"
+    },
+    {
+      "type": "PubMed",
+      "pmid": "2536334",
+      "doi": "10.1007/BF01990457",
+      "purpose": "Quantitative spectral analysis of phenol red protonation equilibrium used as model chromophore system"
+    }
+  ]
+}

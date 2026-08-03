@@ -1,0 +1,8 @@
+{
+  "id": "water",
+  "displayName": "Purified Water (HPLC Grade)",
+  "uvCutoff": 190,
+  "kBelow": 0.005,
+  "baselineOffset": 0.002,
+  "description": "Universal polar protic solvent. Transparent across entire 190–800 nm range."
+}

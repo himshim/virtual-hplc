@@ -1,10 +1,5 @@
-/**
- * ParameterImpact.js — P7 Parameter Cause-Effect Feedback Panel
- *
- * Shows the predicted impact of changed method parameters before running.
- * Simulates retention time direction, peak width, selectivity, and back-pressure.
- * Critical for educational scaffolding: students see WHY before they run.
- */
+import { EducationalEngine } from '../education/EducationalEngine.js';
+
 export class ParameterImpact {
   constructor(containerId = 'param-impact-panel') {
     this.containerId = containerId;
@@ -18,80 +13,9 @@ export class ParameterImpact {
    * @returns {Array<{icon, label, direction, tooltip}>}
    */
   _computeImpacts(newParams, oldParams) {
-    if (!oldParams) return [];
-
-    const impacts = [];
-
-    const flowDelta   = newParams.flowRate   - oldParams.flowRate;
-    const organicDelta= newParams.organicPercent - oldParams.organicPercent;
-    const tempDelta   = newParams.temperature   - oldParams.temperature;
-
-    // Flow rate → retention time & pressure
-    if (Math.abs(flowDelta) > 0.05) {
-      const rtDir   = flowDelta > 0 ? '↓' : '↑';
-      const pDir    = flowDelta > 0 ? '↑' : '↓';
-      const rtColor = flowDelta > 0 ? '#38bdf8' : '#f59e0b';
-      const pColor  = flowDelta > 0 ? '#f87171' : '#34d399';
-      impacts.push({
-        icon: '⚡',
-        label: 'Retention Time',
-        direction: rtDir,
-        tooltip: `Flow ${flowDelta > 0 ? 'increased' : 'decreased'} → faster ${flowDelta > 0 ? 'elution' : 'separation'}`,
-        color: rtColor
-      });
-      impacts.push({
-        icon: '🔧',
-        label: 'Back-pressure',
-        direction: pDir,
-        tooltip: `Pressure ∝ flow rate (van Deemter / Darcy)`,
-        color: pColor
-      });
-    }
-
-    // Organic % → retention time & selectivity
-    if (Math.abs(organicDelta) > 0.5) {
-      const rtDir  = organicDelta > 0 ? '↓' : '↑';
-      const selDir = organicDelta > 0 ? '↓' : '↑';
-      const rtColor = organicDelta > 0 ? '#a78bfa' : '#fbbf24';
-      impacts.push({
-        icon: '🧪',
-        label: 'Retention Time',
-        direction: rtDir,
-        tooltip: `More organic → weaker retention (LSS: log k = log kw − S·φ)`,
-        color: rtColor
-      });
-      impacts.push({
-        icon: '🔀',
-        label: 'Selectivity α',
-        direction: selDir,
-        tooltip: `Mobile-phase composition shifts relative selectivity between analytes`,
-        color: organicDelta > 0 ? '#64748b' : '#34d399'
-      });
-    }
-
-    // Temperature → peak width & retention
-    if (Math.abs(tempDelta) > 0.5) {
-      const rtDir  = tempDelta > 0 ? '↓' : '↑';
-      const wDir   = tempDelta > 0 ? '↓' : '↑';
-      const rtColor = tempDelta > 0 ? '#f97316' : '#38bdf8';
-      impacts.push({
-        icon: '🌡️',
-        label: 'Retention Time',
-        direction: rtDir,
-        tooltip: `Higher temp → lower viscosity → faster analyte diffusion`,
-        color: rtColor
-      });
-      impacts.push({
-        icon: '📏',
-        label: 'Peak Width',
-        direction: wDir,
-        tooltip: `Higher temp → increased B-term diffusion → narrower peaks (Van Deemter)`,
-        color: tempDelta > 0 ? '#34d399' : '#f59e0b'
-      });
-    }
-
-    return impacts;
+    return EducationalEngine.computeImpacts(newParams, oldParams);
   }
+
 
   update(newParams, oldParams) {
     this._lastParams = { ...newParams };

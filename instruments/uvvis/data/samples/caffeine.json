@@ -1,0 +1,15 @@
+{
+  "id": "caffeine",
+  "displayName": "Caffeine",
+  "formula": "C8H10N4O2",
+  "mw": 194.19,
+  "epsilonMax": 9200,
+  "peaks": [
+    { "lambdaMax": 273, "bandwidth": 24, "epsilonFraction": 1.00 },
+    { "lambdaMax": 206, "bandwidth": 14, "epsilonFraction": 0.38 }
+  ],
+  "description": "Purine-2,6-dione: π→π* at 273 nm (primary), high-energy band at 206 nm.",
+  "chromophore": "Conjugated purine dione system",
+  "transition": "π → π* electronic transition",
+  "clinicalNote": "Used as UV-Vis linearity standard in pharmacopoeial compliance testing."
+}

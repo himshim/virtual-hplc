@@ -1,0 +1,8 @@
+{
+  "id": "dmso",
+  "displayName": "Dimethyl Sulfoxide (DMSO)",
+  "uvCutoff": 268,
+  "kBelow": 0.08,
+  "baselineOffset": 0.025,
+  "description": "Polar aprotic solvent with S=O group. High UV cutoff at 268 nm masks UV absorption below 268 nm."
+}

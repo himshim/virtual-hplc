@@ -84,6 +84,26 @@ export class HplcController extends SimulationController {
     this.eventBus.emit(HPLC_EVENTS.INSTRUMENT_INITIALIZED, { instrumentId: 'HPLC' });
   }
 
+  /**
+   * Universal SimulationInstrument Contract (Phase 4 Runtime Interface)
+   * @param {SimulationContext} ctx - Immutable simulation context
+   * @returns {Object} TickResult containing telemetry, graph points, events
+   */
+  tick(ctx) {
+    const dt = ctx ? ctx.deltaTime : (this.clock ? this.clock.intervalMs / 1000 : 0.05);
+    const tickResult = this.onTick(dt);
+    return {
+      telemetry: {
+        pressure: this.simState.pressure,
+        flowRate: this.simState.flowRate,
+        organicPercent: this.simState.organicPercent,
+        uvAbsorbance: this.simState.detectorSignal,
+        runTime: this.simState.time
+      },
+      graphPoints: tickResult?.point ? [tickResult.point] : []
+    };
+  }
+
   configure(configParams = {}) {
     if (configParams.flowRate)       this.setFlowRate(configParams.flowRate);
     if (configParams.organicPercent)  this.setOrganicPercent(configParams.organicPercent);
@@ -94,7 +114,39 @@ export class HplcController extends SimulationController {
     if (configParams.sampleKey)      this.setSampleKey(configParams.sampleKey);
   }
 
-  run()    { return this.injectSample(); }
+  run() {
+    const mode = this.simState?.expertiseMode || 'beginner';
+
+    // Advanced mode: Require strict manual operator workflow
+    if (mode === 'advanced') {
+      if (this.stateMachine.state !== 'READY') {
+        this.eventBus.emit(HPLC_EVENTS.WARNING_EMITTED, {
+          type: 'MANUAL_WORKFLOW_REQUIRED',
+          message: 'Advanced Mode: Manual workflow required. Please start pump, equilibrate column, and switch injection valve manually.'
+        });
+        return false;
+      }
+      return this.injectSample();
+    }
+
+    // Standard mode: Emit warning notice before auto-equilibrating
+    if (mode === 'standard' && (this.stateMachine.state === 'IDLE' || this.stateMachine.state === 'BOOTING')) {
+      this.eventBus.emit(HPLC_EVENTS.WARNING_EMITTED, {
+        type: 'PUMP_NOT_EQUILIBRATED',
+        message: 'Standard Mode: Column not equilibrated. Initiating automatic pump equilibration sequence...'
+      });
+    }
+
+    // Beginner & Standard auto-sequence
+    if (this.stateMachine.state === 'IDLE' || this.stateMachine.state === 'BOOTING') {
+      this.startPump();
+      this.eventBus.once(HPLC_EVENTS.BASELINE_STABILIZED, () => {
+        this.injectSample();
+      });
+      return true;
+    }
+    return this.injectSample();
+  }
   stop()   { return this.stopPump(); }
   evaluate(runResult) { return scoreMethodExercise(runResult, getMethodExercise(this.exerciseProfileId)); }
   report(runResult)   { return runResult; }
@@ -104,6 +156,7 @@ export class HplcController extends SimulationController {
   setTemperature(tempCelsius)       { this.simState.temperature    = Number(tempCelsius);   this.updatePressure(); }
   setSensitivity(sensitivity)       { this.simState.sensitivity    = Number(sensitivity); }
   setSampleKey(sampleKey)           { this.simState.sampleKey      = sampleKey; }
+  setSample(sampleKey)              { return this.setSampleKey(sampleKey); }
 
   setWavelength(wavelengthNm) {
     this.simState.wavelengthNm = Number(wavelengthNm);
@@ -151,7 +204,20 @@ export class HplcController extends SimulationController {
   }
 
   updatePressure() {
-    const p = getSystemPressure(this.simState.flowRate, this.simState.organicPercent, this.simState.temperature);
+    const baseP = getSystemPressure(this.simState.flowRate, this.simState.organicPercent, this.simState.temperature);
+    const state = this.getState();
+
+    let p = baseP;
+    if (state === 'PRIMING') {
+      const progress = Math.min(1.0, (this._primingTime || 0) / PRIMING_DURATION_MIN);
+      p = baseP * (0.3 + 0.65 * progress) + (Math.sin(Date.now() / 100) * 4);
+    } else if (state === 'EQUILIBRATING') {
+      const progress = Math.min(1.0, (this._equilibratingTime || 0) / EQUILIBRATING_DURATION_MIN);
+      const damp = (1.0 - progress);
+      p = baseP + (Math.sin(Date.now() / 150) * 6 * damp);
+    }
+
+    p = Math.round(p);
     this.simState.pressure = p;
     this.eventBus.emit(HPLC_EVENTS.PRESSURE_CHANGED, { pressure: p });
 

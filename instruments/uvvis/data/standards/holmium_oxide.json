@@ -1,0 +1,10 @@
+{
+  "id": "holmium_oxide",
+  "testKey": "wavelength_accuracy",
+  "testName": "Wavelength Accuracy & Repeatability",
+  "standardName": "Holmium Oxide Glass Filter / Perchloric Acid Solution",
+  "certifiedValue": "241.5 nm, 287.6 nm, 360.8 nm, 536.4 nm",
+  "tolerance": "± 1.0 nm",
+  "targetLambda": 241.5,
+  "limitDescription": "|Δλ| ≤ 1.0 nm"
+}

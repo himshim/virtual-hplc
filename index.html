@@ -1,49 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Virtual Analytical Lab</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="css/global.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Analytical Lab — Classroom Educational Workstation</title>
+  <meta name="description" content="Interactive open-source analytical chemistry simulator for HPLC, UV-Vis, FTIR, and GC-FID in pharmacy and chemistry education.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    .hero-landing {
+      text-align: center;
+      padding: 48px 16px 32px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .hero-title {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #f8fafc;
+      margin: 0 0 12px 0;
+      letter-spacing: -0.02em;
+    }
+    .hero-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin: 0 0 24px 0;
+    }
+    .badge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    .badge-item {
+      background: rgba(2, 132, 199, 0.15);
+      border: 1px solid rgba(2, 132, 199, 0.3);
+      color: #38bdf8;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .grid-workstations {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 16px;
+      max-width: 1200px;
+      margin: 0 auto 48px;
+    }
+    .workstation-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+    .workstation-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--brand-primary);
+      box-shadow: 0 12px 24px -6px rgba(2, 132, 199, 0.25);
+    }
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin: 0 0 8px 0;
+    }
+    .card-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex-grow: 1;
+    }
+    .card-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .tag {
+      background: #0f172a;
+      border: 1px solid var(--border-subtle);
+      color: #94a3b8;
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+    }
+    .card-btn {
+      background: var(--brand-primary);
+      color: white;
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .faculty-section {
+      background: #1e293b;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 36px 16px;
+      text-align: center;
+    }
+  </style>
 </head>
+<body>
 
-<body class="landing">
+  <!-- HERO SECTION -->
+  <header class="hero-landing">
+    <div class="badge-bar">
+      <span class="badge-item">⚡ LabPlugin SDK v1.0.0</span>
+      <span class="badge-item">📱 PWA Offline Ready</span>
+      <span class="badge-item">🏛️ WCAG 2.2 AA Compliant</span>
+    </div>
+    <h1 class="hero-title">🧪 Virtual Analytical Lab</h1>
+    <p class="hero-subtitle">
+      Interactive, open-source analytical chemistry simulator for B.Pharm and M.Pharm education.<br>
+      Explore physical retention models, Beer-Lambert regression, FTIR spectra, and gas chromatography.
+    </p>
 
-<header class="hero">
-  <h1>🧪 Virtual Analytical Lab</h1>
-  <p>
-    Interactive, open-source simulations of analytical instruments<br>
-    for pharmacy and chemistry education.
-  </p>
-</header>
+    <!-- CLASSROOM & FACULTY CONTROLS -->
+    <div style="display:flex; justify-content:center; gap:12px; margin-top:16px;">
+      <button id="toggleProjectionBtn" style="padding:10px 18px; min-height:44px; background:#334155; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">
+        📺 Toggle Projection Mode
+      </button>
+      <a href="docs/STUDENT_GUIDE.md" style="padding:10px 18px; min-height:44px; background:rgba(2,132,199,0.2); color:#38bdf8; border:1px solid rgba(2,132,199,0.4); border-radius:8px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center;">
+        📖 Student Practical Guide
+      </a>
+    </div>
+  </header>
 
-<section class="instrument-grid">
+  <!-- WORKSTATIONS GRID -->
+  <main class="grid-workstations">
 
-  <a class="instrument-card" href="instruments/hplc/index.html">
-    <h2>HPLC Simulator</h2>
-    <p>Reversed-phase HPLC with real-time chromatogram, multi-compound mixtures, injector logic, and live detector response.</p>
-    <span>Open Simulator →</span>
-  </a>
+    <!-- HPLC WORKSTATION -->
+    <a class="workstation-card" href="instruments/hplc/index.html">
+      <div>
+        <div class="card-icon">🧪</div>
+        <h2 class="card-title">HPLC Simulator</h2>
+        <p class="card-desc">Reversed-phase HPLC with $C_{18}$ column, Van Deemter kinetics, EMG tailing, and real-time chromatogram acquisition.</p>
+        <div class="card-tags">
+          <span class="tag">USP &lt;621&gt;</span>
+          <span class="tag">Isocratic & Gradient</span>
+          <span class="tag">Van Deemter</span>
+        </div>
+      </div>
+      <div class="card-btn">Launch HPLC Workstation →</div>
+    </a>
 
-  <div class="instrument-card disabled">
-    <h2>GC Simulator</h2>
-    <p>Coming soon — Gas chromatography with temperature-programmed runs.</p>
-  </div>
+    <!-- UV-VIS WORKSTATION -->
+    <a class="workstation-card" href="instruments/uvvis/index.html">
+      <div>
+        <div class="card-icon">🔬</div>
+        <h2 class="card-title">UV-Vis Spectrophotometer</h2>
+        <p class="card-desc">Beer-Lambert law linear regression ($A = \varepsilon c l$), 200–800 nm spectrum scanning, and ChEMBL structure visualization.</p>
+        <div class="card-tags">
+          <span class="tag">USP &lt;857&gt;</span>
+          <span class="tag">Calibration Curve</span>
+          <span class="tag">ChEMBL 2D</span>
+        </div>
+      </div>
+      <div class="card-btn">Launch UV-Vis Workstation →</div>
+    </a>
 
-  <div class="instrument-card disabled">
-    <h2>UV-Vis Spectrophotometer</h2>
-    <p>Coming soon — Absorbance spectra and Beer-Lambert law experiments.</p>
-  </div>
+    <!-- FTIR WORKSTATION -->
+    <a class="workstation-card" href="instruments/ftir/index.html">
+      <div>
+        <div class="card-icon">📡</div>
+        <h2 class="card-title">FTIR Spectrometer</h2>
+        <p class="card-desc">ATR-FTIR spectroscopy ($4000 \to 400\text{ cm}^{-1}$), functional group band callouts, and fingerprint region analysis.</p>
+        <div class="card-tags">
+          <span class="tag">ATR Sampling</span>
+          <span class="tag">Functional Groups</span>
+          <span class="tag">Transmittance</span>
+        </div>
+      </div>
+      <div class="card-btn">Launch FTIR Workstation →</div>
+    </a>
 
-</section>
+    <!-- GC WORKSTATION -->
+    <a class="workstation-card" href="instruments/gc/index.html">
+      <div>
+        <div class="card-icon">🔥</div>
+        <h2 class="card-title">Gas Chromatograph (GC-FID)</h2>
+        <p class="card-desc">Capillary gas chromatography with Kovats retention indices, thermal programming ramp rate, and flame ionization detector ($pA$).</p>
+        <div class="card-tags">
+          <span class="tag">USP &lt;467&gt;</span>
+          <span class="tag">Kovats Index</span>
+          <span class="tag">Split Injection</span>
+        </div>
+      </div>
+      <div class="card-btn">Launch GC Workstation →</div>
+    </a>
 
-<footer>
-  <p>
-    Maintained by <strong>@himshim26</strong> •
-    Open-source on
-    <a href="https://github.com/himshim/virtual-analytical-lab" target="_blank">GitHub</a>
-  </p>
-</footer>
+  </main>
 
+  <!-- FACULTY & CLASSROOM SECTION -->
+  <section class="faculty-section">
+    <div style="max-width:800px; margin:0 auto;">
+      <h3 style="margin:0 0 8px 0; color:#f8fafc; font-size:1.3rem;">👨‍🏫 Faculty & Classroom Deployment</h3>
+      <p style="color:var(--text-secondary); font-size:0.95rem; margin-bottom:20px;">
+        Designed for pharmacy college laboratories. Supports offline PWA installation, 20-foot classroom projection mode, and student lab report CSV exports.
+      </p>
+      <div style="display:flex; justify-content:center; gap:12px;">
+        <a href="docs/INSTRUCTOR_GUIDE.md" style="padding:10px 16px; background:#334155; color:white; border-radius:6px; font-size:0.88rem; font-weight:600; text-decoration:none;">
+          Instructor Guide
+        </a>
+        <a href="docs/CLASSROOM_DEPLOYMENT_GUIDE.md" style="padding:10px 16px; background:#334155; color:white; border-radius:6px; font-size:0.88rem; font-weight:600; text-decoration:none;">
+          Deployment Guide
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="text-align:center; padding:24px 16px; color:#94a3b8; font-size:0.85rem;">
+    <p>
+      Maintained by <strong>@himshim26</strong> • Open-source under MIT License on
+      <a href="https://github.com/himshim/virtual-analytical-lab" target="_blank" style="color:var(--brand-primary);">GitHub</a>
+    </p>
+  </footer>
+
+  <script type="module">
+    import { projectionModeInstance } from './platform/ui/ProjectionMode.js';
+    document.getElementById('toggleProjectionBtn').addEventListener('click', () => {
+      const isProj = projectionModeInstance.toggle();
+      document.getElementById('toggleProjectionBtn').innerText = isProj ? '☀️ Exit Projection Mode' : '📺 Toggle Projection Mode';
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg error:', err));
+    }
+  </script>
 </body>
 </html>

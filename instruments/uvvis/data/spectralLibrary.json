@@ -1,0 +1,50 @@
+{
+  "paracetamol": {
+    "id": "paracetamol",
+    "displayName": "Paracetamol (Acetaminophen)",
+    "category": "Analgesic / Antipyretic",
+    "lambdaMax": [243],
+    "linearRange": { "min": 2.0, "max": 25.0 },
+    "description": "Primary UV absorption band at 243 nm due to π → π* aromatic amide transition."
+  },
+  "caffeine": {
+    "id": "caffeine",
+    "displayName": "Caffeine",
+    "category": "Central Nervous System Stimulant",
+    "lambdaMax": [273],
+    "linearRange": { "min": 2.0, "max": 20.0 },
+    "description": "Primary UV absorption band at 273 nm due to purine imidazole ring π → π* transition."
+  },
+  "aspirin": {
+    "id": "aspirin",
+    "displayName": "Aspirin (Acetylsalicylic Acid)",
+    "category": "NSAID",
+    "lambdaMax": [276, 230],
+    "linearRange": { "min": 5.0, "max": 40.0 },
+    "description": "Absorption maximum at 276 nm (E2 band) and high-energy band at 230 nm."
+  },
+  "ibuprofen": {
+    "id": "ibuprofen",
+    "displayName": "Ibuprofen",
+    "category": "NSAID",
+    "lambdaMax": [222, 264, 273],
+    "linearRange": { "min": 10.0, "max": 100.0 },
+    "description": "Isobutylphenyl propionic acid exhibiting weak aromatic fine structure bands at 264 nm and 273 nm."
+  },
+  "salicylic_acid": {
+    "id": "salicylic_acid",
+    "displayName": "Salicylic Acid",
+    "category": "Hydrolysis Degradant / Keratolytic",
+    "lambdaMax": [303, 235],
+    "linearRange": { "min": 1.0, "max": 15.0 },
+    "description": "Intense absorption band at 303 nm due to intramolecular hydrogen bonding in ortho-hydroxybenzoic acid."
+  },
+  "benzoic_acid": {
+    "id": "benzoic_acid",
+    "displayName": "Benzoic Acid",
+    "category": "Preservative",
+    "lambdaMax": [228, 272],
+    "linearRange": { "min": 2.0, "max": 30.0 },
+    "description": "Aromatic carboxylic acid exhibiting benzenoid absorption at 228 nm and secondary band at 272 nm."
+  }
+}

@@ -1,0 +1,28 @@
+﻿{
+  "id": "methylene_blue",
+  "displayName": "Methylene Blue",
+  "formula": "C16H18ClN3S",
+  "mw": 319.9,
+  "epsilonMax": 95000,
+  "peaks": [
+    { "lambdaMax": 665, "bandwidth": 30, "epsilonFraction": 1.00 },
+    { "lambdaMax": 610, "bandwidth": 25, "epsilonFraction": 0.28 }
+  ],
+  "description": "Intense visible absorption band at 665 nm (thiazine monomer) with a shoulder at ~610 nm (H-dimer), arising from extended \u03c0-conjugation through the phenothiazinium ring system.",
+  "chromophore": "Phenothiazinium cationic ring system",
+  "transition": "\u03c0 \u2192 \u03c0* (S\u2080 \u2192 S\u2081) extended conjugation across the thiazine scaffold",
+  "clinicalNote": "Used as a redox indicator (blue when oxidised, colourless when reduced) and as a model dye in adsorption/photocatalysis studies; clinically employed as a sentinel node dye and antidote for methaemoglobinaemia.",
+  "sources": [
+    {
+      "type": "PubChem",
+      "cid": 6099,
+      "purpose": "Chemical identity and molecular weight (CID 6099, MW 319.9 g/mol)"
+    },
+    {
+      "type": "PubMed",
+      "pmid": "36347164",
+      "doi": "10.1016/j.saa.2022.122058",
+      "purpose": "\u03bbmax 665 nm (monomer) and 605/610 nm (dimer) confirmed in aqueous solution; molar extinction coefficient basis from spectroscopic analysis of monomer-dimer equilibria"
+    }
+  ]
+}

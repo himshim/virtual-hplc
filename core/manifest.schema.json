@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AnalyticalInstrumentPluginManifest",
+  "type": "object",
+  "required": ["sdkVersion", "id", "name", "category", "pluginVersion", "entry", "features", "contributes"],
+  "properties": {
+    "sdkVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "pluginVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "entry": {
+      "type": "string"
+    },
+    "requires": {
+      "type": "object",
+      "properties": {
+        "platform": { "type": "string" },
+        "chart": { "type": "string" }
+      }
+    },
+    "features": {
+      "type": "object",
+      "required": ["graph", "education", "reporting"],
+      "properties": {
+        "graph": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": { "type": "string" },
+            "live": { "type": "boolean" },
+            "zoom": { "type": "boolean" },
+            "compare": { "type": "boolean" }
+          }
+        },
+        "education": {
+          "type": "object",
+          "properties": {
+            "prediction": { "type": "boolean" },
+            "notebook": { "type": "boolean" },
+            "replay": { "type": "boolean" }
+          }
+        },
+        "reporting": {
+          "type": "object",
+          "properties": {
+            "export": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "contributes": {
+      "type": "object",
+      "required": ["telemetry", "hero", "bottomSheet"],
+      "properties": {
+        "telemetry": { "type": "boolean" },
+        "hero": { "type": "string" },
+        "toolbar": { "type": "boolean" },
+        "bottomSheet": { "type": "boolean" }
+      }
+    }
+  }
+}

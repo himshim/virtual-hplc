@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Agent Skills & AGY Tooling (Excluded from GitHub Pages)
+.agents/
+skills-lock.json
+.licenses/
+
+# Scratch directory & temporary test scripts
+scratch/
+*.log
+
+# OS & IDE Clutter
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

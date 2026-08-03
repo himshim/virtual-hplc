@@ -141,7 +141,10 @@ ${entry.reflection || 'N/A'}
           <button id="btnNewNotebook" style="padding:8px 16px; background:#38bdf8; color:#0f172a; font-weight:700; border:none; border-radius:6px; cursor:pointer;">+ Start New Entry</button>
         </div>
       `;
-      document.getElementById('btnNewNotebook')?.addEventListener('click', () => this.createNewEntry());
+      // C1.2: use onclick (not addEventListener) — render() may be called multiple times,
+      // re-creating this element each time. onclick overwrites; addEventListener accumulates.
+      const newBtn = document.getElementById('btnNewNotebook');
+      if (newBtn) newBtn.onclick = () => this.createNewEntry();
       return;
     }
 
@@ -204,7 +207,10 @@ ${entry.reflection || 'N/A'}
       }
     });
 
-    document.getElementById('btnExportMd')?.addEventListener('click', () => this.exportMarkdown());
-    document.getElementById('btnNewNotebook')?.addEventListener('click', () => this.createNewEntry());
+    // C1.2: onclick assignment — safe across repeated render() calls.
+    const exportBtn = document.getElementById('btnExportMd');
+    const newEntryBtn = document.getElementById('btnNewNotebook');
+    if (exportBtn)  exportBtn.onclick  = () => this.exportMarkdown();
+    if (newEntryBtn) newEntryBtn.onclick = () => this.createNewEntry();
   }
 }

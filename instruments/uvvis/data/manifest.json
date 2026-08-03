@@ -1,0 +1,41 @@
+{
+  "samples": [
+    "paracetamol",
+    "caffeine",
+    "aspirin",
+    "kmno4",
+    "riboflavin",
+    "vitamin_c",
+    "dna",
+    "nadh",
+    "tryptophan",
+    "quinine",
+    "phenol_red",
+    "methylene_blue",
+    "metronidazole",
+    "ibuprofen",
+    "diclofenac_sodium",
+    "ciprofloxacin"
+  ],
+  "solvents": [
+    "water",
+    "methanol",
+    "ethanol",
+    "acetonitrile",
+    "acetone",
+    "hexane",
+    "chloroform",
+    "dmso",
+    "dcm",
+    "isopropanol",
+    "ether"
+  ],
+  "standards": [
+    "holmium_oxide",
+    "potassium_dichromate",
+    "sodium_iodide",
+    "air_blank"
+  ],
+  "defaultSample": "paracetamol",
+  "defaultSolvent": "water"
+}
