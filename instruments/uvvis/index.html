@@ -1022,63 +1022,261 @@
       </div>
     </div>
 
-    <!-- Theory & Derivation Cards -->
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:16px;">
-      
-      <!-- Beer-Lambert Law Card -->
-      <div class="instrument-card" style="padding:16px;">
-        <h3 style="margin:0 0 10px 0; font-size:0.95rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">
-          📐 Beer-Lambert Law Derivation
-        </h3>
-        <div style="background:#0f172a; padding:10px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; color:#f8fafc; margin-bottom:10px;">
-          A = -log₁₀(I / I₀) = ε · c · l
+    <!-- Interactive Educational Suite -->
+    <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
+
+      <!-- 1. Electronic Transitions & Chromophore Explorer -->
+      <div class="instrument-card" style="padding:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <h3 style="margin:0 0 4px 0; font-size:1.05rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">
+              ⚛️ Molecular Orbital Transitions &amp; Chromophores
+            </h3>
+            <p style="margin:0; font-size:0.8rem; color:#94a3b8;">
+              Click any electronic transition to inspect its quantum jump, typical absorption wavelength, and real lab compounds:
+            </p>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;" id="transitionBtnGroup">
+            <button type="button" class="btn-transition active" data-trans="pi_pi" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(56,189,248,0.2); border:1px solid #38bdf8; color:#38bdf8; font-weight:700;">π → π*</button>
+            <button type="button" class="btn-transition" data-trans="n_pi" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">n → π*</button>
+            <button type="button" class="btn-transition" data-trans="lmct" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">LMCT (KMnO₄)</button>
+            <button type="button" class="btn-transition" data-trans="d_d" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">d → d (CuSO₄)</button>
+            <button type="button" class="btn-transition" data-trans="n_sigma" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">n → σ*</button>
+            <button type="button" class="btn-transition" data-trans="sigma_sigma" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">σ → σ*</button>
+          </div>
         </div>
-        <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.4; margin:0 0 8px 0;">
-          Absorbance is directly proportional to concentration ($c$) and optical path length ($l$):
-        </p>
-        <ul style="font-size:0.8rem; color:#94a3b8; padding-left:18px; margin:0; line-height:1.5;">
-          <li><strong>A</strong>: Absorbance (dimensionless absorbance units, AU)</li>
-          <li><strong>ε</strong>: Molar Absorptivity (L · mol⁻¹ · cm⁻¹)</li>
-          <li><strong>c</strong>: Analyte concentration (mol · L⁻¹)</li>
-          <li><strong>l</strong>: Cuvette optical path length (cm)</li>
-        </ul>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; background:#020810; padding:14px; border-radius:8px; border:1px solid #1e293b;">
+          <!-- Orbital Energy Diagram -->
+          <div>
+            <div style="font-size:0.75rem; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Orbital Energy Diagram</div>
+            <svg id="orbitalSvg" viewBox="0 0 260 160" style="width:100%; height:140px; background:#0b1120; border-radius:6px;">
+              <!-- Energy Axis -->
+              <line x1="25" y1="145" x2="25" y2="15" stroke="#475569" stroke-width="1.5" />
+              <polygon points="25,10 21,18 29,18" fill="#475569" />
+              <text x="18" y="80" fill="#64748b" font-size="8" font-family="'JetBrains Mono',monospace" transform="rotate(-90 18 80)" text-anchor="middle">Energy (E)</text>
+
+              <!-- Levels -->
+              <line x1="45" y1="140" x2="115" y2="140" stroke="#38bdf8" stroke-width="2" />
+              <text x="120" y="143" fill="#38bdf8" font-size="9" font-family="'JetBrains Mono',monospace">σ (bonding)</text>
+
+              <line x1="45" y1="110" x2="115" y2="110" stroke="#34d399" stroke-width="2" />
+              <text x="120" y="113" fill="#34d399" font-size="9" font-family="'JetBrains Mono',monospace">π (bonding)</text>
+
+              <line x1="45" y1="80" x2="115" y2="80" stroke="#fbbf24" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="120" y="83" fill="#fbbf24" font-size="9" font-family="'JetBrains Mono',monospace">n (non-bonding)</text>
+
+              <line x1="45" y1="50" x2="115" y2="50" stroke="#f87171" stroke-width="2" />
+              <text x="120" y="53" fill="#f87171" font-size="9" font-family="'JetBrains Mono',monospace">π* (antibonding)</text>
+
+              <line x1="45" y1="20" x2="115" y2="20" stroke="#c084fc" stroke-width="2" />
+              <text x="120" y="23" fill="#c084fc" font-size="9" font-family="'JetBrains Mono',monospace">σ* (antibonding)</text>
+
+              <!-- Dynamic Transition Arrow -->
+              <g id="orbitalArrowGroup">
+                <line id="orbitalArrowLine" x1="80" y1="110" x2="80" y2="50" stroke="#38bdf8" stroke-width="2.5" />
+                <polygon id="orbitalArrowHead" points="80,45 76,53 84,53" fill="#38bdf8" />
+              </g>
+            </svg>
+          </div>
+
+          <!-- Transition Details -->
+          <div id="transDetailsBox" style="display:flex; flex-direction:column; justify-content:center;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+              <span id="transBadge" style="padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:800; font-family:'JetBrains Mono',monospace; background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid #38bdf8;">π → π*</span>
+              <span id="transWavelength" style="font-size:0.85rem; color:#f8fafc; font-weight:700; font-family:'JetBrains Mono',monospace;">200 – 400 nm (Near-UV &amp; Vis)</span>
+            </div>
+            <p id="transDesc" style="margin:0 0 8px 0; font-size:0.82rem; color:#cbd5e1; line-height:1.4;">
+              Dipole-allowed transition in conjugated unsaturated systems (alkenes, aromatics, carbonyls). High molar absorptivity (ε ≈ 10,000 – 100,000 L·mol⁻¹·cm⁻¹).
+            </p>
+            <div style="font-size:0.78rem; color:#94a3b8;">
+              <strong style="color:#f8fafc;">Lab Examples:</strong> <span id="transExamples" style="color:#38bdf8;">Paracetamol (243 nm), Caffeine (273 nm), Tryptophan (219/278 nm), Quinine (250 nm), Aspirin (226/276 nm)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chromophore Shifts Grid -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:8px; margin-top:12px;">
+          <div style="background:#0b1120; padding:10px; border-radius:6px; border-left:3px solid #ef4444;">
+            <div style="font-size:0.8rem; font-weight:700; color:#ef4444;">🔴 Bathochromic (Red Shift)</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Shift to longer λ (lower energy). Example: Phenol Red (433→558 nm) &amp; Paracetamol in alkali (243→257 nm).</div>
+          </div>
+          <div style="background:#0b1120; padding:10px; border-radius:6px; border-left:3px solid #38bdf8;">
+            <div style="font-size:0.8rem; font-weight:700; color:#38bdf8;">🔵 Hypsochromic (Blue Shift)</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Shift to shorter λ (higher energy). Example: Protonation of anilines removing nitrogen lone pair conjugation.</div>
+          </div>
+          <div style="background:#0b1120; padding:10px; border-radius:6px; border-left:3px solid #22c55e;">
+            <div style="font-size:0.8rem; font-weight:700; color:#22c55e;">⬆ Hyperchromic Shift</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Increase in molar absorptivity ε. Example: DNA thermal denaturation (unstacking bases increases A260 by ~35%).</div>
+          </div>
+          <div style="background:#0b1120; padding:10px; border-radius:6px; border-left:3px solid #eab308;">
+            <div style="font-size:0.8rem; font-weight:700; color:#eab308;">⬇ Hypochromic Shift</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Decrease in molar absorptivity ε. Example: dsDNA base-stacking in native double helix reduces A260.</div>
+          </div>
+        </div>
       </div>
 
-      <!-- Solvent Cutoffs Card -->
-      <div class="instrument-card" style="padding:16px;">
-        <h3 style="margin:0 0 10px 0; font-size:0.95rem; color:#fbbf24; font-family:'JetBrains Mono',monospace;">
-          🌊 Solvent UV Cutoff Guide
+      <!-- 2. Stray Light & High-Absorbance Deviation Sandbox -->
+      <div class="instrument-card" style="padding:18px;">
+        <h3 style="margin:0 0 6px 0; font-size:1.05rem; color:#fbbf24; font-family:'JetBrains Mono',monospace;">
+          📉 Stray Light &amp; High-Absorbance Non-Linearity Sandbox
         </h3>
-        <table style="width:100%; border-collapse:collapse; font-size:0.8rem; text-align:left;">
-          <thead>
-            <tr style="border-bottom:1px solid #334155; color:#94a3b8;">
-              <th style="padding:4px 6px;">Solvent</th>
-              <th style="padding:4px 6px;">UV Cutoff</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style="border-bottom:1px solid rgba(255,255,255,0.04); color:white;">
-              <td style="padding:4px 6px;">Water</td>
-              <td style="padding:4px 6px; font-family:monospace; color:#34d399;">190 nm</td>
-            </tr>
-            <tr style="border-bottom:1px solid rgba(255,255,255,0.04); color:white;">
-              <td style="padding:4px 6px;">Acetonitrile</td>
-              <td style="padding:4px 6px; font-family:monospace; color:#34d399;">190 nm</td>
-            </tr>
-            <tr style="border-bottom:1px solid rgba(255,255,255,0.04); color:white;">
-              <td style="padding:4px 6px;">Methanol</td>
-              <td style="padding:4px 6px; font-family:monospace; color:#fbbf24;">205 nm</td>
-            </tr>
-            <tr style="color:white;">
-              <td style="padding:4px 6px;">Ethanol 96%</td>
-              <td style="padding:4px 6px; font-family:monospace; color:#f87171;">210 nm</td>
-            </tr>
-          </tbody>
-        </table>
-        <p style="font-size:0.75rem; color:#94a3b8; margin:8px 0 0 0; line-height:1.3;">
-          Below the cutoff, solvent molecules absorb strongly and obscure solute peaks.
+        <p style="margin:0 0 14px 0; font-size:0.82rem; color:#94a3b8; line-height:1.4;">
+          The Beer-Lambert Law ($A = \varepsilon \cdot c \cdot l$) is strictly linear only for monochromatic light. Real instruments experience stray light fraction ($s$), causing apparent absorbance to flatten at $A &gt; 2.0\text{ AU}$:
+          <span style="font-family:'JetBrains Mono',monospace; color:#f8fafc; margin-left:6px;">A_apparent = -log₁₀(10^(-A_true) + s)</span>
         </p>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+          <!-- Controls -->
+          <div style="background:#020810; padding:14px; border-radius:8px; border:1px solid #1e293b;">
+            <div style="margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#cbd5e1; margin-bottom:4px;">
+                <span>True Absorbance (A_true):</span>
+                <span id="strayTrueADisp" style="font-family:'JetBrains Mono',monospace; color:#38bdf8; font-weight:700;">2.00 AU</span>
+              </div>
+              <input id="strayTrueASlider" type="range" min="0.1" max="4.0" step="0.1" value="2.0" style="width:100%; accent-color:#38bdf8;" />
+            </div>
+
+            <div style="margin-bottom:14px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#cbd5e1; margin-bottom:4px;">
+                <span>Instrument Stray Light (s):</span>
+                <span id="strayFracDisp" style="font-family:'JetBrains Mono',monospace; color:#fbbf24; font-weight:700;">0.10% (s = 0.001)</span>
+              </div>
+              <input id="strayFracSlider" type="range" min="0.0" max="1.5" step="0.05" value="0.10" style="width:100%; accent-color:#fbbf24;" />
+            </div>
+
+            <!-- Live Output Cards -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border:1px solid #334155;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Apparent Absorbance</div>
+                <div id="strayAppADisp" style="font-size:1.05rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:#34d399;">1.96 AU</div>
+              </div>
+              <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border:1px solid #334155;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Photometric Error</div>
+                <div id="strayErrorDisp" style="font-size:1.05rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:#f87171;">-2.0%</div>
+              </div>
+            </div>
+            <p id="strayWarningText" style="font-size:0.75rem; color:#fbbf24; margin:10px 0 0 0; line-height:1.3;">
+              💡 Optimal linear assay range is <strong>0.2 – 1.5 AU</strong>. Above 2.0 AU, dilute your sample to restore Beer-Lambert linearity.
+            </p>
+          </div>
+
+          <!-- Live Canvas Graph -->
+          <div style="background:#020810; padding:12px; border-radius:8px; border:1px solid #1e293b; display:flex; flex-direction:column;">
+            <div style="font-size:0.75rem; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Beer-Lambert Linearity vs Stray Light Roll-Off</div>
+            <canvas id="strayLightCanvas" width="300" height="150" style="width:100%; height:150px; background:#0b1120; border-radius:4px;"></canvas>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#64748b; margin-top:4px;">
+              <span>─── Ideal Linear (No Stray)</span>
+              <span style="color:#fbbf24;">─── Apparent Signal with Stray Light</span>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- 3. Comprehensive 11-Solvent UV Cutoff & 3-Cuvette Matrix -->
+      <div class="instrument-card" style="padding:18px;">
+        <h3 style="margin:0 0 6px 0; font-size:1.05rem; color:#34d399; font-family:'JetBrains Mono',monospace;">
+          🌊 Comprehensive Solvent UV Cutoff &amp; Optical Cuvette Guide
+        </h3>
+        <p style="margin:0 0 12px 0; font-size:0.82rem; color:#94a3b8; line-height:1.4;">
+          Below the solvent UV cutoff wavelength, the solvent molecule itself absorbs $>99\%$ of incident light ($A_{\text{solvent}} &gt; 1.0$), making analyte measurement impossible.
+        </p>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+          <!-- 11-Solvent Table -->
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.78rem; text-align:left;">
+              <thead>
+                <tr style="border-bottom:2px solid #334155; color:#94a3b8;">
+                  <th style="padding:6px;">Solvent</th>
+                  <th style="padding:6px;">UV Cutoff</th>
+                  <th style="padding:6px;">Polarity (P')</th>
+                  <th style="padding:6px;">Suitability</th>
+                </tr>
+              </thead>
+              <tbody id="solventTableBody">
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">Water (H₂O)</td><td style="padding:5px 6px; font-family:monospace; color:#34d399; font-weight:700;">190 nm</td><td style="padding:5px 6px; color:#94a3b8;">10.2</td><td style="padding:5px 6px; color:#34d399;">Deep-UV &amp; Bio Assays</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">Acetonitrile (ACN)</td><td style="padding:5px 6px; font-family:monospace; color:#34d399; font-weight:700;">190 nm</td><td style="padding:5px 6px; color:#94a3b8;">5.8</td><td style="padding:5px 6px; color:#34d399;">Deep-UV &amp; HPLC Grade</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">Hexane</td><td style="padding:5px 6px; font-family:monospace; color:#34d399; font-weight:700;">195 nm</td><td style="padding:5px 6px; color:#94a3b8;">0.1</td><td style="padding:5px 6px; color:#34d399;">Non-polar Organics</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">Methanol (MeOH)</td><td style="padding:5px 6px; font-family:monospace; color:#fbbf24; font-weight:700;">205 nm</td><td style="padding:5px 6px; color:#94a3b8;">5.1</td><td style="padding:5px 6px; color:#fbbf24;">Standard API Solubilizer</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">Ethanol 96%</td><td style="padding:5px 6px; font-family:monospace; color:#fbbf24; font-weight:700;">210 nm</td><td style="padding:5px 6px; color:#94a3b8;">5.2</td><td style="padding:5px 6px; color:#fbbf24;">General Spectrometry</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">Isopropanol (IPA)</td><td style="padding:5px 6px; font-family:monospace; color:#fbbf24; font-weight:700;">210 nm</td><td style="padding:5px 6px; color:#94a3b8;">3.9</td><td style="padding:5px 6px; color:#fbbf24;">Lipid &amp; Steroid Assay</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">Diethyl Ether</td><td style="padding:5px 6px; font-family:monospace; color:#fbbf24; font-weight:700;">215 nm</td><td style="padding:5px 6px; color:#94a3b8;">2.8</td><td style="padding:5px 6px; color:#fbbf24;">Non-polar Extractions</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">Dichloromethane (DCM)</td><td style="padding:5px 6px; font-family:monospace; color:#f87171; font-weight:700;">230 nm</td><td style="padding:5px 6px; color:#94a3b8;">3.1</td><td style="padding:5px 6px; color:#f87171;">Avoid &lt; 235 nm</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">Chloroform (CHCl₃)</td><td style="padding:5px 6px; font-family:monospace; color:#f87171; font-weight:700;">245 nm</td><td style="padding:5px 6px; color:#94a3b8;">4.1</td><td style="padding:5px 6px; color:#f87171;">Avoid &lt; 250 nm</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">DMSO</td><td style="padding:5px 6px; font-family:monospace; color:#f87171; font-weight:700;">265 nm</td><td style="padding:5px 6px; color:#94a3b8;">7.2</td><td style="padding:5px 6px; color:#f87171;">Avoid UV API Assays</td></tr>
+                <tr><td style="padding:5px 6px; color:#f8fafc; font-weight:600;">Acetone</td><td style="padding:5px 6px; font-family:monospace; color:#f87171; font-weight:700;">330 nm</td><td style="padding:5px 6px; color:#94a3b8;">5.1</td><td style="padding:5px 6px; color:#f87171;">Visible Region Only</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Cuvette Material Guide -->
+          <div>
+            <div style="font-size:0.85rem; font-weight:700; color:#f8fafc; margin-bottom:8px;">Cuvette Optical Material Comparison</div>
+            
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="background:#020810; padding:10px 12px; border-radius:6px; border-left:3px solid #38bdf8;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong style="color:#38bdf8; font-size:0.85rem;">Fused Quartz (Suprasil)</strong>
+                  <span style="font-size:0.75rem; font-family:'JetBrains Mono',monospace; color:#34d399;">190 – 2500 nm</span>
+                </div>
+                <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">Required for all deep-UV pharmaceutical API assays (e.g. Paracetamol 243 nm, Aspirin 226 nm). Transparent across UV, Vis, and NIR. Resistant to all organic solvents.</div>
+              </div>
+
+              <div style="background:#020810; padding:10px 12px; border-radius:6px; border-left:3px solid #fbbf24;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong style="color:#fbbf24; font-size:0.85rem;">Optical Flint Glass</strong>
+                  <span style="font-size:0.75rem; font-family:'JetBrains Mono',monospace; color:#fbbf24;">340 – 2000 nm</span>
+                </div>
+                <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">Economical for visible colorimetric assays (e.g. KMnO₄, Riboflavin, Phenol Red, Bradford protein assay). Opaque below 340 nm — do NOT use for UV drugs.</div>
+              </div>
+
+              <div style="background:#020810; padding:10px 12px; border-radius:6px; border-left:3px solid #94a3b8;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong style="color:#94a3b8; font-size:0.85rem;">Disposable PMMA / Polystyrene</strong>
+                  <span style="font-size:0.75rem; font-family:'JetBrains Mono',monospace; color:#f87171;">300 – 900 nm</span>
+                </div>
+                <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">Single-use plastic for biological cell growth (OD600) and enzyme kinetics. Incompatible with organic solvents (Acetone/DCM/Chloroform dissolve plastic).</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Derivative Spectroscopy Masterclass -->
+      <div class="instrument-card" style="padding:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <h3 style="margin:0 0 4px 0; font-size:1.05rem; color:#c084fc; font-family:'JetBrains Mono',monospace;">
+              📊 Derivative Spectroscopy Masterclass (dA/dλ &amp; d²A/dλ²)
+            </h3>
+            <p style="margin:0; font-size:0.82rem; color:#94a3b8;">
+              Resolve heavily overlapping multicomponent drug peaks (e.g. Paracetamol + Caffeine) without physical HPLC separation:
+            </p>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button id="btnDerivOrder0" type="button" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(192,132,252,0.2); border:1px solid #c084fc; color:#c084fc; font-weight:700;">Zero-Order (A)</button>
+            <button id="btnDerivOrder1" type="button" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">1st Deriv (dA/dλ)</button>
+            <button id="btnDerivOrder2" type="button" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">2nd Deriv (d²A/dλ²)</button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; background:#020810; padding:14px; border-radius:8px; border:1px solid #1e293b;">
+          <canvas id="derivativeCanvas" width="300" height="140" style="width:100%; height:140px; background:#0b1120; border-radius:4px;"></canvas>
+          <div style="display:flex; flex-direction:column; justify-content:center;">
+            <div id="derivTitle" style="font-size:0.9rem; font-weight:700; color:#c084fc; margin-bottom:4px; font-family:'JetBrains Mono',monospace;">Zero-Order Absorption Spectrum A(λ)</div>
+            <p id="derivDesc" style="font-size:0.8rem; color:#cbd5e1; line-height:1.4; margin:0 0 6px 0;">
+              Standard absorbance spectrum showing broad, overlapping Gaussian bands. Minor components appear only as subtle shoulders on larger peaks.
+            </p>
+            <ul style="font-size:0.75rem; color:#94a3b8; padding-left:16px; margin:0; line-height:1.4;">
+              <li><strong>Zero-Crossing Points:</strong> In 1st derivative ($dA/d\lambda = 0$), exact inflection and peak apex positions are pinpointed.</li>
+              <li><strong>Negative Minima in 2nd Deriv:</strong> Absorption peaks invert into sharp negative troughs with dramatically enhanced resolution ($W_{1/2} \approx 0.53 \times W$).</li>
+              <li><strong>Turbidity Elimination:</strong> Constant baseline offsets ($\frac{d(C)}{d\lambda} = 0$) drop out completely.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div><!-- End TAB 3: LEARN -->
 
@@ -1940,16 +2138,308 @@ Analyst Signature: _______________________
     optDetector: { title: '⚡ Photomultiplier Tube (PMT)', desc: 'Converts transmitted photons into measurable electric current.' }
   };
 
-  Object.keys(OPTICAL_NODE_DATA).forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.onclick = () => {
-        const info = OPTICAL_NODE_DATA[id];
-        document.getElementById('optNodeTitle').textContent = info.title;
-        document.getElementById('optNodeDesc').textContent  = info.desc;
-      };
+  // =========================================================================
+  // TAB 3: LEARN HUB INTERACTIVE CONTROLLERS
+  // =========================================================================
+
+  // 1. Electronic Transitions Explorer
+  const TRANSITION_DATA = {
+    pi_pi: {
+      badge: 'π → π*',
+      color: '#38bdf8',
+      wavelength: '200 – 400 nm (Near-UV & Vis)',
+      desc: 'Dipole-allowed transition in conjugated unsaturated systems (alkenes, aromatics, carbonyls). High molar absorptivity (ε ≈ 10,000 – 100,000 L·mol⁻¹·cm⁻¹).',
+      examples: 'Paracetamol (243 nm), Caffeine (273 nm), Tryptophan (219/278 nm), Quinine (250 nm), Aspirin (226/276 nm)',
+      arrow: { fromY: 110, toY: 50 }
+    },
+    n_pi: {
+      badge: 'n → π*',
+      color: '#fbbf24',
+      wavelength: '270 – 350 nm (Near-UV)',
+      desc: 'Symmetry-forbidden transition of non-bonding heteroatom lone pair (O, N, S) into conjugated π* orbital. Weak intensity (ε ≈ 10 – 100 L·mol⁻¹·cm⁻¹). Blue-shifts in polar/protic solvents (hydrogen bonding stabilizes lone pair).',
+      examples: 'Metronidazole (320 nm), Quinine (350 nm shoulder), Acetone (280 nm)',
+      arrow: { fromY: 80, toY: 50 }
+    },
+    lmct: {
+      badge: 'LMCT (Charge Transfer)',
+      color: '#c084fc',
+      wavelength: '400 – 600 nm (Visible)',
+      desc: 'Ligand-to-Metal Charge Transfer: an electron jumps from oxygen/ligand lone pair orbital into empty metal d-orbital (MnO₄⁻). Fully dipole-allowed with intensely high extinction coefficient (ε ≈ 2,400) giving deep purple color.',
+      examples: 'Potassium Permanganate KMnO₄ (5 vibronic bands at 502, 525, 545, 567, 590 nm)',
+      arrow: { fromY: 110, toY: 20 }
+    },
+    d_d: {
+      badge: 'd → d (Crystal Field)',
+      color: '#34d399',
+      wavelength: '600 – 900 nm (Near-IR & Vis)',
+      desc: 'Laporte/parity-forbidden crystal-field transition between split d-orbitals in octahedral/tetrahedral metal complexes. Very low molar absorptivity (ε ≈ 10 – 50 L·mol⁻¹·cm⁻¹) causing pale pastel coloration.',
+      examples: 'Copper(II) Sulfate CuSO₄ (broad band at 810 nm, ε ≈ 14 in [Cu(H₂O)₆]²⁺)',
+      arrow: { fromY: 80, toY: 50 }
+    },
+    n_sigma: {
+      badge: 'n → σ*',
+      color: '#f87171',
+      wavelength: '180 – 200 nm (Far-UV)',
+      desc: 'Excitation of non-bonding lone pair electron to antibonding σ* orbital in saturated compounds containing heteroatoms (alcohols, ethers, amines, halides). Moderate absorptivity (ε ≈ 100 – 1,000).',
+      examples: 'Methanol (cutoff 205 nm), Ethanol (cutoff 210 nm), Diethyl Ether (cutoff 215 nm)',
+      arrow: { fromY: 80, toY: 20 }
+    },
+    sigma_sigma: {
+      badge: 'σ → σ*',
+      color: '#94a3b8',
+      wavelength: '< 180 nm (Vacuum-UV)',
+      desc: 'High-energy transition of tightly bound single covalent C-C and C-H bonds. Requires vacuum UV spectrometers because atmospheric O₂ and N₂ absorb strongly below 190 nm.',
+      examples: 'Saturated hydrocarbons (Hexane, Cyclohexane, Water vapor cutoff 190 nm)',
+      arrow: { fromY: 140, toY: 20 }
     }
+  };
+
+  document.querySelectorAll('#transitionBtnGroup .btn-transition').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#transitionBtnGroup .btn-transition').forEach(b => {
+        b.style.background = 'rgba(255,255,255,0.05)';
+        b.style.borderColor = '#334155';
+        b.style.color = '#94a3b8';
+        b.style.fontWeight = 'normal';
+      });
+      btn.style.background = 'rgba(56,189,248,0.2)';
+      btn.style.borderColor = '#38bdf8';
+      btn.style.color = '#38bdf8';
+      btn.style.fontWeight = '700';
+
+      const key = btn.dataset.trans;
+      const t = TRANSITION_DATA[key];
+      if (t) {
+        document.getElementById('transBadge').textContent = t.badge;
+        document.getElementById('transBadge').style.borderColor = t.color;
+        document.getElementById('transBadge').style.color = t.color;
+        document.getElementById('transWavelength').textContent = t.wavelength;
+        document.getElementById('transDesc').textContent = t.desc;
+        document.getElementById('transExamples').textContent = t.examples;
+
+        // Update SVG Arrow
+        const line = document.getElementById('orbitalArrowLine');
+        const head = document.getElementById('orbitalArrowHead');
+        if (line && head) {
+          line.setAttribute('y1', t.arrow.fromY);
+          line.setAttribute('y2', t.arrow.toY);
+          line.setAttribute('stroke', t.color);
+          head.setAttribute('points', `80,${t.arrow.toY - 5} 76,${t.arrow.toY + 3} 84,${t.arrow.toY + 3}`);
+          head.setAttribute('fill', t.color);
+        }
+      }
+    };
   });
+
+  // 2. Stray Light & Non-Linearity Sandbox
+  function updateStrayLightCalculator() {
+    const trueAInput = document.getElementById('strayTrueASlider');
+    const strayInput = document.getElementById('strayFracSlider');
+    if (!trueAInput || !strayInput) return;
+
+    const trueA = parseFloat(trueAInput.value);
+    const strayPct = parseFloat(strayInput.value);
+    const s = strayPct / 100.0;
+
+    // A_app = -log10(10^(-trueA) + s)
+    const transTrue = Math.pow(10, -trueA);
+    const transApp = transTrue + s;
+    const appA = -Math.log10(transApp);
+    const errorPct = ((appA - trueA) / trueA) * 100.0;
+
+    document.getElementById('strayTrueADisp').textContent = `${trueA.toFixed(2)} AU`;
+    document.getElementById('strayFracDisp').textContent = `${strayPct.toFixed(2)}% (s = ${s.toFixed(4)})`;
+    document.getElementById('strayAppADisp').textContent = `${appA.toFixed(2)} AU`;
+    document.getElementById('strayErrorDisp').textContent = `${errorPct.toFixed(1)}%`;
+    document.getElementById('strayErrorDisp').style.color = Math.abs(errorPct) > 5 ? '#f87171' : '#34d399';
+
+    // Draw Live Canvas Plot
+    const canvas = document.getElementById('strayLightCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Grid & Axes
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 30; x < w; x += 50) { ctx.moveTo(x, 10); ctx.lineTo(x, h - 20); }
+    for (let y = 10; y < h - 20; y += 30) { ctx.moveTo(30, y); ctx.lineTo(w - 10, y); }
+    ctx.stroke();
+
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(30, 10); ctx.lineTo(30, h - 20); ctx.lineTo(w - 10, h - 20);
+    ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = '#64748b';
+    ctx.font = '9px monospace';
+    ctx.fillText('0', 20, h - 18);
+    ctx.fillText('2.0', w / 2 - 10, h - 8);
+    ctx.fillText('4.0 AU (True)', w - 70, h - 8);
+    ctx.fillText('A_app', 4, 20);
+
+    // Safe Working Range Highlight (0.2 to 1.5 AU)
+    const x02 = 30 + (0.2 / 4.0) * (w - 40);
+    const x15 = 30 + (1.5 / 4.0) * (w - 40);
+    ctx.fillStyle = 'rgba(52, 211, 153, 0.08)';
+    ctx.fillRect(x02, 10, x15 - x02, h - 30);
+
+    // 1. Ideal Line
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(30, h - 20);
+    ctx.lineTo(w - 10, 10);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 2. Apparent Stray Light Curve
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    for (let aVal = 0; aVal <= 4.0; aVal += 0.05) {
+      const aPlot = -Math.log10(Math.pow(10, -aVal) + s);
+      const px = 30 + (aVal / 4.0) * (w - 40);
+      const py = (h - 20) - (aPlot / 4.0) * (h - 30);
+      if (aVal === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // 3. Current Operating Point
+    const curX = 30 + (trueA / 4.0) * (w - 40);
+    const curY = (h - 20) - (appA / 4.0) * (h - 30);
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath();
+    ctx.arc(curX, curY, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const strayTrueASlider = document.getElementById('strayTrueASlider');
+  const strayFracSlider = document.getElementById('strayFracSlider');
+  if (strayTrueASlider) strayTrueASlider.oninput = updateStrayLightCalculator;
+  if (strayFracSlider) strayFracSlider.oninput = updateStrayLightCalculator;
+  updateStrayLightCalculator();
+
+  // 3. Derivative Spectroscopy Masterclass
+  let currentDerivOrder = 0;
+  function drawDerivativeSpectrum(order = 0) {
+    currentDerivOrder = order;
+    const canvas = document.getElementById('derivativeCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Two synthetic overlapping Gaussian peaks: Paracetamol (243 nm) + Caffeine (273 nm)
+    const points = [];
+    for (let lambda = 210; lambda <= 320; lambda += 1) {
+      // Gaussian 1: peak at 243, sigma 18
+      const g1 = 1.0 * Math.exp(-Math.pow(lambda - 243, 2) / (2 * 18 * 18));
+      // Gaussian 2: peak at 273, sigma 16
+      const g2 = 0.75 * Math.exp(-Math.pow(lambda - 273, 2) / (2 * 16 * 16));
+      const a0 = g1 + g2 + 0.05; // baseline offset
+      points.push({ lambda, a0 });
+    }
+
+    let yValues = [];
+    if (order === 0) {
+      yValues = points.map(p => p.a0);
+    } else if (order === 1) {
+      // dA/dlambda
+      for (let i = 0; i < points.length; i++) {
+        const prev = points[Math.max(0, i - 1)].a0;
+        const next = points[Math.min(points.length - 1, i + 1)].a0;
+        yValues.push((next - prev) * 15.0);
+      }
+    } else if (order === 2) {
+      // d2A/dlambda2
+      for (let i = 0; i < points.length; i++) {
+        const prev = points[Math.max(0, i - 1)].a0;
+        const curr = points[i].a0;
+        const next = points[Math.min(points.length - 1, i + 1)].a0;
+        yValues.push((next - 2 * curr + prev) * 180.0);
+      }
+    }
+
+    // Grid & Zero-Line
+    const zeroY = order === 0 ? h - 18 : h / 2;
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(25, zeroY); ctx.lineTo(w - 10, zeroY);
+    ctx.stroke();
+
+    // Curve
+    ctx.strokeStyle = order === 0 ? '#38bdf8' : (order === 1 ? '#fbbf24' : '#c084fc');
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < points.length; i++) {
+      const px = 25 + (i / (points.length - 1)) * (w - 35);
+      let py;
+      if (order === 0) {
+        py = (h - 18) - (yValues[i] / 1.8) * (h - 30);
+      } else {
+        py = zeroY - yValues[i] * (h / 3);
+      }
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Axis Labels
+    ctx.fillStyle = '#64748b';
+    ctx.font = '8px monospace';
+    ctx.fillText('210 nm', 25, h - 4);
+    ctx.fillText('243 nm', w * 0.33, h - 4);
+    ctx.fillText('273 nm', w * 0.60, h - 4);
+    ctx.fillText('320 nm', w - 40, h - 4);
+  }
+
+  const btnDeriv0 = document.getElementById('btnDerivOrder0');
+  const btnDeriv1 = document.getElementById('btnDerivOrder1');
+  const btnDeriv2 = document.getElementById('btnDerivOrder2');
+  if (btnDeriv0 && btnDeriv1 && btnDeriv2) {
+    const updateButtons = (activeBtn) => {
+      [btnDeriv0, btnDeriv1, btnDeriv2].forEach(b => {
+        b.style.background = 'rgba(255,255,255,0.05)';
+        b.style.borderColor = '#334155';
+        b.style.color = '#94a3b8';
+        b.style.fontWeight = 'normal';
+      });
+      activeBtn.style.background = 'rgba(192,132,252,0.2)';
+      activeBtn.style.borderColor = '#c084fc';
+      activeBtn.style.color = '#c084fc';
+      activeBtn.style.fontWeight = '700';
+    };
+
+    btnDeriv0.onclick = () => {
+      updateButtons(btnDeriv0);
+      document.getElementById('derivTitle').textContent = 'Zero-Order Absorption Spectrum A(λ)';
+      document.getElementById('derivDesc').textContent = 'Standard absorbance spectrum showing broad, overlapping Gaussian bands. Minor components appear only as subtle shoulders on larger peaks.';
+      drawDerivativeSpectrum(0);
+    };
+    btnDeriv1.onclick = () => {
+      updateButtons(btnDeriv1);
+      document.getElementById('derivTitle').textContent = '1st Derivative Spectrum dA/dλ';
+      document.getElementById('derivDesc').textContent = 'First derivative crosses zero exactly at peak maxima and minima. Inflexion points become derivative peaks. Flat baseline offsets drop to zero.';
+      drawDerivativeSpectrum(1);
+    };
+    btnDeriv2.onclick = () => {
+      updateButtons(btnDeriv2);
+      document.getElementById('derivTitle').textContent = '2nd Derivative Spectrum d²A/dλ²';
+      document.getElementById('derivDesc').textContent = 'Second derivative inverts absorption bands into sharp negative troughs with ~50% narrower band width, resolving Paracetamol and Caffeine with zero cross-interference.';
+      drawDerivativeSpectrum(2);
+    };
+    drawDerivativeSpectrum(0);
+  }
 
 </script>
 

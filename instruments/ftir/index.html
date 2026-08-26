@@ -333,70 +333,253 @@
 
   <!-- TAB 3: LEARN HUB -->
   <div id="tab-learn-view" class="tab-panel" style="display:none;">
+    <!-- Hero Header -->
     <div class="instrument-card" style="padding:20px; background:linear-gradient(135deg, rgba(2,132,199,0.15) 0%, rgba(15,23,42,0.9) 100%); border:1px solid rgba(56,189,248,0.25); margin-bottom:16px;">
-      <h2 style="margin:0 0 8px 0; font-size:1.3rem; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;">🎓 FTIR & Michelson Interferometry Educational Hub</h2>
+      <h2 style="margin:0 0 8px 0; font-size:1.3rem; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;">🎓 FTIR &amp; Michelson Interferometry Masterclass</h2>
       <p style="margin:0; color:var(--text-secondary); font-size:0.9rem; line-height:1.4;">
-        Explore how a moving mirror creates an optical path difference (interferogram) and transforms into an infrared absorption spectrum ($4000\text{--}400\text{ cm}^{-1}$).
+        Explore how a moving mirror modulates infrared waves into an optical path difference (interferogram) and transforms via FFT into a diagnostic fingerprint spectrum ($4000\text{--}400\text{ cm}^{-1}$).
       </p>
     </div>
 
-    <!-- Live Michelson Interferometer SVG Diagram -->
-    <div class="instrument-card" style="padding:16px; margin-bottom:16px;">
-      <h3 style="margin:0 0 12px 0; font-size:1rem; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;">
-        🔬 Interactive Michelson Interferometer & Optical Path Diagram
-      </h3>
-      <div style="background:#020810; border-radius:8px; padding:16px; text-align:center;">
-        <svg viewBox="0 0 700 240" style="width:100%; max-height:220px;">
-          <!-- IR Ever-Glo Source -->
-          <rect x="20" y="90" width="70" height="60" rx="6" fill="#ef4444" opacity="0.85" />
-          <text x="55" y="125" fill="#fff" font-size="11" font-weight="700" text-anchor="middle">IR Source</text>
+    <!-- Educational Grid -->
+    <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
 
-          <!-- Beam Splitter -->
-          <polygon points="260,70 300,170 290,170 250,70" fill="#38bdf8" opacity="0.75" />
-          <text x="275" y="190" fill="#38bdf8" font-size="11" font-weight="700" text-anchor="middle">Beam Splitter</text>
-
-          <!-- Fixed Mirror -->
-          <rect x="255" y="10" width="60" height="15" rx="3" fill="#94a3b8" />
-          <text x="285" y="0" fill="#94a3b8" font-size="10" text-anchor="middle">Fixed Mirror</text>
-
-          <!-- Moving Mirror (OPD) -->
-          <rect id="svgMovingMirror" x="520" y="90" width="15" height="60" rx="3" fill="#f59e0b" />
-          <text x="527" y="170" fill="#f59e0b" font-size="10" font-weight="700" text-anchor="middle">Moving Mirror (OPD δ)</text>
-
-          <!-- Optical Beams -->
-          <line x1="90" y1="120" x2="265" y2="120" stroke="#f43f5e" stroke-width="3" stroke-dasharray="6,3" />
-          <line x1="275" y1="120" x2="275" y2="25" stroke="#f43f5e" stroke-width="3" stroke-dasharray="6,3" />
-          <line x1="275" y1="120" x2="520" y2="120" stroke="#f43f5e" stroke-width="3" stroke-dasharray="6,3" />
-
-          <!-- Detector -->
-          <circle cx="275" cy="220" r="16" fill="#34d399" />
-          <text x="275" y="224" fill="#000" font-size="10" font-weight="800" text-anchor="middle">DTGS</text>
-        </svg>
-      </div>
-    </div>
-
-    <!-- 3-Column Educational Grid -->
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
-      <div class="instrument-card" style="padding:16px;">
-        <h4 style="margin:0 0 8px 0; color:#38bdf8; font-family:'JetBrains Mono',monospace;">📜 Fourier Transform Math</h4>
-        <p style="font-size:0.82rem; color:#94a3b8; line-height:1.4; margin:0;">
-          The interferogram $I(\delta)$ records light intensity as a function of optical path difference $\delta$. Fast Fourier Transform (FFT) converts $I(\delta)$ into a wavenumber spectrum $T(\tilde{\nu})$.
+      <!-- 1. Interactive Michelson Interferometer & FFT Wave Sandbox -->
+      <div class="instrument-card" style="padding:18px;">
+        <h3 style="margin:0 0 6px 0; font-size:1.05rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">
+          🔬 Interactive Michelson Interferometer &amp; Wave Interference Sandbox
+        </h3>
+        <p style="margin:0 0 14px 0; font-size:0.82rem; color:#94a3b8; line-height:1.4;">
+          The beam splitter divides light between a Fixed Mirror and a Moving Mirror. At Zero Path Difference ($\text{ZPD}, \delta = 0$), all wavelengths interfere constructively, producing the intense <strong>Centerburst</strong>.
         </p>
+
+        <!-- Live Optical Schematic SVG -->
+        <div style="background:#020810; border-radius:8px; padding:16px; text-align:center; border:1px solid #1e293b; margin-bottom:14px;">
+          <svg viewBox="0 0 700 240" style="width:100%; max-height:220px;">
+            <!-- IR Ever-Glo Source -->
+            <rect x="20" y="90" width="70" height="60" rx="6" fill="#ef4444" opacity="0.85" />
+            <text x="55" y="125" fill="#fff" font-size="11" font-weight="700" text-anchor="middle">IR Source</text>
+            <text x="55" y="140" fill="#fecdd3" font-size="8" text-anchor="middle">Ever-Glo (SiC)</text>
+
+            <!-- Beam Splitter -->
+            <polygon points="260,70 300,170 290,170 250,70" fill="#38bdf8" opacity="0.75" />
+            <text x="275" y="190" fill="#38bdf8" font-size="11" font-weight="700" text-anchor="middle">KBr / Ge Splitter</text>
+
+            <!-- Fixed Mirror -->
+            <rect x="255" y="10" width="60" height="15" rx="3" fill="#94a3b8" />
+            <text x="285" y="0" fill="#94a3b8" font-size="10" text-anchor="middle">Fixed Mirror (L₁)</text>
+
+            <!-- Moving Mirror (OPD) -->
+            <rect id="svgMovingMirror" x="520" y="90" width="15" height="60" rx="3" fill="#f59e0b" />
+            <text id="svgMirrorText" x="527" y="170" fill="#f59e0b" font-size="10" font-weight="700" text-anchor="middle">Moving Mirror (L₂ = L₁ + δ/2)</text>
+
+            <!-- Optical Beams -->
+            <line x1="90" y1="120" x2="265" y2="120" stroke="#f43f5e" stroke-width="3" stroke-dasharray="6,3" />
+            <line x1="275" y1="120" x2="275" y2="25" stroke="#f43f5e" stroke-width="3" stroke-dasharray="6,3" />
+            <line id="svgBeamToMirror" x1="275" y1="120" x2="520" y2="120" stroke="#f43f5e" stroke-width="3" stroke-dasharray="6,3" />
+
+            <!-- Sample Cell & Detector -->
+            <rect x="250" y="165" width="50" height="20" rx="3" fill="rgba(56,189,248,0.15)" stroke="#38bdf8" />
+            <text x="275" y="179" fill="#38bdf8" font-size="9" text-anchor="middle">Sample</text>
+
+            <circle cx="275" cy="220" r="16" fill="#34d399" />
+            <text x="275" y="224" fill="#000" font-size="10" font-weight="800" text-anchor="middle">DTGS</text>
+          </svg>
+        </div>
+
+        <!-- Interactive Mirror Slider & Live Canvas -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; background:#020810; padding:14px; border-radius:8px; border:1px solid #1e293b;">
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#cbd5e1; margin-bottom:4px;">
+              <span>Moving Mirror Optical Path Difference (δ):</span>
+              <span id="opdSliderDisp" style="font-family:'JetBrains Mono',monospace; color:#f59e0b; font-weight:700;">δ = 0.0000 cm (ZPD)</span>
+            </div>
+            <input id="opdSlider" type="range" min="-0.04" max="0.04" step="0.001" value="0.0" style="width:100%; accent-color:#f59e0b; margin-bottom:12px;" />
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+              <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border:1px solid #334155;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Interference State</div>
+                <div id="interfStateDisp" style="font-size:0.95rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:#34d399;">Constructive (ZPD)</div>
+              </div>
+              <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border:1px solid #334155;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Relative Intensity I(δ)</div>
+                <div id="interfIntDisp" style="font-size:0.95rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:#38bdf8;">100.0% Max</div>
+              </div>
+            </div>
+            <p id="opdExplainText" style="font-size:0.75rem; color:#94a3b8; margin:0; line-height:1.4;">
+              At <strong>Zero Path Difference (ZPD)</strong>, the two optical beams travel identical distances ($L_1 = L_2$), so every wavenumber in the polychromatic beam interferes constructively.
+            </p>
+          </div>
+
+          <!-- Canvas Interferogram Wave Display -->
+          <div>
+            <div style="font-size:0.75rem; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Interferogram Centerburst I(δ) vs Fourier Spectrum T(ν̃)</div>
+            <canvas id="ftirLearnCanvas" width="300" height="130" style="width:100%; height:130px; background:#0b1120; border-radius:4px;"></canvas>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#64748b; margin-top:4px;">
+              <span>-0.04 cm</span>
+              <span style="color:#f59e0b;">ZPD (0.00 cm)</span>
+              <span>+0.04 cm</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="instrument-card" style="padding:16px;">
-        <h4 style="margin:0 0 8px 0; color:#34d399; font-family:'JetBrains Mono',monospace;">❓ Why Background Scan?</h4>
-        <p style="font-size:0.82rem; color:#94a3b8; line-height:1.4; margin:0;">
-          Atmospheric $CO_2$ (2350 cm⁻¹) and water vapor ($H_2O$ 3600 cm⁻¹) absorb IR. Ratioing $T(\tilde{\nu}) = \frac{I_{\text{sample}}}{I_{\text{background}}} \times 100\%$ eliminates atmospheric interference.
-        </p>
+      <!-- 2. Diagnostic IR Frequency Map & "Carbonyl Ladder" -->
+      <div class="instrument-card" style="padding:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <h3 style="margin:0 0 4px 0; font-size:1.05rem; color:#fb7185; font-family:'JetBrains Mono',monospace;">
+              🎹 Diagnostic IR Frequency Map &amp; The "Carbonyl Ladder"
+            </h3>
+            <p style="margin:0; font-size:0.8rem; color:#94a3b8;">
+              Click any diagnostic zone to inspect functional groups, bond vibrational modes, and matching lab compounds:
+            </p>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;" id="irZoneBtnGroup">
+            <button type="button" class="btn-irzone active" data-zone="xh" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(251,113,133,0.2); border:1px solid #fb7185; color:#fb7185; font-weight:700;">Zone I: X-H (4000-2500)</button>
+            <button type="button" class="btn-irzone" data-zone="triple" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">Zone II: C≡C / C≡N</button>
+            <button type="button" class="btn-irzone" data-zone="carbonyl" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">Zone III: Carbonyl Ladder</button>
+            <button type="button" class="btn-irzone" data-zone="fingerprint" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">Zone IV: Fingerprint</button>
+          </div>
+        </div>
+
+        <div id="irZoneContentBox" style="background:#020810; padding:14px; border-radius:8px; border:1px solid #1e293b;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong id="irZoneTitle" style="color:#fb7185; font-size:0.95rem; font-family:'JetBrains Mono',monospace;">Zone I: X-H Single Bond Stretching Region (4000 – 2500 cm⁻¹)</strong>
+            <span id="irZoneWavenumber" style="font-size:0.8rem; font-family:'JetBrains Mono',monospace; color:#f8fafc;">4000 – 2500 cm⁻¹</span>
+          </div>
+          <p id="irZoneDesc" style="font-size:0.82rem; color:#cbd5e1; line-height:1.4; margin:0 0 10px 0;">
+            Hydrogen is the lightest atom, so stretching vibrations of X-H bonds occur at the highest frequencies according to Hooke's Law (ν̃ ∝ √(k/μ)).
+          </p>
+
+          <div id="irZoneBandsGrid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:8px;">
+            <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border-left:3px solid #38bdf8;">
+              <div style="font-size:0.8rem; font-weight:700; color:#38bdf8;">Phenolic / Alcohol O-H</div>
+              <div style="font-size:0.75rem; color:#cbd5e1;">3200 – 3550 cm⁻¹ (Broad, H-bonded)</div>
+              <div style="font-size:0.7rem; color:#94a3b8; margin-top:2px;">Paracetamol (3325), Ethanol (3330), Quinine (3400)</div>
+            </div>
+            <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border-left:3px solid #34d399;">
+              <div style="font-size:0.8rem; font-weight:700; color:#34d399;">Carboxylic Acid O-H</div>
+              <div style="font-size:0.75rem; color:#cbd5e1;">2500 – 3300 cm⁻¹ (Very broad dimer envelope)</div>
+              <div style="font-size:0.7rem; color:#94a3b8; margin-top:2px;">Aspirin (3000 broad), Ibuprofen (2750), Benzoic Acid (2900)</div>
+            </div>
+            <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border-left:3px solid #fbbf24;">
+              <div style="font-size:0.8rem; font-weight:700; color:#fbbf24;">Amine / Amide N-H</div>
+              <div style="font-size:0.75rem; color:#cbd5e1;">3300 – 3500 cm⁻¹ (1° doublet, 2° singlet)</div>
+              <div style="font-size:0.7rem; color:#94a3b8; margin-top:2px;">Paracetamol (3165), Diclofenac (3388), Theophylline (3120)</div>
+            </div>
+            <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border-left:3px solid #c084fc;">
+              <div style="font-size:0.8rem; font-weight:700; color:#c084fc;">Aliphatic &amp; Aromatic C-H</div>
+              <div style="font-size:0.75rem; color:#cbd5e1;">&gt;3000 cm⁻¹ (sp² Ar-H) vs &lt;3000 cm⁻¹ (sp³ CH₃/CH₂)</div>
+              <div style="font-size:0.7rem; color:#94a3b8; margin-top:2px;">Ibuprofen (2955 isobutyl), Toluene (3027 Ar-H), Polystyrene (3027)</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="instrument-card" style="padding:16px;">
-        <h4 style="margin:0 0 8px 0; color:#f59e0b; font-family:'JetBrains Mono',monospace;">📊 ATR vs KBr Sampling</h4>
-        <p style="font-size:0.82rem; color:#94a3b8; line-height:1.4; margin:0;">
-          <strong>ATR (Diamond)</strong> uses evanescent waves (0.5–2 µm depth) for liquids/solids. <strong>KBr Pellet</strong> provides 1 mm transmission for solids.
+      <!-- 3. ATR Penetration Depth (dp) Calculator -->
+      <div class="instrument-card" style="padding:18px;">
+        <h3 style="margin:0 0 6px 0; font-size:1.05rem; color:#34d399; font-family:'JetBrains Mono',monospace;">
+          💎 ATR Evanescent Wave Penetration Depth (d_p) Calculator
+        </h3>
+        <p style="margin:0 0 12px 0; font-size:0.82rem; color:#94a3b8; line-height:1.4;">
+          Attenuated Total Reflectance (ATR) uses internal reflection at the crystal-sample interface to produce an <strong>evanescent wave</strong> that penetrates sample depth $d_p$:
+          <span style="font-family:'JetBrains Mono',monospace; color:#f8fafc; margin-left:6px;">d_p = 1 / (2π · ν̃ · n₁ · √(sin²θ - (n₂/n₁)²))</span>
         </p>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+          <!-- Controls -->
+          <div style="background:#020810; padding:14px; border-radius:8px; border:1px solid #1e293b;">
+            <div style="margin-bottom:10px;">
+              <label style="display:block; font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">ATR CRYSTAL TYPE (n₁)</label>
+              <select id="atrCrystalSelect" style="width:100%; padding:6px 8px; background:#0b1120; border:1px solid #334155; color:#f8fafc; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:0.8rem;">
+                <option value="diamond">Diamond (n₁ = 2.40, Hardness 10, pH 1–14)</option>
+                <option value="znse">ZnSe (n₁ = 2.40, Optical Glass, pH 5–9)</option>
+                <option value="germanium">Germanium (n₁ = 4.00, High Index, Carbon Black / Dark Polymers)</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#cbd5e1; margin-bottom:4px;">
+                <span>Wavenumber (ν̃):</span>
+                <span id="atrWaveDisp" style="font-family:'JetBrains Mono',monospace; color:#34d399; font-weight:700;">1000 cm⁻¹</span>
+              </div>
+              <input id="atrWaveSlider" type="range" min="400" max="4000" step="50" value="1000" style="width:100%; accent-color:#34d399;" />
+            </div>
+
+            <!-- Live Output Cards -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border:1px solid #334155;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Penetration Depth (d_p)</div>
+                <div id="atrDpDisp" style="font-size:1.1rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:#34d399;">2.01 µm</div>
+              </div>
+              <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border:1px solid #334155;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Relative Intensity vs 4000 cm⁻¹</div>
+                <div id="atrRelIntDisp" style="font-size:1.1rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:#38bdf8;">4.0x Deeper</div>
+              </div>
+            </div>
+            <p id="atrKeyFact" style="font-size:0.75rem; color:#fbbf24; margin:10px 0 0 0; line-height:1.3;">
+              💡 <strong>Key Takeaway:</strong> $d_p$ is 4x deeper at $1000\text{ cm}^{-1}$ than at $4000\text{ cm}^{-1}$. That is why ATR spectra have shallower O-H bands compared to traditional transmission KBr pellets.
+            </p>
+          </div>
+
+          <!-- Live Canvas Graph -->
+          <div style="background:#020810; padding:12px; border-radius:8px; border:1px solid #1e293b; display:flex; flex-direction:column;">
+            <div style="font-size:0.75rem; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">ATR Penetration Depth d_p(ν̃) across 4000–400 cm⁻¹</div>
+            <canvas id="atrDpCanvas" width="300" height="150" style="width:100%; height:150px; background:#0b1120; border-radius:4px;"></canvas>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#64748b; margin-top:4px;">
+              <span>4000 cm⁻¹ (0.5 µm)</span>
+              <span style="color:#34d399;">Current Operating Point</span>
+              <span>400 cm⁻¹ (5.0 µm)</span>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- 4. ASTM E1421 Polystyrene Calibration & Spectral Artifact Guide -->
+      <div class="instrument-card" style="padding:18px;">
+        <h3 style="margin:0 0 6px 0; font-size:1.05rem; color:#eab308; font-family:'JetBrains Mono',monospace;">
+          📐 ASTM E1421 Polystyrene Calibration &amp; Artifact Troubleshooting
+        </h3>
+        <p style="margin:0 0 12px 0; font-size:0.82rem; color:#94a3b8; line-height:1.4;">
+          FTIR spectrometers are qualified per <strong>ASTM E1421 / ISO 10553</strong> using a certified polystyrene film ($38\,\mu\text{m}$) to verify wavenumber accuracy to $\pm 1\text{ cm}^{-1}$.
+        </p>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:14px;">
+          <!-- Benchmark Table -->
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.78rem; text-align:left;">
+              <thead>
+                <tr style="border-bottom:2px solid #334155; color:#94a3b8;">
+                  <th style="padding:6px;">Wavenumber</th>
+                  <th style="padding:6px;">Vibrational Assignment</th>
+                  <th style="padding:6px;">Tolerance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; font-family:monospace; color:#38bdf8; font-weight:700;">3027.1 cm⁻¹</td><td style="padding:5px 6px; color:#cbd5e1;">Aromatic C-H stretch (monosubstituted)</td><td style="padding:5px 6px; color:#34d399;">± 1.0 cm⁻¹</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; font-family:monospace; color:#38bdf8; font-weight:700;">1601.2 cm⁻¹</td><td style="padding:5px 6px; color:#cbd5e1;">Aromatic C=C quadrant ring stretch (primary qualification band)</td><td style="padding:5px 6px; color:#34d399;">± 1.0 cm⁻¹</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; font-family:monospace; color:#38bdf8; font-weight:700;">1492.2 cm⁻¹</td><td style="padding:5px 6px; color:#cbd5e1;">Aromatic C=C semicircular ring stretch</td><td style="padding:5px 6px; color:#34d399;">± 1.0 cm⁻¹</td></tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 6px; font-family:monospace; color:#38bdf8; font-weight:700;">906.7 cm⁻¹</td><td style="padding:5px 6px; color:#cbd5e1;">Vinyl C-H out-of-plane bend</td><td style="padding:5px 6px; color:#34d399;">± 1.0 cm⁻¹</td></tr>
+                <tr><td style="padding:5px 6px; font-family:monospace; color:#38bdf8; font-weight:700;">699.0 cm⁻¹</td><td style="padding:5px 6px; color:#cbd5e1;">Monosubstituted ring out-of-plane puckering</td><td style="padding:5px 6px; color:#34d399;">± 1.0 cm⁻¹</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Artifact Troubleshooting -->
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="background:#020810; padding:10px 12px; border-radius:6px; border-left:3px solid #ef4444;">
+              <strong style="color:#ef4444; font-size:0.85rem;">Atmospheric CO₂ Incomplete Subtraction (2349 cm⁻¹)</strong>
+              <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">Appears as an inverted peak or sharp doublet at 2349 cm⁻¹ if room ventilation or breathing changes between background and sample scans. Solution: Re-acquire fresh background.</div>
+            </div>
+            <div style="background:#020810; padding:10px 12px; border-radius:6px; border-left:3px solid #38bdf8;">
+              <strong style="color:#38bdf8; font-size:0.85rem;">Water Vapor Rotational Fine Structure (3600–3800 &amp; 1500–1700 cm⁻¹)</strong>
+              <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">Dozens of needle-sharp spikes across the O-H and amide regions caused by atmospheric humidity fluctuations. Solution: Purge bench with dry N₂ or desiccant.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -738,16 +921,278 @@
     setWorkflowStep(3);
   };
 
-  // Playback Controls
-  document.getElementById('ftirPauseBtn').onclick  = () => playback.pause();
-  document.getElementById('ftirResumeBtn').onclick = () => playback.resume();
-  document.getElementById('ftirResetBtn').onclick  = () => {
-    runner.clock.stop();
-    controller.reset();
-    initChart('line', false, 'Optical Path Difference OPD (cm)');
-    document.getElementById('ftirStateVal').textContent = '● IDLE';
-    setWorkflowStep(1);
+  // =========================================================================
+  // TAB 3: FTIR LEARN HUB INTERACTIVE CONTROLLERS
+  // =========================================================================
+
+  // 1. Interactive Michelson Interferometer & FFT Sandbox
+  function updateMichelsonInterferometer() {
+    const slider = document.getElementById('opdSlider');
+    if (!slider) return;
+    const opd = parseFloat(slider.value); // cm (-0.04 to +0.04)
+
+    // Update Slider Display
+    const isZpd = Math.abs(opd) < 0.001;
+    document.getElementById('opdSliderDisp').textContent = isZpd 
+      ? `δ = 0.0000 cm (ZPD)` 
+      : `δ = ${opd > 0 ? '+' : ''}${opd.toFixed(4)} cm (${(opd * 10000).toFixed(0)} µm)`;
+
+    // Update SVG Mirror Position (Visual scale)
+    const baseMirrorX = 520;
+    const offsetPx = (opd / 0.04) * 40; // ±40px travel
+    const mirrorEl = document.getElementById('svgMovingMirror');
+    const beamEl = document.getElementById('svgBeamToMirror');
+    const textEl = document.getElementById('svgMirrorText');
+    if (mirrorEl && beamEl && textEl) {
+      const curX = baseMirrorX + offsetPx;
+      mirrorEl.setAttribute('x', curX);
+      beamEl.setAttribute('x2', curX);
+      textEl.setAttribute('x', curX + 7);
+    }
+
+    // Interference State & Intensity calculation
+    // Model broadband centerburst envelope: exp(- (opd/0.008)^2) * cos(2*pi*nu*opd)
+    const envelope = Math.exp(-Math.pow(opd / 0.008, 2));
+    const carrier = Math.cos(2 * Math.PI * 1500 * opd); // ~1500 cm^-1 average carrier
+    const relIntensity = (envelope * 0.85 + 0.15 * carrier * envelope) * 100.0;
+    const clampedInt = Math.max(2.0, Math.min(100.0, relIntensity));
+
+    document.getElementById('interfIntDisp').textContent = `${clampedInt.toFixed(1)}%`;
+    document.getElementById('interfStateDisp').textContent = isZpd 
+      ? 'Constructive (ZPD Centerburst)' 
+      : (Math.abs(carrier) > 0.6 ? 'Constructive Fringe' : 'Destructive Fringe');
+    document.getElementById('interfStateDisp').style.color = isZpd ? '#34d399' : (Math.abs(carrier) > 0.6 ? '#38bdf8' : '#f87171');
+
+    document.getElementById('opdExplainText').innerHTML = isZpd
+      ? `At <strong>Zero Path Difference (ZPD)</strong>, the two optical arms are identical in length ($L_1 = L_2$). All wavelengths interfere in phase simultaneously, producing the diagnostic high-intensity Centerburst.`
+      : `At $\\delta = ${(opd * 10000).toFixed(0)}\\text{ \\mu m}$, different infrared wavelengths undergo constructive or destructive interference depending on whether $\\delta$ is an integer multiple of their wavelength ($m\\lambda$).`;
+
+    // Draw Live Interferogram on Canvas
+    const canvas = document.getElementById('ftirLearnCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Centerburst baseline & grid
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(10, h / 2); ctx.lineTo(w - 10, h / 2);
+    ctx.stroke();
+
+    // Plot full interferogram curve
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    const pts = 120;
+    for (let i = 0; i <= pts; i++) {
+      const xVal = -0.04 + (i / pts) * 0.08;
+      const env = Math.exp(-Math.pow(xVal / 0.007, 2));
+      const osc = Math.cos(2 * Math.PI * 1800 * xVal);
+      const yVal = env * osc;
+      const px = 10 + (i / pts) * (w - 20);
+      const py = (h / 2) - yVal * (h * 0.42);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Current OPD Indicator Marker
+    const curPx = 10 + ((opd + 0.04) / 0.08) * (w - 20);
+    const curPy = (h / 2) - (envelope * carrier) * (h * 0.42);
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.arc(curPx, curPy, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Vertical marker line
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(curPx, 5); ctx.lineTo(curPx, h - 5);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  const opdSlider = document.getElementById('opdSlider');
+  if (opdSlider) opdSlider.oninput = updateMichelsonInterferometer;
+  updateMichelsonInterferometer();
+
+  // 2. Diagnostic IR Frequency Map & Carbonyl Ladder
+  const IR_ZONE_DATA = {
+    xh: {
+      title: 'Zone I: X-H Single Bond Stretching Region (4000 – 2500 cm⁻¹)',
+      wavenumber: '4000 – 2500 cm⁻¹',
+      desc: 'Hydrogen is the lightest atom, so stretching vibrations of X-H bonds occur at the highest frequencies according to Hooke\'s Law (ν̃ ∝ √(k/μ)).',
+      bands: [
+        { name: 'Phenolic / Alcohol O-H', range: '3200 – 3550 cm⁻¹ (Broad, H-bonded)', color: '#38bdf8', examples: 'Paracetamol (3325), Ethanol (3330), Quinine (3400)' },
+        { name: 'Carboxylic Acid O-H', range: '2500 – 3300 cm⁻¹ (Very broad dimer envelope)', color: '#34d399', examples: 'Aspirin (3000 broad), Ibuprofen (2750), Benzoic Acid (2900)' },
+        { name: 'Amine / Amide N-H', range: '3300 – 3500 cm⁻¹ (1° doublet, 2° singlet)', color: '#fbbf24', examples: 'Paracetamol (3165), Diclofenac (3388), Theophylline (3120)' },
+        { name: 'Aliphatic & Aromatic C-H', range: '>3000 cm⁻¹ (sp² Ar-H) vs <3000 cm⁻¹ (sp³ CH₃/CH₂)', color: '#c084fc', examples: 'Ibuprofen (2955 isobutyl), Toluene (3027 Ar-H), Polystyrene (3027)' }
+      ]
+    },
+    triple: {
+      title: 'Zone II: Triple Bond & Cumulative Double Bond Region (2500 – 2000 cm⁻¹)',
+      wavenumber: '2500 – 2000 cm⁻¹',
+      desc: 'High bond force constant (k) shifts triple-bond vibrations into this characteristically quiet, uncrowded spectral window.',
+      bands: [
+        { name: 'Atmospheric CO₂ Doublet', range: '2349 & 667 cm⁻¹ (Asymmetric Stretch)', color: '#f87171', examples: 'Universal atmospheric background artifact; eliminated via N₂ purge or fresh blank scan.' },
+        { name: 'Alkyne C≡C Stretch', range: '2100 – 2260 cm⁻¹ (Sharp, weak if symmetric)', color: '#38bdf8', examples: 'Synthetic acetylene APIs, ethinylestradiol' },
+        { name: 'Nitrile C≡N Stretch', range: '2220 – 2260 cm⁻¹ (Sharp, strong dipole)', color: '#34d399', examples: 'Acetonitrile solvent, cyano-substituted pharmaceutical APIs' },
+        { name: 'Isocyanate / Azide N=C=O / -N₃', range: '2150 – 2270 cm⁻¹ (Intense asymmetric stretch)', color: '#fbbf24', examples: 'Polyurethane precursors, click chemistry azides' }
+      ]
+    },
+    carbonyl: {
+      title: 'Zone III: The "Carbonyl Ladder" & Double Bond Region (2000 – 1500 cm⁻¹)',
+      wavenumber: '2000 – 1500 cm⁻¹',
+      desc: 'The single most diagnostic region in organic IR spectrometry. Electronegativity, ring strain, and resonance shift the C=O stretch systematically across an 8-rung ladder:',
+      bands: [
+        { name: '1. Conjugated Amide I (C=O)', range: '1650 – 1680 cm⁻¹ (Lowest C=O frequency)', color: '#38bdf8', examples: 'Paracetamol (1668 cm⁻¹), Caffeine (1695 cm⁻¹), Proteins (Amide I band)' },
+        { name: '2. Carboxylic Acid C=O', range: '1700 – 1720 cm⁻¹ (H-bonded dimer)', color: '#34d399', examples: 'Ibuprofen (1708 cm⁻¹), Benzoic Acid (1685 cm⁻¹)' },
+        { name: '3. Aliphatic Ketone C=O', range: '1715 cm⁻¹ (Standard unstrained)', color: '#fbbf24', examples: 'Acetone (1715 cm⁻¹), cyclohexanone (1715 cm⁻¹)' },
+        { name: '4. Ester C=O (Acetyl)', range: '1735 – 1755 cm⁻¹ (Inductive effect of -O-)', color: '#c084fc', examples: 'Aspirin (1754 cm⁻¹ ester), Vitamin C lactone (1754 cm⁻¹)' },
+        { name: '5. Aromatic C=C Ring Quadrant', range: '1580 – 1610 cm⁻¹ (Diagnostic ring doublet)', color: '#f87171', examples: 'Polystyrene (1601 cm⁻¹), Toluene (1605 cm⁻¹), Aspirin (1605 cm⁻¹)' }
+      ]
+    },
+    fingerprint: {
+      title: 'Zone IV: The Fingerprint Region (1500 – 400 cm⁻¹)',
+      wavenumber: '1500 – 400 cm⁻¹',
+      desc: 'Complex whole-molecule skeletal bending, C-O, C-C, and C-Halogen vibrations. Like human fingerprints, no two distinct chemical compounds share the same pattern.',
+      bands: [
+        { name: 'C-O Ester & Alcohol Stretch', range: '1050 – 1300 cm⁻¹ (Intense broad/sharp bands)', color: '#38bdf8', examples: 'Ethanol (1050 primary alcohol C-O), Aspirin (1250 ester C-O-C)' },
+        { name: 'Aromatic C-H Out-of-Plane (OOP)', range: '690 – 900 cm⁻¹ (Substitution patterns)', color: '#34d399', examples: 'Polystyrene (756/699 mono), Toluene (728/694 mono), Paracetamol (832 para)' },
+        { name: 'C-Cl / C-F Carbon-Halogen', range: '600 – 800 cm⁻¹ (C-Cl) / 1000–1400 (C-F)', color: '#fbbf24', examples: 'Chloroform (762/669 cm⁻¹), Diclofenac (746 cm⁻¹), Ciprofloxacin (1260 C-F)' },
+        { name: 'Purine Ring Puckering', range: '600 – 750 cm⁻¹ (Heteroaromatic ring modes)', color: '#c084fc', examples: 'Theophylline (620 cm⁻¹ N-H wag), Caffeine (745 cm⁻¹ ring bend)' }
+      ]
+    }
   };
+
+  document.querySelectorAll('#irZoneBtnGroup .btn-irzone').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#irZoneBtnGroup .btn-irzone').forEach(b => {
+        b.style.background = 'rgba(255,255,255,0.05)';
+        b.style.borderColor = '#334155';
+        b.style.color = '#94a3b8';
+        b.style.fontWeight = 'normal';
+      });
+      btn.style.background = 'rgba(251,113,133,0.2)';
+      btn.style.borderColor = '#fb7185';
+      btn.style.color = '#fb7185';
+      btn.style.fontWeight = '700';
+
+      const key = btn.dataset.zone;
+      const z = IR_ZONE_DATA[key];
+      if (z) {
+        document.getElementById('irZoneTitle').textContent = z.title;
+        document.getElementById('irZoneWavenumber').textContent = z.wavenumber;
+        document.getElementById('irZoneDesc').textContent = z.desc;
+
+        const grid = document.getElementById('irZoneBandsGrid');
+        if (grid) {
+          grid.innerHTML = z.bands.map(b => `
+            <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border-left:3px solid ${b.color};">
+              <div style="font-size:0.8rem; font-weight:700; color:${b.color};">${b.name}</div>
+              <div style="font-size:0.75rem; color:#cbd5e1;">${b.range}</div>
+              <div style="font-size:0.7rem; color:#94a3b8; margin-top:2px;">${b.examples}</div>
+            </div>
+          `).join('');
+        }
+      }
+    };
+  });
+
+  // 3. ATR Penetration Depth (dp) Calculator
+  const ATR_CRYSTAL_INDICES = {
+    diamond:   2.40,
+    znse:      2.40,
+    germanium: 4.00
+  };
+
+  function updateAtrCalculator() {
+    const select = document.getElementById('atrCrystalSelect');
+    const slider = document.getElementById('atrWaveSlider');
+    if (!select || !slider) return;
+
+    const n1 = ATR_CRYSTAL_INDICES[select.value] || 2.40;
+    const nu = parseFloat(slider.value); // cm^-1
+    const thetaRad = (45.0 * Math.PI) / 180.0; // 45 degree angle of incidence
+    const n2 = 1.50; // typical organic sample refractive index
+
+    // dp = 1 / (2*pi * nu * n1 * sqrt(sin^2(theta) - (n2/n1)^2)) in cm -> convert to micrometers (10^4)
+    const sinTheta = Math.sin(thetaRad);
+    const denomSqrt = Math.sqrt(Math.pow(sinTheta, 2) - Math.pow(n2 / n1, 2));
+    const dpCm = 1.0 / (2 * Math.PI * nu * n1 * denomSqrt);
+    const dpUm = dpCm * 10000.0;
+
+    // dp at 4000 cm^-1 reference
+    const dp4000Um = (1.0 / (2 * Math.PI * 4000 * n1 * denomSqrt)) * 10000.0;
+    const relRatio = dpUm / dp4000Um;
+
+    document.getElementById('atrWaveDisp').textContent = `${nu.toFixed(0)} cm⁻¹`;
+    document.getElementById('atrDpDisp').textContent = `${dpUm.toFixed(2)} µm`;
+    document.getElementById('atrRelIntDisp').textContent = `${relRatio.toFixed(1)}x Deeper`;
+
+    // Draw Live Canvas Plot of dp vs Wavenumber
+    const canvas = document.getElementById('atrDpCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Axes & Grid (Inverted 4000 to 400 cm^-1)
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 30; x < w; x += 50) { ctx.moveTo(x, 10); ctx.lineTo(x, h - 20); }
+    for (let y = 10; y < h - 20; y += 30) { ctx.moveTo(30, y); ctx.lineTo(w - 10, y); }
+    ctx.stroke();
+
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(30, 10); ctx.lineTo(30, h - 20); ctx.lineTo(w - 10, h - 20);
+    ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = '#64748b';
+    ctx.font = '9px monospace';
+    ctx.fillText('4000', 30, h - 6);
+    ctx.fillText('2000', w / 2 - 10, h - 6);
+    ctx.fillText('400 cm⁻¹', w - 55, h - 6);
+    ctx.fillText('dp (µm)', 4, 18);
+
+    // Curve (Inverted x-axis from 4000 down to 400 cm^-1)
+    const maxDpGraph = 6.0; // micrometers scale
+    ctx.strokeStyle = '#34d399';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    for (let wv = 4000; wv >= 400; wv -= 50) {
+      const calcDp = (1.0 / (2 * Math.PI * wv * n1 * denomSqrt)) * 10000.0;
+      const px = 30 + ((4000 - wv) / 3600) * (w - 40);
+      const py = (h - 20) - (calcDp / maxDpGraph) * (h - 30);
+      if (wv === 4000) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Current Operating Point
+    const curPx = 30 + ((4000 - nu) / 3600) * (w - 40);
+    const curPy = (h - 20) - (dpUm / maxDpGraph) * (h - 30);
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.arc(curPx, Math.max(10, curPy), 4.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const atrCrystalSelect = document.getElementById('atrCrystalSelect');
+  const atrWaveSlider = document.getElementById('atrWaveSlider');
+  if (atrCrystalSelect) atrCrystalSelect.onchange = updateAtrCalculator;
+  if (atrWaveSlider) atrWaveSlider.oninput = updateAtrCalculator;
+  updateAtrCalculator();
+
 </script>
 
 </body>
