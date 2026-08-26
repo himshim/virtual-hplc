@@ -41,14 +41,14 @@
   }
   </script>
 
-  <link rel="icon" type="image/svg+xml" href="../../assets/val-logo-mark.svg" />
-  <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
-  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="icon" type="image/svg+xml" href="/assets/val-logo-mark.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/css/global.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-  <script type="module" src="../../ui/components/LabHeader.js"></script>
-  <script type="module" src="../../ui/components/LabTabs.js"></script>
-  <script type="module" src="../../ui/components/LabBottomSheet.js"></script>
+  <script type="module" src="/ui/components/LabHeader.js"></script>
+  <script type="module" src="/ui/components/LabTabs.js"></script>
+  <script type="module" src="/ui/components/LabBottomSheet.js"></script>
   <style>
     :root {
       --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
@@ -773,29 +773,29 @@
 </style>
 
 <script type="module">
-  import { HplcController } from './controller/HplcController.js';
-  import { GraphView } from './ui/graph.js';
-  import { ControlsView } from './ui/controls.js';
-  import { DisplayView } from './ui/display.js';
-  import { CompareView } from './ui/compareView.js';
-  import { HistoryView } from './ui/historyView.js';
-  import { SpectrumView } from './ui/spectrumView.js';
-  import { ReportCardComponent } from '../../ui/components/ReportCard.js';
-  import { RunTimeline } from './ui/RunTimeline.js';
-  import { ParameterImpact } from './ui/ParameterImpact.js';
-  import { WorkspaceMemory } from './ui/WorkspaceMemory.js';
-  import { ChromatogramFullscreen } from './ui/ChromatogramFullscreen.js';
-  import { InteractiveChromatogram } from './ui/InteractiveChromatogram.js';
-  import { EducationalNarrator } from './ui/EducationalNarrator.js';
-  import { ExperimentNotebook } from './ui/ExperimentNotebook.js';
-  import { MethodReplay } from './ui/MethodReplay.js';
-  import { UiCoordinator } from './ui/UiCoordinator.js';
+  import { HplcController } from '/instruments/hplc/controller/HplcController.js';
+  import { GraphView } from '/instruments/hplc/ui/graph.js';
+  import { ControlsView } from '/instruments/hplc/ui/controls.js';
+  import { DisplayView } from '/instruments/hplc/ui/display.js';
+  import { CompareView } from '/instruments/hplc/ui/compareView.js';
+  import { HistoryView } from '/instruments/hplc/ui/historyView.js';
+  import { SpectrumView } from '/instruments/hplc/ui/spectrumView.js';
+  import { ReportCardComponent } from '/ui/components/ReportCard.js';
+  import { RunTimeline } from '/instruments/hplc/ui/RunTimeline.js';
+  import { ParameterImpact } from '/instruments/hplc/ui/ParameterImpact.js';
+  import { WorkspaceMemory } from '/instruments/hplc/ui/WorkspaceMemory.js';
+  import { ChromatogramFullscreen } from '/instruments/hplc/ui/ChromatogramFullscreen.js';
+  import { InteractiveChromatogram } from '/instruments/hplc/ui/InteractiveChromatogram.js';
+  import { EducationalNarrator } from '/instruments/hplc/ui/EducationalNarrator.js';
+  import { ExperimentNotebook } from '/instruments/hplc/ui/ExperimentNotebook.js';
+  import { MethodReplay } from '/instruments/hplc/ui/MethodReplay.js';
+  import { UiCoordinator } from '/instruments/hplc/ui/UiCoordinator.js';
 
   async function injectDiagramSVG() {
     const container = document.getElementById("diagramContainer");
     if (!container) return;
     try {
-      const response = await fetch("./hplc.diagram.svg");
+      const response = await fetch("/instruments/hplc/hplc.diagram.svg");
       if (!response.ok) throw new Error("SVG not found");
       container.innerHTML = await response.text();
     } catch (error) {

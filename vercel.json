@@ -3,12 +3,16 @@
   "framework": null,
   "outputDirectory": ".",
   "cleanUrls": true,
-  "trailingSlash": false,
+  "trailingSlash": true,
   "rewrites": [
-    { "source": "/hplc", "destination": "/instruments/hplc" },
-    { "source": "/uvvis", "destination": "/instruments/uvvis" },
-    { "source": "/ftir", "destination": "/instruments/ftir" },
-    { "source": "/gc", "destination": "/instruments/gc" },
+    { "source": "/hplc", "destination": "/instruments/hplc/index.html" },
+    { "source": "/hplc/(.*)", "destination": "/instruments/hplc/$1" },
+    { "source": "/uvvis", "destination": "/instruments/uvvis/index.html" },
+    { "source": "/uvvis/(.*)", "destination": "/instruments/uvvis/$1" },
+    { "source": "/ftir", "destination": "/instruments/ftir/index.html" },
+    { "source": "/ftir/(.*)", "destination": "/instruments/ftir/$1" },
+    { "source": "/gc", "destination": "/instruments/gc/index.html" },
+    { "source": "/gc/(.*)", "destination": "/instruments/gc/$1" },
     { "source": "/manifest.json", "destination": "/manifest.webmanifest" }
   ],
   "headers": [
