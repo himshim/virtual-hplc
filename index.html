@@ -500,20 +500,47 @@
     }
     .bento-card.card-hplc {
       --card-accent: #38bdf8;
-      --card-glow: rgba(56, 189, 248, 0.28);
+      --card-glow: rgba(56, 189, 248, 0.35);
+      --card-glow-mobile: rgba(56, 189, 248, 0.16);
+      --card-border-mobile: rgba(56, 189, 248, 0.5);
     }
     .bento-card.card-uvvis {
       --card-accent: #c084fc;
-      --card-glow: rgba(192, 132, 252, 0.28);
+      --card-glow: rgba(192, 132, 252, 0.35);
+      --card-glow-mobile: rgba(192, 132, 252, 0.16);
+      --card-border-mobile: rgba(192, 132, 252, 0.5);
     }
     .bento-card.card-ftir {
       --card-accent: #fb7185;
-      --card-glow: rgba(251, 113, 133, 0.28);
+      --card-glow: rgba(251, 113, 133, 0.35);
+      --card-glow-mobile: rgba(251, 113, 133, 0.16);
+      --card-border-mobile: rgba(251, 113, 133, 0.5);
     }
     .bento-card.card-gc {
       --card-accent: #34d399;
-      --card-glow: rgba(52, 211, 153, 0.28);
+      --card-glow: rgba(52, 211, 153, 0.35);
+      --card-glow-mobile: rgba(52, 211, 153, 0.16);
+      --card-border-mobile: rgba(52, 211, 153, 0.5);
     }
+
+    .card-category-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding: 3px 9px;
+      border-radius: 4px;
+      width: fit-content;
+    }
+    .card-category-pill.pill-hplc { color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); background: rgba(56, 189, 248, 0.12); }
+    .card-category-pill.pill-uvvis { color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.35); background: rgba(192, 132, 252, 0.12); }
+    .card-category-pill.pill-ftir { color: #fb7185; border: 1px solid rgba(251, 113, 133, 0.35); background: rgba(251, 113, 133, 0.12); }
+    .card-category-pill.pill-gc { color: #34d399; border: 1px solid rgba(52, 211, 153, 0.35); background: rgba(52, 211, 153, 0.12); }
 
     .bento-card-inner {
       background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 0%), rgba(255, 255, 255, 0.05), transparent 75%), var(--bg-card-inner);
@@ -538,11 +565,37 @@
       border-color: rgba(255, 255, 255, 0.12);
     }
 
+    @media (max-width: 768px) {
+      .bento-card {
+        border: 1.5px solid var(--card-border-mobile) !important;
+        border-top: 4px solid var(--card-accent) !important;
+        box-shadow: 0 8px 24px -6px var(--card-glow), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+        margin-bottom: 14px;
+      }
+      .bento-card-inner {
+        padding: 20px 16px;
+        background: linear-gradient(180deg, var(--card-glow-mobile) 0%, rgba(11, 17, 32, 0.96) 45%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .card-instrument-title {
+        font-size: 1.25rem !important;
+      }
+      .btn-nested-action {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--card-accent) !important;
+        color: #ffffff !important;
+      }
+      .btn-nested-action .btn-nested-icon {
+        background: var(--card-accent) !important;
+        color: #030712 !important;
+      }
+    }
+
     .card-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     .card-instrument-title {
       font-size: 1.32rem;
@@ -733,6 +786,120 @@
       flex-wrap: wrap;
       gap: 10px;
     }
+    .btn-guide-trigger {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-guide-trigger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(56, 189, 248, 0.2);
+    }
+
+    /* GUIDE POPUP MODAL STYLING */
+    .guide-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .guide-modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .guide-modal-dialog {
+      background: #0b1120;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.9), 0 0 40px rgba(56, 189, 248, 0.15);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 900px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.96) translateY(12px);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .guide-modal-backdrop.active .guide-modal-dialog {
+      transform: scale(1) translateY(0);
+    }
+    .guide-modal-header {
+      padding: 16px 20px;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .guide-modal-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 10px 20px;
+      background: #020810;
+      border-bottom: 1px solid #1e293b;
+      overflow-x: auto;
+    }
+    .guide-tab-btn {
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: rgba(255, 255, 255, 0.04);
+      color: #94a3b8;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .guide-tab-btn.active {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+    .guide-modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      color: #cbd5e1;
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+    .guide-modal-body h2 { color: #f8fafc; font-size: 1.25rem; margin-top: 0; margin-bottom: 12px; border-bottom: 1px solid #1e293b; padding-bottom: 8px; }
+    .guide-modal-body h3 { color: #38bdf8; font-size: 1.05rem; margin-top: 20px; margin-bottom: 8px; font-family: var(--font-mono); }
+    .guide-modal-body table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.8rem; }
+    .guide-modal-body th, .guide-modal-body td { border: 1px solid #334155; padding: 8px 10px; text-align: left; }
+    .guide-modal-body th { background: #0b1120; color: #38bdf8; font-family: var(--font-mono); }
+    .guide-modal-body tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+    .guide-modal-body pre { background: #020810; border: 1px solid #1e293b; border-radius: 6px; padding: 12px; overflow-x: auto; font-family: var(--font-mono); font-size: 0.78rem; color: #34d399; }
+    .guide-modal-footer {
+      padding: 12px 20px;
+      background: #020810;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
 
     /* FOOTER */
     .site-footer {
@@ -859,16 +1026,17 @@
       Zero-install, browser-native instrument simulators with authentic chromatographic fluid dynamics, optical benches, and Fourier transform mathematical models.
     </p>
 
-    <div class="hero-ctas">
+    <!-- HERO ACTION BUTTONS -->
+    <div class="hero-actions">
       <a href="#workstations" class="btn-primary">
         Launch Workstations ↓
       </a>
-      <a href="docs/STUDENT_GUIDE.md" class="btn-secondary">
-        Student Manual
-      </a>
-      <a href="docs/INSTRUCTOR_GUIDE.md" class="btn-secondary">
-        Faculty Guide
-      </a>
+      <button type="button" class="btn-secondary btn-guide-trigger" onclick="window.openGuideModal('student')">
+        🎓 Student Manual
+      </button>
+      <button type="button" class="btn-secondary btn-guide-trigger" onclick="window.openGuideModal('instructor')">
+        👨‍🏫 Faculty Guide
+      </button>
     </div>
 
     <!-- LIVING LABORATORY HERO SPECIMEN STAGE -->
@@ -927,8 +1095,9 @@
       <a class="workstation-card bento-card card-hplc reveal-on-scroll" href="instruments/hplc/index.html" aria-label="Launch HPLC Workstation">
         <div class="bento-card-inner">
           <div>
+            <div class="card-category-pill pill-hplc">🧪 LIQUID CHROMATOGRAPHY • C18 REVERSED-PHASE</div>
             <div class="card-head">
-              <h3 class="card-instrument-title">HPLC Chromatograph</h3>
+              <h3 class="card-instrument-title" style="color:#38bdf8;">HPLC Chromatograph</h3>
               <span class="card-status-badge">● READY</span>
             </div>
             <p class="card-description">
@@ -957,8 +1126,9 @@
       <a class="workstation-card bento-card card-uvvis reveal-on-scroll" href="instruments/uvvis/index.html" aria-label="Launch UV-Vis Spectrophotometer">
         <div class="bento-card-inner">
           <div>
+            <div class="card-category-pill pill-uvvis">🔬 OPTICAL ABSORBANCE • 190–900 NM</div>
             <div class="card-head">
-              <h3 class="card-instrument-title">UV-Vis Spectrophotometer</h3>
+              <h3 class="card-instrument-title" style="color:#c084fc;">UV-Vis Spectrophotometer</h3>
               <span class="card-status-badge">● READY</span>
             </div>
             <p class="card-description">
@@ -987,8 +1157,9 @@
       <a class="workstation-card bento-card card-ftir reveal-on-scroll" href="instruments/ftir/index.html" aria-label="Launch FTIR Spectrometer">
         <div class="bento-card-inner">
           <div>
+            <div class="card-category-pill pill-ftir">🔴 VIBRATIONAL INFRARED • 4000–400 CM⁻¹</div>
             <div class="card-head">
-              <h3 class="card-instrument-title">FTIR Spectrometer</h3>
+              <h3 class="card-instrument-title" style="color:#fb7185;">FTIR Spectrometer</h3>
               <span class="card-status-badge">● READY</span>
             </div>
             <p class="card-description">
@@ -1017,8 +1188,9 @@
       <a class="workstation-card bento-card card-gc reveal-on-scroll" href="instruments/gc/index.html" aria-label="Launch Gas Chromatograph">
         <div class="bento-card-inner">
           <div>
+            <div class="card-category-pill pill-gc">🟢 GAS CHROMATOGRAPHY • FLAME IONIZATION</div>
             <div class="card-head">
-              <h3 class="card-instrument-title">Gas Chromatograph (GC-FID)</h3>
+              <h3 class="card-instrument-title" style="color:#34d399;">Gas Chromatograph (GC-FID)</h3>
               <span class="card-status-badge">● READY</span>
             </div>
             <p class="card-description">
@@ -1082,9 +1254,9 @@
         </p>
       </div>
       <div class="docs-links">
-        <a href="docs/INSTRUCTOR_GUIDE.md" class="btn-secondary">Instructor Guide</a>
-        <a href="docs/STUDENT_GUIDE.md" class="btn-secondary">Student Guide</a>
-        <a href="docs/CLASSROOM_DEPLOYMENT_GUIDE.md" class="btn-secondary">Deployment Guide</a>
+        <button type="button" class="btn-secondary btn-guide-trigger" onclick="window.openGuideModal('instructor')">👨‍🏫 Instructor Guide</button>
+        <button type="button" class="btn-secondary btn-guide-trigger" onclick="window.openGuideModal('student')">🎓 Student Guide</button>
+        <button type="button" class="btn-secondary btn-guide-trigger" onclick="window.openGuideModal('deployment')">🏫 Deployment &amp; LMS</button>
       </div>
     </div>
   </section>
@@ -1099,9 +1271,226 @@
     </div>
   </footer>
 
-  <!-- CONTROLS, SPOTLIGHT & HERO WAVE CANVAS SCRIPT -->
+  <!-- INTERACTIVE RESOURCE GUIDE MODAL POPUP -->
+  <div id="guideModal" class="guide-modal-backdrop" role="dialog" aria-modal="true" aria-label="Resource Guides">
+    <div class="guide-modal-dialog">
+      <!-- Modal Header -->
+      <div class="guide-modal-header">
+        <div>
+          <h2 style="margin:0; font-size:1.15rem; color:#f8fafc; font-family:var(--font-mono); font-weight:800;">
+            📖 Resource Guides &amp; Classroom Manuals
+          </h2>
+          <span style="font-size:0.75rem; color:#94a3b8;">Virtual Analytical Lab Documentation Suite</span>
+        </div>
+        <button type="button" id="closeGuideModalBtn" onclick="window.closeGuideModal()" style="background:rgba(255,255,255,0.06); border:1px solid #334155; color:#f8fafc; width:32px; height:32px; border-radius:50%; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s ease;">✕</button>
+      </div>
+
+      <!-- Modal Tabs -->
+      <div class="guide-modal-tabs">
+        <button type="button" class="guide-tab-btn active" id="guideTabBtn-student" onclick="window.switchGuideTab('student')">🎓 Student Manual</button>
+        <button type="button" class="guide-tab-btn" id="guideTabBtn-instructor" onclick="window.switchGuideTab('instructor')">👨‍🏫 Instructor &amp; Faculty Guide</button>
+        <button type="button" class="guide-tab-btn" id="guideTabBtn-deployment" onclick="window.switchGuideTab('deployment')">🏫 Deployment &amp; LMS Integration</button>
+      </div>
+
+      <!-- Modal Content Body -->
+      <div class="guide-modal-body" id="guideModalBody">
+
+        <!-- TAB 1: STUDENT MANUAL -->
+        <div id="guideContent-student" class="guide-content-panel">
+          <h2>🎓 Student Practical &amp; Laboratory Manual</h2>
+          <p>A complete step-by-step practical manual for mastering pharmaceutical and chemical instrumental analysis on <strong>Virtual Analytical Lab</strong>.</p>
+          
+          <h3>1. 🔬 Standard Laboratory Operating Procedure (SOP)</h3>
+          <ol style="padding-left:20px; line-height:1.6; margin:0 0 16px 0;">
+            <li><strong>Select Workstation &amp; Analyte:</strong> Choose your target instrument (<strong>HPLC</strong>, <strong>UV-Vis</strong>, <strong>FTIR</strong>, or <strong>GC-FID</strong>) and select a pharmacopoeial sample compound (e.g. Paracetamol, Caffeine, Aspirin, Ibuprofen, Quinine).</li>
+            <li><strong>Formulate a Hypothesis:</strong> Predict physical effects before moving sliders. (e.g., <em>"Increasing % Acetonitrile from 40% to 60% will shorten retention time by decreasing mobile phase polarity"</em>).</li>
+            <li><strong>Execute Acquisition:</strong>
+              <ul style="padding-left:18px; margin:4px 0;">
+                <li><strong>UV-Vis:</strong> Place reference cuvette, click <strong>Record Blank</strong>, then click <strong>Run Wavelength Sweep</strong>.</li>
+                <li><strong>FTIR:</strong> Collect <strong>Background Scan</strong> ($I_0$), place sample on ATR crystal, and click <strong>Acquire %Transmittance</strong>.</li>
+                <li><strong>HPLC:</strong> Click <strong>Prime Pump</strong>, adjust flow rate &amp; mobile phase %B, click <strong>Inject Sample &amp; Start Run</strong>.</li>
+                <li><strong>GC-FID:</strong> Set oven temperature program &amp; carrier gas, click <strong>Inject Sample &amp; Start GC Run</strong>.</li>
+              </ul>
+            </li>
+            <li><strong>Interpret Features:</strong> Check peak symmetry ($T \approx 1.0$), resolution ($R_s \ge 1.5$), plate count ($N$), or functional group bands. Use <strong>Tab 3: Learn Hub</strong> in each simulator for live calculators.</li>
+            <li><strong>Log Data:</strong> Record retention times and absorbances in the built-in <strong>Notebook</strong> and export high-res PNG or CSV reports.</li>
+          </ol>
+
+          <h3>2. 📐 Essential Equations &amp; Compendial Formulas</h3>
+          <table>
+            <thead>
+              <tr><th>Instrument</th><th>Core Equation</th><th>Significance / Standard</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>UV-Vis</strong></td><td>$A = \varepsilon \cdot c \cdot l = -\log_{10}(I/I_0)$</td><td>Beer-Lambert Law (USP &lt;857&gt; Linearity $R^2 \ge 0.999$)</td></tr>
+              <tr><td><strong>HPLC</strong></td><td>$R_s = \frac{\sqrt{N}}{4}\left(\frac{\alpha-1}{\alpha}\right)\left(\frac{k'_2}{1+k'_2}\right)$</td><td>Purnell Resolution ($R_s \ge 1.5$ Baseline USP Pass)</td></tr>
+              <tr><td><strong>FTIR</strong></td><td>$d_p = \frac{1}{2\pi \tilde{\nu} n_1 \sqrt{\sin^2\theta - (n_2/n_1)^2}}$</td><td>ATR Evanescent Penetration Depth ($\approx 0.5–2.0\,\mu\text{m}$)</td></tr>
+              <tr><td><strong>GC-FID</strong></td><td>$I = 100 [z + \frac{\log t'_Rx - \log t'_Rz}{\log t'_R(z+1) - \log t'_Rz}]$</td><td>Kovats Retention Index ($n$-alkane scale $C_5 \to C_{24}$)</td></tr>
+            </tbody>
+          </table>
+
+          <h3>3. 🚨 Common Artifacts &amp; Troubleshooting Guide</h3>
+          <table>
+            <thead><tr><th>Symptom</th><th>Probable Cause</th><th>Corrective Action</th></tr></thead>
+            <tbody>
+              <tr><td style="color:#f87171;">HPLC Peak Tailing ($T > 1.5$)</td><td>Basic amine interacting with acidic silanols</td><td>Add triethylamine (TEA) modifier or drop pH to 2.5</td></tr>
+              <tr><td style="color:#fbbf24;">HPLC Peak Fronting ($T < 0.9$)</td><td>Column mass overload / strong sample solvent</td><td>Dilute sample 10x or dissolve directly in mobile phase</td></tr>
+              <tr><td style="color:#f87171;">UV-Vis Flat Top ($A > 2.0$)</td><td>Monochromator stray light / detector saturation</td><td>Dilute sample to enter $0.2 - 1.5\text{ AU}$ linear range</td></tr>
+              <tr><td style="color:#38bdf8;">FTIR Spike at $2349\text{ cm}^{-1}$</td><td>Atmospheric $\text{CO}_2$ purge imbalance</td><td>Acquire fresh background scan and purge bench</td></tr>
+              <tr><td style="color:#fbbf24;">GC Broad Late Peaks</td><td>Isothermal temperature too low for high-boilers</td><td>Switch from Isothermal to Linear Temperature Program</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TAB 2: INSTRUCTOR GUIDE -->
+        <div id="guideContent-instructor" class="guide-content-panel" style="display:none;">
+          <h2>👨‍🏫 Instructor &amp; Faculty Guide</h2>
+          <p>Comprehensive pedagogical guidance for teaching undergraduate and postgraduate chemistry and pharmacy laboratory courses.</p>
+
+          <h3>1. 🎯 Educational Objectives &amp; Curriculum Mapping</h3>
+          <table>
+            <thead><tr><th>Instrument</th><th>Core Theoretical Principles</th><th>Compendial Standard</th></tr></thead>
+            <tbody>
+              <tr><td><strong>HPLC</strong></td><td>C18 reversed-phase partitioning, Van Deemter kinetics, LSS gradient model</td><td>USP &lt;621&gt; System Suitability</td></tr>
+              <tr><td><strong>UV-Vis</strong></td><td>Beer-Lambert law, Henderson-Hasselbalch shifts, derivative spectroscopy</td><td>USP &lt;857&gt; Linearity &amp; Stray Light</td></tr>
+              <tr><td><strong>FTIR</strong></td><td>Vibrational dipole moments, Michelson interferometry, ATR $d_p$ depth</td><td>ASTM E1421 Polystyrene Calibration</td></tr>
+              <tr><td><strong>GC-FID</strong></td><td>Golay capillary efficiency, carrier gas kinetics ($N_2, He, H_2$), ECN</td><td>USP &lt;467&gt; Residual Solvents</td></tr>
+            </tbody>
+          </table>
+
+          <h3>2. 💡 Recommended Classroom Workflows</h3>
+          <p>• <strong>Predict-Observe-Explain (POE) Framework:</strong> Have students predict shifts before adjusting %B or oven ramps, observe live signals, and explain using physical equations.<br/>
+          • <strong>Blind Unknown Identification:</strong> Assign unknown codes from our 14+ compound library. Students verify identity via $\lambda_{\max}$, functional group IR zones, and retention factors ($k'$ / $I$).</p>
+
+          <h3>3. 🖥️ Teaching Tools &amp; Projection Mode</h3>
+          <p>• <strong>20-Foot Projection Mode:</strong> Toggle Projection Mode in the header for high-contrast, enlarged typography and thick graph lines readable from the back of lecture halls.<br/>
+          • <strong>Live Learn Hubs (Tab 3):</strong> Use interactive Van Deemter / Golay calculators and Purnell resolution sandboxes for engaging live demonstrations.</p>
+
+          <h3>4. 📝 5 Ready-to-Use Practical Assignments</h3>
+          <ol style="padding-left:20px; line-height:1.6; margin:0;">
+            <li><strong>UV-Vis Assay &amp; pH Shift:</strong> Quantitate Paracetamol ($R^2 \ge 0.999$) and observe Phenol Red bathochromic shift ($430 \to 560\text{ nm}$).</li>
+            <li><strong>HPLC Separation Optimization:</strong> Achieve baseline separation ($R_s \ge 1.5$) of Paracetamol + Caffeine by tuning flow rate and % Acetonitrile.</li>
+            <li><strong>FTIR Carbonyl Ladder:</strong> Differentiate Esters, Ketones, and Amides ($1650 - 1750\text{ cm}^{-1}$) and demonstrate ATR $d_p$ wavelength dependence.</li>
+            <li><strong>GC Carrier Gas Comparison:</strong> Compare $N_2$ vs $He$ vs $H_2$ on DB-5 capillary column to prove why Hydrogen enables $2\times$ faster run times.</li>
+            <li><strong>Kovats Retention Index Calculation:</strong> Calculate Kovats Index ($I$) for Limonene and Toluene using homologous $n$-alkane calibration anchors.</li>
+          </ol>
+        </div>
+
+        <!-- TAB 3: DEPLOYMENT GUIDE -->
+        <div id="guideContent-deployment" class="guide-content-panel" style="display:none;">
+          <h2>🏫 Classroom &amp; Campus Deployment Guide</h2>
+          <p>Technical guide for IT Administrators, Lab Instructors, and Academic Technologists deploying <strong>Virtual Analytical Lab</strong>.</p>
+
+          <h3>1. ⚡ Architecture Highlights</h3>
+          <p>• <strong>100% Client-Side Pure Execution:</strong> All numerical simulations, FFT transforms, and Canvas renderers execute in the student's browser. Zero backend server load.<br/>
+          • <strong>Zero Framework Bloat:</strong> Pure vanilla JavaScript ES modules and HTML5 standards.<br/>
+          • <strong>Offline &amp; Low-Bandwidth Resilient:</strong> Works seamlessly without active internet once loaded.</p>
+
+          <h3>2. 🚀 Deployment Options</h3>
+          <p><strong>Option 1: Live Cloud Production (Zero Setup)</strong><br/>
+          Direct students to: <code style="color:#38bdf8;">https://virtual-analytical-lab.vercel.app/</code></p>
+
+          <p><strong>Option 2: Local LAN Classroom Server (Air-Gapped Labs)</strong><br/>
+          Run a 1-line server on the instructor's PC for offline computer labs:</p>
+          <pre><code>npx serve ./ -p 8080   # Using Node.js
+# OR
+python -m http.server 8080   # Using Python 3</code></pre>
+
+          <p><strong>Option 3: Progressive Web App (PWA) Offline Installation</strong><br/>
+          Click <strong>Install Virtual Analytical Lab</strong> in Chrome/Edge or <em>Add to Home Screen</em> on Safari iPad for standalone offline operation.</p>
+
+          <h3>3. 💻 Learning Management System (LMS) Iframe Embedding</h3>
+          <p>Embed any workstation or the full platform inside <strong>Canvas LMS</strong>, <strong>Moodle</strong>, <strong>Blackboard Learn</strong>, or <strong>Google Classroom</strong>:</p>
+          <pre><code>&lt;iframe 
+  src="https://virtual-analytical-lab.vercel.app/" 
+  width="100%" 
+  height="850px" 
+  style="border:1px solid #334155; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.5);" 
+  allow="fullscreen" 
+  title="Virtual Analytical Lab"&gt;
+&lt;/iframe&gt;</code></pre>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer Actions -->
+      <div class="guide-modal-footer">
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn-secondary" id="copyGuideBtn" onclick="window.copyCurrentGuide()" style="padding:6px 12px; font-size:0.78rem; font-weight:700; cursor:pointer;">📋 Copy Guide Markdown</button>
+          <button type="button" class="btn-secondary" onclick="window.print()" style="padding:6px 12px; font-size:0.78rem; font-weight:700; cursor:pointer;">🖨️ Print / Save PDF</button>
+        </div>
+        <button type="button" class="btn-primary" onclick="window.closeGuideModal()" style="padding:6px 18px; font-size:0.8rem; font-weight:700; cursor:pointer;">Close Guide</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS, SPOTLIGHT, HERO WAVE & GUIDE MODAL SCRIPT -->
   <script type="module">
-    // 1. Dynamic Cursor Spotlight on Bento Cards
+    // 1. Guide Modal Controller Functions (exposed to window)
+    let currentGuideTab = 'student';
+
+    window.openGuideModal = function(tabName = 'student') {
+      const modal = document.getElementById('guideModal');
+      if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        window.switchGuideTab(tabName);
+      }
+    };
+
+    window.closeGuideModal = function() {
+      const modal = document.getElementById('guideModal');
+      if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    };
+
+    window.switchGuideTab = function(tabName) {
+      currentGuideTab = tabName;
+      document.querySelectorAll('.guide-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.guide-content-panel').forEach(panel => panel.style.display = 'none');
+
+      const btn = document.getElementById(`guideTabBtn-${tabName}`);
+      const panel = document.getElementById(`guideContent-${tabName}`);
+      if (btn) btn.classList.add('active');
+      if (panel) panel.style.display = 'block';
+
+      // Scroll modal body to top
+      const body = document.getElementById('guideModalBody');
+      if (body) body.scrollTop = 0;
+    };
+
+    window.copyCurrentGuide = function() {
+      const panel = document.getElementById(`guideContent-${currentGuideTab}`);
+      if (!panel) return;
+      const text = panel.innerText || panel.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyGuideBtn');
+        if (btn) {
+          const original = btn.textContent;
+          btn.textContent = '✓ Copied to Clipboard!';
+          btn.style.color = '#34d399';
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.style.color = '';
+          }, 2000);
+        }
+      });
+    };
+
+    // Close modal on Escape or backdrop click
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') window.closeGuideModal();
+    });
+    const modalBackdrop = document.getElementById('guideModal');
+    if (modalBackdrop) {
+      modalBackdrop.addEventListener('click', (e) => {
+        if (e.target === modalBackdrop) window.closeGuideModal();
+      });
+    }
+
+    // 2. Dynamic Cursor Spotlight on Bento Cards
     document.querySelectorAll('.bento-card').forEach(card => {
       card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
@@ -1112,7 +1501,7 @@
       });
     });
 
-    // 2. Living Laboratory Hero Waveform Canvas Animation
+    // 3. Living Laboratory Hero Waveform Canvas Animation
     const canvas = document.getElementById('heroWaveCanvas');
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -1223,7 +1612,7 @@
       draw();
     }
 
-    // 3. Projection Mode Toggle & LocalStorage Sync
+    // 4. Projection Mode Toggle & LocalStorage Sync
     const toggleProjBtn = document.getElementById('toggleProjectionBtn');
     
     function applyProjectionMode(isProj) {
@@ -1246,7 +1635,7 @@
       applyProjectionMode(true);
     }
 
-    // 4. IntersectionObserver Entry Reveal Choreography
+    // 5. IntersectionObserver Entry Reveal Choreography
     const observerOptions = {
       threshold: 0.08,
       rootMargin: '0px 0px -30px 0px'
@@ -1267,7 +1656,7 @@
       revealObserver.observe(el);
     });
 
-    // 5. PWA Service Worker Registration
+    // 6. PWA Service Worker Registration
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(err => console.log('SW reg error:', err));
     }
