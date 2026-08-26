@@ -46,268 +46,118 @@
   }
   </script>
 
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
   <link rel="icon" type="image/svg+xml" href="assets/val-logo-mark.svg">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/global.css">
+  
   <style>
     /* ==========================================================================
        DESIGN SYSTEM TOKENS - HIGH-END VISUAL DESIGN (AWWWARDS-TIER)
        ========================================================================== */
     :root {
-      --bg-base: #050811;
-      --bg-surface: #0b1120;
-      --bg-surface-elevated: #111a2e;
-      --bg-card-inner: #080d19;
-      --border-subtle: rgba(255, 255, 255, 0.07);
-      --border-medium: rgba(255, 255, 255, 0.12);
-      --border-strong: rgba(255, 255, 255, 0.18);
-      --border-focus: #38bdf8;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --bg-base: #040711;
+      --bg-surface: #0a1020;
+      --bg-surface-elevated: #10192e;
+      --bg-card-inner: #070c18;
       
-      --accent: #0284c7;
-      --accent-light: #38bdf8;
-      --accent-glow: rgba(2, 132, 199, 0.28);
-      --accent-secondary: #10b981;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-medium: rgba(255, 255, 255, 0.14);
+      --border-strong: rgba(255, 255, 255, 0.22);
       
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
       
-      --radius-sm: 6px;
-      --radius-md: 12px;
+      --radius-sm: 8px;
+      --radius-md: 14px;
       --radius-lg: 20px;
-      --radius-xl: 24px;
+      --radius-xl: 26px;
       --radius-full: 9999px;
 
       --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
       --ease-tactile: cubic-bezier(0.16, 1, 0.3, 1);
-      --duration-fast: 150ms;
-      --duration-normal: 250ms;
-      --duration-slow: 400ms;
-    }
-
-    /* ==========================================================================
-       PROJECTION MODE - 20-FOOT CLASSROOM HIGH-CONTRAST INVERSION
-       ========================================================================== */
-    body.projection-mode {
-      --bg-base: #ffffff;
-      --bg-surface: #f8fafc;
-      --bg-surface-elevated: #f1f5f9;
-      --bg-card-inner: #ffffff;
-      --border-subtle: #cbd5e1;
-      --border-medium: #94a3b8;
-      --border-strong: #64748b;
-      --text-main: #020617;
-      --text-muted: #334155;
-      --text-dim: #475569;
-      --accent: #0284c7;
-      --accent-light: #0369a1;
-      --accent-glow: rgba(2, 132, 199, 0.18);
-    }
-    body.projection-mode .ambient-radial-glow {
-      display: none !important;
-    }
-    body.projection-mode .site-nav-pill {
-      background: rgba(255, 255, 255, 0.95) !important;
-      border-color: #cbd5e1 !important;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
-    }
-    body.projection-mode .brand-name {
-      color: #020617 !important;
-    }
-    body.projection-mode .bento-card {
-      background: #f8fafc !important;
-      border-color: #cbd5e1 !important;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
-    }
-    body.projection-mode .bento-card:hover {
-      border-color: #0284c7 !important;
-      box-shadow: 0 12px 28px rgba(2, 132, 199, 0.15) !important;
-    }
-    body.projection-mode .bento-card-inner {
-      background: #ffffff !important;
-      border-color: #e2e8f0 !important;
-      box-shadow: none !important;
-    }
-    body.projection-mode .card-instrument-title,
-    body.projection-mode .section-title,
-    body.projection-mode .hero-headline,
-    body.projection-mode .docs-text h3,
-    body.projection-mode .teaser-title {
-      color: #020617 !important;
-    }
-    body.projection-mode .hero-subtext,
-    body.projection-mode .card-description,
-    body.projection-mode .docs-text p {
-      color: #334155 !important;
-    }
-    body.projection-mode .hero-eyebrow {
-      background: #f1f5f9 !important;
-      border-color: #cbd5e1 !important;
-      color: #0369a1 !important;
-    }
-    body.projection-mode .hero-proof-badge {
-      background: #ffffff !important;
-      border-color: #cbd5e1 !important;
-      color: #1e293b !important;
-    }
-    body.projection-mode .card-spec-row {
-      background: #f8fafc !important;
-      border-color: #cbd5e1 !important;
-      color: #1e293b !important;
-    }
-    body.projection-mode .tag-item {
-      background: #f1f5f9 !important;
-      border-color: #cbd5e1 !important;
-      color: #334155 !important;
-    }
-    body.projection-mode .btn-nested-action {
-      background: #f1f5f9 !important;
-      border-color: #cbd5e1 !important;
-      color: #020617 !important;
-    }
-    body.projection-mode .bento-card:hover .btn-nested-action {
-      background: #0284c7 !important;
-      border-color: #0284c7 !important;
-      color: #ffffff !important;
-    }
-    body.projection-mode .btn-nested-icon {
-      background: rgba(0, 0, 0, 0.08) !important;
-      color: inherit !important;
-    }
-    body.projection-mode .bento-card:hover .btn-nested-icon {
-      background: rgba(255, 255, 255, 0.25) !important;
-      color: #ffffff !important;
-    }
-    body.projection-mode .teaser-card {
-      background: #f8fafc !important;
-      border-color: #cbd5e1 !important;
-    }
-    body.projection-mode .teaser-box {
-      background: #ffffff !important;
-      border-color: #cbd5e1 !important;
-    }
-    body.projection-mode .teaser-name {
-      color: #020617 !important;
-    }
-    body.projection-mode .teaser-desc {
-      color: #475569 !important;
-    }
-    body.projection-mode .docs-section {
-      background: #f8fafc !important;
-      border-top-color: #cbd5e1 !important;
-      border-bottom-color: #cbd5e1 !important;
-    }
-    body.projection-mode .btn-secondary {
-      background: #ffffff !important;
-      border-color: #cbd5e1 !important;
-      color: #0f172a !important;
-    }
-    body.projection-mode .btn-secondary:hover {
-      border-color: #0284c7 !important;
-      color: #0284c7 !important;
-    }
-    body.projection-mode .site-footer {
-      color: #64748b !important;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    /* ==========================================================================
-       BASE LAYOUT & SCENERY
-       ========================================================================== */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      --duration-fast: 160ms;
+      --duration-normal: 280ms;
+      --duration-slow: 450ms;
     }
 
     body {
+      font-family: var(--font-sans);
       background-color: var(--bg-base);
       color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
       -webkit-font-smoothing: antialiased;
-      position: relative;
+      -moz-osx-font-smoothing: grayscale;
       overflow-x: hidden;
     }
 
-    /* Skip link */
-    .skip-link {
-      position: absolute;
-      top: -40px;
-      left: 20px;
-      background: var(--accent);
-      color: #ffffff;
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      font-weight: 700;
-      font-size: 0.85rem;
-      z-index: 9999;
-      text-decoration: none;
-      transition: top 0.2s ease;
-    }
-    .skip-link:focus {
-      top: 16px;
-    }
-
-    /* Subtle ambient radial mesh background glow */
+    /* Ambient atmospheric glow mesh */
     .ambient-radial-glow {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       pointer-events: none;
       z-index: 0;
       overflow: hidden;
     }
     .glow-orb-primary {
       position: absolute;
-      top: -120px;
+      top: -10vw;
       left: 50%;
       transform: translateX(-50%);
-      width: 700px;
+      width: 80vw;
+      max-width: 1000px;
       height: 450px;
-      background: radial-gradient(ellipse at center, rgba(2, 132, 199, 0.15) 0%, rgba(5, 8, 17, 0) 70%);
-      filter: blur(40px);
+      background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.12) 0%, rgba(14, 165, 233, 0.04) 45%, transparent 70%);
+      filter: blur(60px);
     }
     .glow-orb-secondary {
       position: absolute;
-      top: 600px;
-      right: -100px;
+      top: 400px;
+      left: 15%;
       width: 500px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(5, 8, 17, 0) 65%);
-      filter: blur(50px);
+      height: 500px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.07) 0%, transparent 65%);
+      filter: blur(80px);
     }
 
-    /* ==========================================================================
-       FLOATING ISLAND NAVIGATION
-       ========================================================================== */
+    /* FLOATING ISLAND NAVIGATION */
     .site-nav-wrap {
-      width: 100%;
-      max-width: 1140px;
-      margin: 18px auto 0;
-      padding: 0 16px;
-      position: relative;
+      position: sticky;
+      top: 20px;
       z-index: 100;
+      padding: 0 16px;
+      max-width: 1140px;
+      margin: 0 auto;
     }
     .site-nav-pill {
-      background: rgba(11, 17, 32, 0.75);
+      background: rgba(10, 16, 32, 0.78);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--border-medium);
       border-radius: var(--radius-full);
-      height: 58px;
-      padding: 0 16px 0 12px;
+      padding: 8px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.35);
-      transition: border-color var(--duration-normal) ease, box-shadow var(--duration-normal) ease;
+      box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      transition: border-color var(--duration-fast) ease;
     }
     .site-nav-pill:hover {
-      border-color: var(--border-medium);
+      border-color: var(--border-strong);
     }
     .brand-mark {
       display: flex;
@@ -319,17 +169,13 @@
     .brand-glyph {
       width: 34px;
       height: 34px;
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-      border-radius: 9px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(168, 85, 247, 0.2));
+      border: 1px solid rgba(56, 189, 248, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-weight: 800;
-      font-size: 0.85rem;
-      font-family: 'JetBrains Mono', monospace;
-      box-shadow: 0 2px 10px var(--accent-glow);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
     }
     .brand-text-group {
       display: flex;
@@ -338,204 +184,267 @@
     .brand-name {
       font-size: 0.96rem;
       font-weight: 700;
-      letter-spacing: -0.015em;
+      letter-spacing: -0.02em;
       color: var(--text-main);
-      line-height: 1.2;
     }
     .brand-subtitle {
-      font-size: 0.68rem;
+      font-size: 0.62rem;
+      font-family: var(--font-mono);
+      color: #38bdf8;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
       font-weight: 600;
-      color: var(--text-dim);
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: 0.04em;
     }
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
-    /* ==========================================================================
-       HERO SECTION & SPATIAL RHYTHM
-       ========================================================================== */
+    /* HERO SECTION */
     .hero-wrap {
-      max-width: 1140px;
-      width: 100%;
+      max-width: 1080px;
       margin: 0 auto;
-      padding: 60px 20px 36px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 64px 20px 48px;
       text-align: center;
       position: relative;
       z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .hero-eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--accent-light);
-      background: rgba(2, 132, 199, 0.1);
-      border: 1px solid rgba(56, 189, 248, 0.28);
       padding: 6px 14px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
       border-radius: var(--radius-full);
-      margin-bottom: 20px;
-      font-family: 'JetBrains Mono', monospace;
-      box-shadow: 0 2px 12px rgba(2, 132, 199, 0.15);
+      font-size: 0.76rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: #38bdf8;
+      letter-spacing: 0.04em;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.1);
     }
     .hero-eyebrow-dot {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: var(--accent-light);
-      box-shadow: 0 0 8px var(--accent-light);
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
       animation: pulseDot 2.4s infinite ease-in-out;
     }
     @keyframes pulseDot {
-      0%, 100% { opacity: 0.5; transform: scale(0.9); }
-      50% { opacity: 1; transform: scale(1.2); }
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.3); }
     }
+
     .hero-headline {
-      font-size: clamp(2.4rem, 5.5vw, 3.85rem);
+      font-size: clamp(2.4rem, 5.4vw, 4.2rem);
       font-weight: 800;
-      line-height: 1.1;
-      letter-spacing: -0.035em;
-      color: var(--text-main);
-      margin-bottom: 18px;
-      max-width: 24ch;
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      color: #ffffff;
+      margin: 0 0 20px;
+      max-width: 20ch;
       text-wrap: balance;
     }
+    .hero-headline .gradient-text {
+      background: linear-gradient(135deg, #ffffff 30%, #38bdf8 70%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
     .hero-subtext {
-      font-size: clamp(0.98rem, 2vw, 1.12rem);
+      font-size: clamp(1rem, 1.8vw, 1.16rem);
       color: var(--text-muted);
-      line-height: 1.55;
-      margin-bottom: 28px;
-      max-width: 54ch;
+      line-height: 1.6;
+      margin: 0 0 32px;
+      max-width: 52ch;
       text-wrap: balance;
     }
+
     .hero-ctas {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 12px;
-      margin-bottom: 32px;
-    }
-    
-    /* Interactive proof badges */
-    .hero-proof-strip {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      max-width: 800px;
-    }
-    .hero-proof-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(11, 17, 32, 0.6);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-full);
-      padding: 4px 12px;
-      font-size: 0.74rem;
-      font-weight: 600;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--text-muted);
-    }
-    .hero-proof-badge span.icon {
-      color: var(--accent-light);
+      gap: 14px;
+      margin-bottom: 40px;
     }
 
-    /* ==========================================================================
-       BUTTON ARCHITECTURE
-       ========================================================================== */
+    /* BUTTONS */
     .btn-primary {
       background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: #ffffff;
-      padding: 12px 24px;
+      padding: 12px 26px;
       border-radius: var(--radius-full);
       font-weight: 700;
       font-size: 0.92rem;
       text-decoration: none;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       display: inline-flex;
       align-items: center;
       gap: 8px;
       transition: transform var(--duration-fast) var(--ease-tactile), box-shadow var(--duration-fast) ease;
       cursor: pointer;
-      box-shadow: 0 4px 16px var(--accent-glow);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px var(--accent-glow);
-    }
-    .btn-primary:active,
-    .btn-secondary:active,
-    .bento-card:active {
-      transform: scale(0.98);
+      box-shadow: 0 10px 28px rgba(2, 132, 199, 0.5);
     }
     .btn-secondary {
-      background: var(--bg-surface);
+      background: rgba(15, 23, 42, 0.7);
       color: var(--text-main);
       min-height: 44px;
-      padding: 10px 18px;
+      padding: 10px 20px;
       border-radius: var(--radius-full);
       font-weight: 600;
-      font-size: 0.84rem;
+      font-size: 0.86rem;
       text-decoration: none;
       border: 1px solid var(--border-subtle);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: border-color var(--duration-fast) ease, transform var(--duration-fast) var(--ease-tactile);
+      transition: border-color var(--duration-fast) ease, transform var(--duration-fast) var(--ease-tactile), background var(--duration-fast) ease;
       cursor: pointer;
     }
     .btn-secondary:hover {
       border-color: var(--border-strong);
+      background: rgba(30, 41, 59, 0.7);
       transform: translateY(-1px);
     }
     .btn-secondary.active {
-      background: var(--accent);
+      background: #0284c7;
       color: #ffffff;
-      border-color: var(--accent-light);
+      border-color: #38bdf8;
+    }
+    .btn-primary:active, .btn-secondary:active, .bento-card:active {
+      transform: scale(0.98);
     }
 
-    @media (max-width: 540px) {
-      .site-nav-pill {
-        height: auto;
-        padding: 8px 12px;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-      .brand-subtitle {
-        display: none;
-      }
-      .hero-wrap {
-        padding: 36px 16px 24px;
-      }
-      .hero-ctas {
-        flex-direction: column;
-        width: 100%;
-      }
-      .hero-ctas .btn-primary,
-      .hero-ctas .btn-secondary {
-        width: 100%;
-      }
+    /* LIVING LABORATORY HERO SPECIMEN STAGE */
+    .hero-specimen-stage {
+      width: 100%;
+      max-width: 960px;
+      margin: 10px auto 44px;
+      background: rgba(8, 13, 25, 0.85);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-xl);
+      padding: 8px;
+      box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-specimen-inner {
+      background: #03060f;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: calc(var(--radius-xl) - 8px);
+      padding: 20px 24px;
+      position: relative;
+    }
+    .hero-specimen-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--text-dim);
+    }
+    .specimen-live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #34d399;
+      font-weight: 700;
+    }
+    .specimen-live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 8px #34d399;
+      animation: pulseDot 1.8s infinite ease-in-out;
+    }
+    #heroWaveCanvas {
+      width: 100%;
+      height: 160px;
+      display: block;
+      border-radius: var(--radius-md);
+      background: rgba(5, 10, 20, 0.5);
+    }
+    .specimen-labels {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .specimen-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .specimen-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
     }
 
-    /* ==========================================================================
-       DOUBLE-BEZEL CONCENTRIC BENTO WORKSTATIONS
-       ========================================================================== */
+    /* TELEMETRY METRICS TICKER STRIP */
+    .telemetry-ticker {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto 54px;
+      padding: 0 16px;
+      box-sizing: border-box;
+    }
+    @media (max-width: 768px) {
+      .telemetry-ticker {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .telemetry-card {
+      background: rgba(11, 17, 32, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      text-align: left;
+    }
+    .telemetry-val {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+    .telemetry-label {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* BENTO WORKSTATION SECTION */
     .workstations-section {
       max-width: 1140px;
-      margin: 0 auto 50px;
+      margin: 0 auto 60px;
       padding: 0 16px;
       width: 100%;
+      box-sizing: border-box;
       position: relative;
       z-index: 10;
     }
@@ -543,24 +452,28 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      padding: 0 4px;
     }
     .section-title {
-      font-size: 1.35rem;
-      font-weight: 700;
+      font-size: 1.45rem;
+      font-weight: 800;
       color: var(--text-main);
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
+      margin: 0;
     }
     .section-subtitle {
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      color: #38bdf8;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      letter-spacing: 0.08em;
     }
 
     .bento-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 18px;
+      gap: 20px;
     }
     @media (max-width: 768px) {
       .bento-grid {
@@ -568,100 +481,109 @@
       }
     }
 
-    /* Concentric Double-Bezel Card */
+    /* CONCENTRIC DOUBLE-BEZEL BENTO CARDS */
     .bento-card {
-      background: rgba(15, 23, 42, 0.65);
+      --card-accent: #38bdf8;
+      --card-glow: rgba(56, 189, 248, 0.25);
+      background: rgba(14, 21, 38, 0.7);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-xl);
-      padding: 6px;
+      padding: 7px;
       text-decoration: none;
       color: inherit;
       display: flex;
       flex-direction: column;
       transition: transform var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) ease, box-shadow var(--duration-normal) ease;
-      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.4);
       position: relative;
       cursor: pointer;
     }
+    .bento-card.card-hplc {
+      --card-accent: #38bdf8;
+      --card-glow: rgba(56, 189, 248, 0.28);
+    }
+    .bento-card.card-uvvis {
+      --card-accent: #c084fc;
+      --card-glow: rgba(192, 132, 252, 0.28);
+    }
+    .bento-card.card-ftir {
+      --card-accent: #fb7185;
+      --card-glow: rgba(251, 113, 133, 0.28);
+    }
+    .bento-card.card-gc {
+      --card-accent: #34d399;
+      --card-glow: rgba(52, 211, 153, 0.28);
+    }
+
     .bento-card-inner {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      border-radius: calc(var(--radius-xl) - 6px);
-      padding: 24px;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 0%), rgba(255, 255, 255, 0.05), transparent 75%), var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: calc(var(--radius-xl) - 7px);
+      padding: 26px;
       height: 100%;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.09);
       position: relative;
       overflow: hidden;
     }
     .bento-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(56, 189, 248, 0.4);
-      box-shadow: 0 16px 36px -8px var(--accent-glow);
+      transform: translateY(-5px);
+      border-color: var(--card-accent);
+      box-shadow: 0 18px 40px -10px var(--card-glow);
+    }
+    .bento-card:hover .bento-card-inner {
+      border-color: rgba(255, 255, 255, 0.12);
     }
 
     .card-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .card-instrument-title {
-      font-size: 1.25rem;
-      font-weight: 700;
+      font-size: 1.32rem;
+      font-weight: 800;
       color: var(--text-main);
-      letter-spacing: -0.015em;
+      letter-spacing: -0.025em;
+      margin: 0;
     }
     .card-status-badge {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 0.68rem;
       font-weight: 700;
-      padding: 3px 8px;
+      color: var(--card-accent);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 4px 10px;
       border-radius: var(--radius-full);
-      background: rgba(34, 197, 94, 0.12);
-      border: 1px solid rgba(34, 197, 94, 0.35);
-      color: #34d399;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      letter-spacing: 0.04em;
     }
+
     .card-description {
       font-size: 0.88rem;
       color: var(--text-muted);
-      line-height: 1.5;
+      line-height: 1.55;
       margin-bottom: 18px;
     }
 
-    /* Specification Grid */
     .card-spec-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 6px;
+      gap: 8px;
       margin-bottom: 18px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: #cbd5e1;
-    }
-    @media (max-width: 480px) {
-      .card-spec-grid {
-        grid-template-columns: 1fr;
-      }
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+      color: var(--text-muted);
     }
     .card-spec-row {
-      background: rgba(15, 23, 42, 0.65);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.04);
       padding: 6px 10px;
       border-radius: var(--radius-sm);
-      border: 1px solid var(--border-subtle);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .card-spec-row::before {
-      content: "•";
-      color: var(--accent-light);
-      font-weight: bold;
     }
 
     .card-tags {
@@ -671,144 +593,140 @@
       margin-bottom: 22px;
     }
     .tag-item {
-      font-family: 'JetBrains Mono', monospace;
       font-size: 0.7rem;
+      font-family: var(--font-mono);
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
       color: var(--text-muted);
-      background: var(--bg-surface-elevated);
-      padding: 3px 10px;
-      border-radius: var(--radius-full);
-      border: 1px solid var(--border-subtle);
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
-    /* Button-in-Button Nested CTA Architecture */
+    /* BUTTON-IN-BUTTON KINETIC COIN */
     .btn-nested-action {
-      background: rgba(17, 26, 46, 0.85);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-full);
-      padding: 8px 10px 8px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-full);
+      padding: 7px 8px 7px 18px;
+      font-size: 0.84rem;
       font-weight: 700;
-      font-size: 0.88rem;
       color: var(--text-main);
-      transition: background var(--duration-normal) ease, color var(--duration-normal) ease, border-color var(--duration-normal) ease;
+      transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
+    }
+    .bento-card:hover .btn-nested-action {
+      background: var(--card-accent);
+      color: #030712;
+      border-color: var(--card-accent);
     }
     .btn-nested-icon {
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      transition: transform var(--duration-normal) var(--ease-spring), background-color var(--duration-normal) ease, color var(--duration-normal) ease;
-    }
-    .bento-card:hover .btn-nested-action {
-      background: var(--accent);
-      border-color: var(--accent-light);
-      color: #ffffff;
+      font-size: 1rem;
+      transition: transform var(--duration-normal) var(--ease-spring), background var(--duration-fast) ease;
     }
     .bento-card:hover .btn-nested-icon {
-      transform: translate(2px, -2px) scale(1.05);
-      background: rgba(255, 255, 255, 0.25);
-      color: #ffffff;
+      background: rgba(0, 0, 0, 0.2);
+      transform: translate(3px, -3px) scale(1.1);
     }
 
-    /* ==========================================================================
-       COMING SOON EXPANSION TEASER
-       ========================================================================== */
+    /* COMING SOON EXPANSION ROW */
     .teaser-card {
-      margin-top: 20px;
-      background: rgba(11, 17, 32, 0.45);
-      border: 1px dashed var(--border-subtle);
+      margin-top: 24px;
+      background: rgba(11, 17, 32, 0.6);
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius-xl);
       padding: 24px;
+      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.3);
     }
     .teaser-head {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       margin-bottom: 16px;
     }
     .teaser-title {
-      font-size: 1.1rem;
+      font-size: 1.12rem;
       font-weight: 700;
       color: var(--text-main);
+      margin: 0;
     }
     .teaser-pill {
-      font-family: 'JetBrains Mono', monospace;
       font-size: 0.68rem;
+      font-family: var(--font-mono);
       font-weight: 700;
-      padding: 3px 10px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 4px 10px;
       border-radius: var(--radius-full);
-      background: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      color: #fbbf24;
     }
     .teaser-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
     }
+    @media (max-width: 768px) {
+      .teaser-grid {
+        grid-template-columns: 1fr;
+      }
+    }
     .teaser-box {
-      background: rgba(8, 13, 25, 0.7);
-      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
       border-radius: var(--radius-md);
       padding: 14px;
-      transition: border-color var(--duration-fast) ease, transform var(--duration-fast) var(--ease-tactile);
-    }
-    .teaser-box:hover {
-      border-color: var(--border-medium);
-      transform: translateY(-2px);
     }
     .teaser-name {
       font-size: 0.88rem;
       font-weight: 700;
-      color: #e2e8f0;
+      color: var(--text-main);
       margin-bottom: 4px;
     }
     .teaser-desc {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: var(--text-dim);
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
-    /* ==========================================================================
-       FACULTY & CLASSROOM RESOURCES
-       ========================================================================== */
+    /* FACULTY & DOCS SECTION */
     .docs-section {
-      background: var(--bg-surface);
-      border-top: 1px solid var(--border-subtle);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: 40px 20px;
-      margin-top: 20px;
+      max-width: 1140px;
+      margin: 0 auto 60px;
+      padding: 0 16px;
+      box-sizing: border-box;
       position: relative;
       z-index: 10;
     }
     .docs-container {
-      max-width: 1140px;
-      margin: 0 auto;
+      background: rgba(14, 21, 38, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 24px;
+      gap: 20px;
     }
     .docs-text h3 {
       font-size: 1.25rem;
       font-weight: 700;
       color: var(--text-main);
-      margin-bottom: 6px;
-      letter-spacing: -0.015em;
+      margin: 0 0 6px;
     }
     .docs-text p {
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--text-muted);
-      max-width: 52ch;
-      line-height: 1.5;
+      margin: 0;
+      max-width: 48ch;
     }
     .docs-links {
       display: flex;
@@ -816,14 +734,12 @@
       gap: 10px;
     }
 
-    /* ==========================================================================
-       FOOTER
-       ========================================================================== */
+    /* FOOTER */
     .site-footer {
       max-width: 1140px;
       margin: 0 auto;
-      width: 100%;
-      padding: 32px 20px;
+      padding: 30px 16px 50px;
+      border-top: 1px solid var(--border-subtle);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -835,7 +751,7 @@
       z-index: 10;
     }
     .site-footer a {
-      color: var(--accent-light);
+      color: #38bdf8;
       text-decoration: none;
     }
     .site-footer a:hover {
@@ -845,12 +761,46 @@
     /* Staggered Scroll Animation Elements */
     .reveal-on-scroll {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(24px);
       transition: opacity 0.7s var(--ease-spring), transform 0.7s var(--ease-spring);
     }
     .reveal-on-scroll.revealed {
       opacity: 1;
       transform: translateY(0);
+    }
+
+    /* PROJECTION MODE HIGH-CONTRAST CLASSROOM INVERSION */
+    body.projection-mode {
+      --bg-base: #ffffff;
+      --bg-surface: #f1f5f9;
+      --bg-surface-elevated: #e2e8f0;
+      --bg-card-inner: #ffffff;
+      --border-subtle: #cbd5e1;
+      --border-medium: #94a3b8;
+      --border-strong: #475569;
+      --text-main: #000000;
+      --text-muted: #334155;
+      --text-dim: #475569;
+    }
+    body.projection-mode .ambient-radial-glow {
+      display: none;
+    }
+    body.projection-mode .site-nav-pill,
+    body.projection-mode .hero-specimen-stage,
+    body.projection-mode .bento-card,
+    body.projection-mode .teaser-card,
+    body.projection-mode .docs-container {
+      background: #ffffff;
+      border-color: #94a3b8;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+    body.projection-mode .hero-headline .gradient-text {
+      background: none;
+      -webkit-text-fill-color: #000000;
+      color: #000000;
+    }
+    body.projection-mode #heroWaveCanvas {
+      background: #f8fafc;
     }
   </style>
 </head>
@@ -888,7 +838,7 @@
           📺 Projection Mode
         </button>
         <a href="docs/STUDENT_GUIDE.md" class="btn-secondary">
-          Documentation
+          Docs
         </a>
       </div>
     </nav>
@@ -902,7 +852,7 @@
     </div>
 
     <h1 class="hero-headline">
-      Master analytical chemistry through real-time physics
+      Master analytical chemistry through <span class="gradient-text">real-time physics</span>
     </h1>
 
     <p class="hero-subtext">
@@ -921,11 +871,44 @@
       </a>
     </div>
 
-    <div class="hero-proof-strip">
-      <div class="hero-proof-badge"><span class="icon">⚡</span> Real-Time Physics Engine</div>
-      <div class="hero-proof-badge"><span class="icon">🔬</span> 4 Analytical Workstations</div>
-      <div class="hero-proof-badge"><span class="icon">🌐</span> 100% Client-Side WebGL/Canvas</div>
-      <div class="hero-proof-badge"><span class="icon">🎓</span> USP &amp; BP Validated Assays</div>
+    <!-- LIVING LABORATORY HERO SPECIMEN STAGE -->
+    <div class="hero-specimen-stage" aria-label="Interactive Physics Signal Demonstration">
+      <div class="hero-specimen-inner">
+        <div class="hero-specimen-header">
+          <div class="specimen-live-badge">
+            <span class="specimen-live-dot"></span>
+            LIVE PHYSICAL SIGNAL SYNTHESIS
+          </div>
+          <div>60 FPS MULTI-BEAM DISPERSION</div>
+        </div>
+        <canvas id="heroWaveCanvas"></canvas>
+        <div class="specimen-labels">
+          <div class="specimen-pill"><span class="specimen-pill-dot" style="background:#38bdf8"></span> HPLC Gaussian Elution Peak</div>
+          <div class="specimen-pill"><span class="specimen-pill-dot" style="background:#c084fc"></span> UV-Vis Double-Beam Dispersion</div>
+          <div class="specimen-pill"><span class="specimen-pill-dot" style="background:#fb7185"></span> FTIR Michelson Interferogram</div>
+          <div class="specimen-pill"><span class="specimen-pill-dot" style="background:#34d399"></span> GC Thermal Flame Ionization</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPENDIAL TELEMETRY TICKER -->
+    <div class="telemetry-ticker">
+      <div class="telemetry-card">
+        <div class="telemetry-val">4 Workstations</div>
+        <div class="telemetry-label">HPLC • UV-Vis • FTIR • GC-FID</div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-val">0 ms Latency</div>
+        <div class="telemetry-label">100% Client-Side Pure WebGL/Canvas</div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-val">0.001 AU</div>
+        <div class="telemetry-label">Sub-mAU Signal &amp; Peak Integration</div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-val">USP / BP Standard</div>
+        <div class="telemetry-label">Compendial Methods &amp; Suitability</div>
+      </div>
     </div>
   </section>
 
@@ -941,7 +924,7 @@
     <div class="bento-grid">
 
       <!-- 1. HPLC CHROMATOGRAPH -->
-      <a class="workstation-card bento-card reveal-on-scroll" href="instruments/hplc/index.html" aria-label="Launch HPLC Workstation">
+      <a class="workstation-card bento-card card-hplc reveal-on-scroll" href="instruments/hplc/index.html" aria-label="Launch HPLC Workstation">
         <div class="bento-card-inner">
           <div>
             <div class="card-head">
@@ -951,10 +934,10 @@
             <p class="card-description">
               Reversed-phase isocratic and gradient separation on C18 stationary phase with Darcy-Poiseuille backpressure kinetics and Van Deemter plate height equations.
             </p>
-            <div class="card-spec-grid tabular-nums">
+            <div class="card-spec-grid">
               <div class="card-spec-row">USP &lt;621&gt; Suitability (N, Rs, T)</div>
               <div class="card-spec-row">Runtime (3, 5, 7, 10, 15 min)</div>
-              <div class="card-spec-row">Flow Rate: 0.1-5.0 mL/min</div>
+              <div class="card-spec-row">Flow Rate: 0.1–5.0 mL/min</div>
               <div class="card-spec-row">Dark Theme &amp; Lab Paper</div>
             </div>
             <div class="card-tags">
@@ -971,7 +954,7 @@
       </a>
 
       <!-- 2. UV-VIS SPECTROPHOTOMETER -->
-      <a class="workstation-card bento-card reveal-on-scroll" href="instruments/uvvis/index.html" aria-label="Launch UV-Vis Spectrophotometer">
+      <a class="workstation-card bento-card card-uvvis reveal-on-scroll" href="instruments/uvvis/index.html" aria-label="Launch UV-Vis Spectrophotometer">
         <div class="bento-card-inner">
           <div>
             <div class="card-head">
@@ -979,9 +962,9 @@
               <span class="card-status-badge">● READY</span>
             </div>
             <p class="card-description">
-              Dual-beam Czerny-Turner monochromator sweep (190-900 nm) with Beer-Lambert linear regression, Henderson-Hasselbalch ionization, and derivative spectroscopy.
+              Dual-beam Czerny-Turner monochromator sweep (190–900 nm) with Beer-Lambert linear regression, Henderson-Hasselbalch ionization, and derivative spectroscopy.
             </p>
-            <div class="card-spec-grid tabular-nums">
+            <div class="card-spec-grid">
               <div class="card-spec-row">Linear Fit (R&sup2; &ge; 0.999)</div>
               <div class="card-spec-row">Derivatives (dA/d&lambda;, d&sup2;A/d&lambda;&sup2;)</div>
               <div class="card-spec-row">Optical Bench Ray-Tracing</div>
@@ -1001,7 +984,7 @@
       </a>
 
       <!-- 3. FTIR SPECTROMETER -->
-      <a class="workstation-card bento-card reveal-on-scroll" href="instruments/ftir/index.html" aria-label="Launch FTIR Spectrometer">
+      <a class="workstation-card bento-card card-ftir reveal-on-scroll" href="instruments/ftir/index.html" aria-label="Launch FTIR Spectrometer">
         <div class="bento-card-inner">
           <div>
             <div class="card-head">
@@ -1011,10 +994,10 @@
             <p class="card-description">
               ATR-FTIR vibrational spectroscopy (4000 to 400 cm&sup1;) simulating Michelson interferogram centerburst and Cooley-Tukey FFT transmittance spectra.
             </p>
-            <div class="card-spec-grid tabular-nums">
+            <div class="card-spec-grid">
               <div class="card-spec-row">Moving Mirror OPD I(&delta;)</div>
               <div class="card-spec-row">Cooley-Tukey FFT &rarr; %T(&nu;)</div>
-              <div class="card-spec-row">Inverted Axis (4000-400 cm&sup1;)</div>
+              <div class="card-spec-row">Inverted Axis (4000–400 cm&sup1;)</div>
               <div class="card-spec-row">Functional Group ID</div>
             </div>
             <div class="card-tags">
@@ -1031,7 +1014,7 @@
       </a>
 
       <!-- 4. GAS CHROMATOGRAPH (GC-FID) -->
-      <a class="workstation-card bento-card reveal-on-scroll" href="instruments/gc/index.html" aria-label="Launch Gas Chromatograph">
+      <a class="workstation-card bento-card card-gc reveal-on-scroll" href="instruments/gc/index.html" aria-label="Launch Gas Chromatograph">
         <div class="bento-card-inner">
           <div>
             <div class="card-head">
@@ -1041,7 +1024,7 @@
             <p class="card-description">
               Capillary column chromatography with carrier gas linear velocity dynamics, oven thermal programming ramps, and Flame Ionization Detection.
             </p>
-            <div class="card-spec-grid tabular-nums">
+            <div class="card-spec-grid">
               <div class="card-spec-row">Kovats Retention Index</div>
               <div class="card-spec-row">Carrier Gas (H2, He, N2)</div>
               <div class="card-spec-row">Split / Splitless Transfer</div>
@@ -1116,9 +1099,131 @@
     </div>
   </footer>
 
-  <!-- CONTROLS & CHOREOGRAPHY SCRIPT -->
+  <!-- CONTROLS, SPOTLIGHT & HERO WAVE CANVAS SCRIPT -->
   <script type="module">
-    // 1. Projection Mode Toggle & LocalStorage Sync
+    // 1. Dynamic Cursor Spotlight on Bento Cards
+    document.querySelectorAll('.bento-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+
+    // 2. Living Laboratory Hero Waveform Canvas Animation
+    const canvas = document.getElementById('heroWaveCanvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let animationFrameId;
+      let width, height;
+      let time = 0;
+      let mouseInfluence = { x: 0.5, y: 0.5 };
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        width = rect.width;
+        height = rect.height;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseInfluence.x = (e.clientX - rect.left) / width;
+        mouseInfluence.y = (e.clientY - rect.top) / height;
+      });
+
+      function draw() {
+        time += 0.025;
+        ctx.clearRect(0, 0, width, height);
+
+        const centerY = height / 2;
+
+        // Grid background lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < width; x += 40) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+        }
+
+        // 1. UV-Vis Optical Dispersion Wave (Violet/Cyan gradient)
+        ctx.beginPath();
+        const gradUv = ctx.createLinearGradient(0, 0, width, 0);
+        gradUv.addColorStop(0, 'rgba(56, 189, 248, 0.7)');
+        gradUv.addColorStop(0.5, 'rgba(192, 132, 252, 0.8)');
+        gradUv.addColorStop(1, 'rgba(251, 113, 133, 0.7)');
+        ctx.strokeStyle = gradUv;
+        ctx.lineWidth = 2.5;
+
+        for (let x = 0; x < width; x += 2) {
+          const normX = x / width;
+          const sine = Math.sin(normX * 12 + time * 1.5);
+          const y = centerY + sine * 28 * Math.cos(normX * 3 + time * 0.5);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // 2. HPLC Chromatographic Elution Peaks (Traveling Gaussian Pulses)
+        const peakPos = ((time * 0.3) % 1.4) - 0.2; // 0.0 to 1.0
+        ctx.beginPath();
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        for (let x = 0; x < width; x += 2) {
+          const normX = x / width;
+          const dist1 = normX - peakPos;
+          const dist2 = normX - (peakPos - 0.18);
+          const g1 = Math.exp(-Math.pow(dist1 / 0.04, 2)) * 48;
+          const g2 = Math.exp(-Math.pow(dist2 / 0.03, 2)) * 32;
+          const y = centerY + 30 - (g1 + g2);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // 3. FTIR Interferogram Damped Centerburst Wave
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(251, 113, 133, 0.75)';
+        ctx.lineWidth = 1.8;
+        for (let x = 0; x < width; x += 2) {
+          const normX = (x / width) - 0.5;
+          const decay = Math.exp(-Math.abs(normX * 8));
+          const osc = Math.cos(normX * 60 + time * 2) * decay * 40;
+          const y = centerY - 15 + osc;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // 4. GC Thermal Flame Noise Floor
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(52, 211, 153, 0.6)';
+        ctx.lineWidth = 1.2;
+        for (let x = 0; x < width; x += 4) {
+          const noise = (Math.sin(x * 0.2 + time * 5) + Math.cos(x * 0.5 - time * 3)) * 2;
+          const y = centerY + 45 + noise;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        animationFrameId = requestAnimationFrame(draw);
+      }
+
+      draw();
+    }
+
+    // 3. Projection Mode Toggle & LocalStorage Sync
     const toggleProjBtn = document.getElementById('toggleProjectionBtn');
     
     function applyProjectionMode(isProj) {
@@ -1137,15 +1242,14 @@
       });
     }
 
-    // Auto-restore saved projection mode preference
     if (localStorage.getItem('val_projection_mode') === 'true') {
       applyProjectionMode(true);
     }
 
-    // 2. IntersectionObserver Entry Reveal Choreography
+    // 4. IntersectionObserver Entry Reveal Choreography
     const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -40px 0px'
+      threshold: 0.08,
+      rootMargin: '0px 0px -30px 0px'
     };
 
     const revealObserver = new IntersectionObserver((entries) => {
@@ -1153,7 +1257,7 @@
         if (entry.isIntersecting) {
           setTimeout(() => {
             entry.target.classList.add('revealed');
-          }, idx * 80);
+          }, idx * 70);
           revealObserver.unobserve(entry.target);
         }
       });
@@ -1163,9 +1267,9 @@
       revealObserver.observe(el);
     });
 
-    // 3. PWA Service Worker Registration
+    // 5. PWA Service Worker Registration
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg error:', err));
+      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW reg error:', err));
     }
   </script>
 </body>
