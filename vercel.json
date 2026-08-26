@@ -5,10 +5,10 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/hplc", "destination": "/instruments/hplc/index.html" },
-    { "source": "/uvvis", "destination": "/instruments/uvvis/index.html" },
-    { "source": "/ftir", "destination": "/instruments/ftir/index.html" },
-    { "source": "/gc", "destination": "/instruments/gc/index.html" },
+    { "source": "/hplc", "destination": "/instruments/hplc" },
+    { "source": "/uvvis", "destination": "/instruments/uvvis" },
+    { "source": "/ftir", "destination": "/instruments/ftir" },
+    { "source": "/gc", "destination": "/instruments/gc" },
     { "source": "/manifest.json", "destination": "/manifest.webmanifest" }
   ],
   "headers": [
