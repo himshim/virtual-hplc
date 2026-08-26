@@ -531,38 +531,214 @@
 
   <!-- TAB 3: LEARN HUB -->
   <div id="tab-learn" class="tab-panel" role="tabpanel" aria-label="Learn Hub">
-    <div class="instrument-card" style="padding:16px;">
-      <h2 style="margin:0 0 12px 0; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;">HPLC Flow Schematic</h2>
-      <div id="diagramContainer" style="overflow-x:auto; min-height:120px;">Loading diagram…</div>
+    
+    <!-- Hero Header -->
+    <div class="instrument-card" style="padding:20px; background:linear-gradient(135deg, rgba(2,132,199,0.15) 0%, rgba(15,23,42,0.9) 100%); border:1px solid rgba(56,189,248,0.25); margin-bottom:16px;">
+      <h2 style="margin:0 0 8px 0; font-size:1.3rem; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;">🎓 HPLC Method Development &amp; Separation Masterclass</h2>
+      <p style="margin:0; color:var(--text-secondary); font-size:0.9rem; line-height:1.4;">
+        Master reversed-phase C18 partitioning, Van Deemter column band broadening kinetics, and USP &lt;621&gt; chromatographic resolution equations.
+      </p>
     </div>
 
-    <div class="instrument-card" style="margin-top:16px; padding:16px;">
-      <h3 style="margin:0 0 12px 0; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;">UV Absorbance Spectrum</h3>
-      <div style="height:200px; position:relative;">
-        <canvas id="spectrumCanvas"></canvas>
+    <!-- Live HPLC Flow Diagram & UV Spectrum Row -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-bottom:16px;">
+      <div class="instrument-card" style="padding:16px;">
+        <h3 style="margin:0 0 10px 0; font-size:0.95rem; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;">🔬 HPLC High-Pressure Flow Schematic</h3>
+        <div id="diagramContainer" style="overflow-x:auto; min-height:140px; background:#020810; border-radius:6px; padding:8px; border:1px solid #1e293b;">Loading diagram…</div>
+      </div>
+
+      <div class="instrument-card" style="padding:16px;">
+        <h3 style="margin:0 0 10px 0; font-size:0.95rem; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;">📊 On-Line Photodiode Array (PDA) Spectrum</h3>
+        <div style="height:140px; position:relative; background:#020810; border-radius:6px; border:1px solid #1e293b; padding:4px;">
+          <canvas id="spectrumCanvas"></canvas>
+        </div>
       </div>
     </div>
 
-    <!-- Educational Topics Grid -->
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:16px;">
-      <div class="instrument-card" style="padding:16px;">
-        <h4 style="margin:0 0 8px 0; color:#38bdf8; font-family:'JetBrains Mono',monospace;">1. Reversed-Phase C18 Mechanism</h4>
-        <p style="font-size:0.82rem; color:#94a3b8; line-height:1.4; margin:0;">
-          Hydrophobic interactions between analytes and octadecylsilane ($C_{18}$) bonded stationary phase. Polar compounds elute first; non-polar compounds retain longer.
-        </p>
+    <!-- Educational Masterclass Grid -->
+    <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
+
+      <!-- 1. Interactive Van Deemter Column Efficiency Calculator -->
+      <div class="instrument-card" style="padding:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <h3 style="margin:0 0 4px 0; font-size:1.05rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">
+              📊 Interactive Van Deemter Column Efficiency Calculator (H vs u)
+            </h3>
+            <p style="margin:0; font-size:0.8rem; color:#94a3b8;">
+              The Van Deemter equation $H = A + \frac{B}{u} + C \cdot u$ describes plate height ($H$) as a function of mobile phase linear velocity ($u$):
+            </p>
+          </div>
+          <div style="display:flex; gap:6px;" id="particleBtnGroup">
+            <button type="button" class="btn-particle active" data-dp="5.0" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(56,189,248,0.2); border:1px solid #38bdf8; color:#38bdf8; font-weight:700;">5.0 µm HPLC</button>
+            <button type="button" class="btn-particle" data-dp="3.5" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">3.5 µm Fast LC</button>
+            <button type="button" class="btn-particle" data-dp="1.8" style="padding:4px 10px; font-size:0.75rem; border-radius:4px; font-family:'JetBrains Mono',monospace; cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid #334155; color:#94a3b8;">1.8 µm UHPLC</button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+          <!-- Controls -->
+          <div style="background:#020810; padding:14px; border-radius:8px; border:1px solid #1e293b;">
+            <div style="margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#cbd5e1; margin-bottom:4px;">
+                <span>Flow Rate (F):</span>
+                <span id="vdeemFlowDisp" style="font-family:'JetBrains Mono',monospace; color:#38bdf8; font-weight:700;">1.00 mL/min</span>
+              </div>
+              <input id="vdeemFlowSlider" type="range" min="0.2" max="3.0" step="0.1" value="1.0" style="width:100%; accent-color:#38bdf8;" />
+            </div>
+
+            <!-- Live Metric Outputs -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+              <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border:1px solid #334155;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Plate Height (H)</div>
+                <div id="vdeemHDisp" style="font-size:1.05rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:#34d399;">12.4 µm</div>
+              </div>
+              <div style="background:#0b1120; padding:8px 10px; border-radius:6px; border:1px solid #334155;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Theoretical Plates (N)</div>
+                <div id="vdeemNDisp" style="font-size:1.05rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:#38bdf8;">12,100 plates</div>
+              </div>
+            </div>
+            <p id="vdeemTakeaway" style="font-size:0.75rem; color:#cbd5e1; margin:0; line-height:1.4;">
+              💡 Sub-2µm particles dramatically reduce the <strong>C-term (resistance to mass transfer)</strong>, allowing 2–3x faster flow rates without losing chromatographic efficiency.
+            </p>
+          </div>
+
+          <!-- Live Van Deemter Canvas Curve -->
+          <div style="background:#020810; padding:12px; border-radius:8px; border:1px solid #1e293b; display:flex; flex-direction:column;">
+            <div style="font-size:0.75rem; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Plate Height H vs Linear Velocity u</div>
+            <canvas id="vanDeemterCanvas" width="300" height="140" style="width:100%; height:140px; background:#0b1120; border-radius:4px;"></canvas>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#64748b; margin-top:4px;">
+              <span>0.2 mL/min (B/u Eddy)</span>
+              <span style="color:#34d399;">u_opt (Minimum H)</span>
+              <span>3.0 mL/min (C·u Resistance)</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="instrument-card" style="padding:16px;">
-        <h4 style="margin:0 0 8px 0; color:#34d399; font-family:'JetBrains Mono',monospace;">2. Van Deemter Kinetics</h4>
-        <p style="font-size:0.82rem; color:#94a3b8; line-height:1.4; margin:0;">
-          Plate height equation $H = A + \frac{B}{u} + C \cdot u$ identifies optimal flow velocity ($u_{\text{opt}} \approx 1.0\text{ mL/min}$) for maximum column efficiency.
+
+      <!-- 2. Interactive Purnell Resolution (Rs) Masterclass -->
+      <div class="instrument-card" style="padding:18px;">
+        <h3 style="margin:0 0 6px 0; font-size:1.05rem; color:#34d399; font-family:'JetBrains Mono',monospace;">
+          🎯 Interactive Purnell Resolution Masterclass (R_s)
+        </h3>
+        <p style="margin:0 0 14px 0; font-size:0.82rem; color:#94a3b8; line-height:1.4;">
+          The fundamental resolution equation links peak separation ($R_s$) to the three pillars of chromatography:
+          <span style="font-family:'JetBrains Mono',monospace; color:#f8fafc; margin-left:6px;">R_s = (√N / 4) · ((α - 1) / α) · (k₂' / (1 + k₂'))</span>
         </p>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+          <!-- 3 Interactive Sliders -->
+          <div style="background:#020810; padding:14px; border-radius:8px; border:1px solid #1e293b;">
+            <div style="margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#cbd5e1; margin-bottom:2px;">
+                <span>1. Efficiency (Plate Count N):</span>
+                <span id="purnellNDisp" style="font-family:'JetBrains Mono',monospace; color:#38bdf8; font-weight:700;">N = 8,000</span>
+              </div>
+              <input id="purnellNSlider" type="range" min="1000" max="25000" step="500" value="8000" style="width:100%; accent-color:#38bdf8;" />
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#cbd5e1; margin-bottom:2px;">
+                <span>2. Selectivity (Separation Factor α):</span>
+                <span id="purnellAlphaDisp" style="font-family:'JetBrains Mono',monospace; color:#34d399; font-weight:700;">α = 1.15</span>
+              </div>
+              <input id="purnellAlphaSlider" type="range" min="1.02" max="1.40" step="0.01" value="1.15" style="width:100%; accent-color:#34d399;" />
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#cbd5e1; margin-bottom:2px;">
+                <span>3. Retention Factor (Capacity k₂'):</span>
+                <span id="purnellKDisp" style="font-family:'JetBrains Mono',monospace; color:#fbbf24; font-weight:700;">k₂' = 3.0</span>
+              </div>
+              <input id="purnellKSlider" type="range" min="0.5" max="8.0" step="0.2" value="3.0" style="width:100%; accent-color:#fbbf24;" />
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#0b1120; padding:10px 12px; border-radius:6px; border:1px solid #334155;">
+              <div>
+                <div style="font-size:0.7rem; color:#94a3b8;">Calculated USP Resolution</div>
+                <div id="purnellRsDisp" style="font-size:1.2rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:#34d399;">R_s = 1.94</div>
+              </div>
+              <span id="purnellStatusBadge" style="padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:800; font-family:'JetBrains Mono',monospace; background:rgba(34,197,94,0.2); color:#22c55e; border:1px solid #22c55e;">USP PASS (≥1.5)</span>
+            </div>
+          </div>
+
+          <!-- Live Canvas Chromatogram Preview -->
+          <div style="background:#020810; padding:12px; border-radius:8px; border:1px solid #1e293b; display:flex; flex-direction:column;">
+            <div style="font-size:0.75rem; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Live 2-Peak Chromatogram Simulation</div>
+            <canvas id="purnellCanvas" width="300" height="150" style="width:100%; height:150px; background:#0b1120; border-radius:4px;"></canvas>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#64748b; margin-top:4px;">
+              <span>Peak 1 (tR1)</span>
+              <span style="color:#34d399;">Valley Baseline</span>
+              <span>Peak 2 (tR2)</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="instrument-card" style="padding:16px;">
-        <h4 style="margin:0 0 8px 0; color:#f59e0b; font-family:'JetBrains Mono',monospace;">3. Isocratic vs Gradient Elution</h4>
-        <p style="font-size:0.82rem; color:#94a3b8; line-height:1.4; margin:0;">
-          Constant mobile phase composition is ideal for simple mixtures. Multi-step organic ramps shorten retention for strongly bound compounds.
+
+      <!-- 3. USP <621> Peak Symmetry & System Suitability Compendium -->
+      <div class="instrument-card" style="padding:18px;">
+        <h3 style="margin:0 0 6px 0; font-size:1.05rem; color:#fbbf24; font-family:'JetBrains Mono',monospace;">
+          📐 USP &lt;621&gt; Peak Symmetry &amp; Diagnostic Defect Compendium
+        </h3>
+        <p style="margin:0 0 12px 0; font-size:0.82rem; color:#94a3b8; line-height:1.4;">
+          Pharmacopoeial assays enforce strict system suitability criteria. Deformed peaks indicate hardware failure, chemical overloading, or secondary interactions.
         </p>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
+          <div style="background:#020810; padding:12px; border-radius:6px; border-left:3px solid #34d399;">
+            <div style="font-size:0.85rem; font-weight:700; color:#34d399; margin-bottom:4px;">Ideal Gaussian Peak</div>
+            <div style="font-size:0.75rem; font-family:'JetBrains Mono',monospace; color:#f8fafc; margin-bottom:4px;">0.95 ≤ T ≤ 1.20</div>
+            <div style="font-size:0.75rem; color:#94a3b8; line-height:1.3;">Symmetric band shape indicating linear adsorption isotherm and homogenous stationary phase packing.</div>
+          </div>
+
+          <div style="background:#020810; padding:12px; border-radius:6px; border-left:3px solid #f87171;">
+            <div style="font-size:0.85rem; font-weight:700; color:#f87171; margin-bottom:4px;">Peak Tailing (T &gt; 1.5)</div>
+            <div style="font-size:0.75rem; font-family:'JetBrains Mono',monospace; color:#f8fafc; margin-bottom:4px;">T = W₀.₀₅ / 2f &gt; 1.5</div>
+            <div style="font-size:0.75rem; color:#94a3b8; line-height:1.3;">Caused by unreacted acidic silanol sites binding basic amine drugs, or column void formation. Fix: Add triethylamine / buffer at low pH.</div>
+          </div>
+
+          <div style="background:#020810; padding:12px; border-radius:6px; border-left:3px solid #fbbf24;">
+            <div style="font-size:0.85rem; font-weight:700; color:#fbbf24; margin-bottom:4px;">Peak Fronting (T &lt; 0.9)</div>
+            <div style="font-size:0.75rem; font-family:'JetBrains Mono',monospace; color:#f8fafc; margin-bottom:4px;">T &lt; 0.85 (Shark Fin)</div>
+            <div style="font-size:0.75rem; color:#94a3b8; line-height:1.3;">Caused by column mass overload or dissolving sample in 100% organic solvent stronger than mobile phase. Fix: Dilute sample or match mobile phase.</div>
+          </div>
+
+          <div style="background:#020810; padding:12px; border-radius:6px; border-left:3px solid #c084fc;">
+            <div style="font-size:0.85rem; font-weight:700; color:#c084fc; margin-bottom:4px;">Peak Splitting / Doublet</div>
+            <div style="font-size:0.75rem; font-family:'JetBrains Mono',monospace; color:#f8fafc; margin-bottom:4px;">Dual Apex / Shoulder</div>
+            <div style="font-size:0.75rem; color:#94a3b8; line-height:1.3;">Caused by partially blocked inlet frit creating dual flow paths, or sample precipitation on column head. Fix: Backflush column or replace guard.</div>
+          </div>
+        </div>
       </div>
+
+      <!-- 4. Method Development Workflow Tree & LSS Model -->
+      <div class="instrument-card" style="padding:18px;">
+        <h3 style="margin:0 0 6px 0; font-size:1.05rem; color:#38bdf8; font-family:'JetBrains Mono',monospace;">
+          🌳 Method Development Decision Tree &amp; Linear Solvent Strength (LSS) Model
+        </h3>
+        <p style="margin:0 0 12px 0; font-size:0.82rem; color:#94a3b8; line-height:1.4;">
+          Under the <strong>Linear Solvent Strength (LSS)</strong> model, analyte retention factor ($k'$) drops exponentially as organic modifier volume fraction ($\phi$) increases: $\log k' = \log k_w - S\phi$.
+        </p>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px;">
+          <div style="background:#020810; padding:12px; border-radius:6px; border:1px solid #1e293b;">
+            <strong style="color:#38bdf8; font-size:0.85rem;">Step 1: Analyte Ionization Assessment</strong>
+            <p style="font-size:0.75rem; color:#cbd5e1; margin:4px 0 0 0; line-height:1.3;">
+              • <strong>Acidic Drug (e.g. Aspirin, Ibuprofen, pKa ~3.5–4.4):</strong> Lower buffer pH to 2.5 (suppresses ionization, retains strongly on C18).<br/>
+              • <strong>Basic Drug (e.g. Quinine, Metronidazole):</strong> Use pH 2.0 or pH 7.0 with ion-pairing modifier to prevent silanol tailing.
+            </p>
+          </div>
+
+          <div style="background:#020810; padding:12px; border-radius:6px; border:1px solid #1e293b;">
+            <strong style="color:#34d399; font-size:0.85rem;">Step 2: Isocratic vs Gradient Elution</strong>
+            <p style="font-size:0.75rem; color:#cbd5e1; margin:4px 0 0 0; line-height:1.3;">
+              • <strong>Δk' &lt; 20:</strong> Use <strong>Isocratic Elution</strong> (e.g. 50:50 ACN/Water) for simple tablets. Zero column re-equilibration time.<br/>
+              • <strong>Δk' &gt; 20:</strong> Use <strong>Organic Gradient Ramp</strong> (e.g. 10% → 90% B over 10 min) to elute hydrophobic impurities in a single run.
+            </p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -691,6 +867,210 @@
     };
     controller.eventBus.on('runCompleted', hidePlaceholder);
     controller.eventBus.on('run:completed', hidePlaceholder);
+
+    // =========================================================================
+    // TAB 3: HPLC LEARN HUB INTERACTIVE CONTROLLERS
+    // =========================================================================
+
+    // 1. Van Deemter Column Efficiency Calculator
+    let currentParticleDp = 5.0; // micrometers
+
+    function updateVanDeemter() {
+      const flowSlider = document.getElementById('vdeemFlowSlider');
+      if (!flowSlider) return;
+      const flow = parseFloat(flowSlider.value); // mL/min
+      const u = (flow / 1.0) * 2.5; // linear velocity cm/s approx
+
+      // Van Deemter terms scaled by particle size dp (µm)
+      // A (Eddy): ~ 1.5 * dp
+      // B (Longitudinal Diffusion): ~ 2 * Dm / u
+      // C (Mass transfer resistance): ~ (dp^2 / 30) * u
+      const A = 1.5 * currentParticleDp;
+      const B = 25.0;
+      const C = (Math.pow(currentParticleDp, 2) / 25.0);
+
+      const H_um = A + (B / u) + (C * u);
+      const colLengthMm = 150.0; // 15 cm column
+      const N_plates = Math.round((colLengthMm * 1000.0) / H_um);
+
+      document.getElementById('vdeemFlowDisp').textContent = `${flow.toFixed(2)} mL/min (u ≈ ${u.toFixed(1)} cm/s)`;
+      document.getElementById('vdeemHDisp').textContent = `${H_um.toFixed(1)} µm`;
+      document.getElementById('vdeemNDisp').textContent = `${N_plates.toLocaleString()} plates`;
+
+      // Live Canvas Plot
+      const canvas = document.getElementById('vanDeemterCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Grid & Axes
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = 30; x < w; x += 50) { ctx.moveTo(x, 10); ctx.lineTo(x, h - 20); }
+      for (let y = 10; y < h - 20; y += 30) { ctx.moveTo(30, y); ctx.lineTo(w - 10, y); }
+      ctx.stroke();
+
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(30, 10); ctx.lineTo(30, h - 20); ctx.lineTo(w - 10, h - 20);
+      ctx.stroke();
+
+      // Labels
+      ctx.fillStyle = '#64748b';
+      ctx.font = '9px monospace';
+      ctx.fillText('0.2', 30, h - 6);
+      ctx.fillText('1.5', w / 2 - 10, h - 6);
+      ctx.fillText('3.0 mL/min', w - 65, h - 6);
+      ctx.fillText('H (µm)', 4, 18);
+
+      // Draw Full Curve
+      ctx.strokeStyle = currentParticleDp === 1.8 ? '#a855f7' : (currentParticleDp === 3.5 ? '#38bdf8' : '#34d399');
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      const maxHGraph = 50.0;
+      for (let f = 0.2; f <= 3.0; f += 0.05) {
+        const vel = (f / 1.0) * 2.5;
+        const calcH = A + (B / vel) + (C * vel);
+        const px = 30 + ((f - 0.2) / 2.8) * (w - 40);
+        const py = (h - 20) - (calcH / maxHGraph) * (h - 30);
+        if (f === 0.2) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Current Operating Marker
+      const curPx = 30 + ((flow - 0.2) / 2.8) * (w - 40);
+      const curPy = (h - 20) - (H_um / maxHGraph) * (h - 30);
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(curPx, Math.max(10, curPy), 4.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    document.querySelectorAll('#particleBtnGroup .btn-particle').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('#particleBtnGroup .btn-particle').forEach(b => {
+          b.style.background = 'rgba(255,255,255,0.05)';
+          b.style.borderColor = '#334155';
+          b.style.color = '#94a3b8';
+          b.style.fontWeight = 'normal';
+        });
+        btn.style.background = 'rgba(56,189,248,0.2)';
+        btn.style.borderColor = '#38bdf8';
+        btn.style.color = '#38bdf8';
+        btn.style.fontWeight = '700';
+
+        currentParticleDp = parseFloat(btn.dataset.dp);
+        updateVanDeemter();
+      };
+    });
+
+    const vdeemSlider = document.getElementById('vdeemFlowSlider');
+    if (vdeemSlider) vdeemSlider.oninput = updateVanDeemter;
+    updateVanDeemter();
+
+    // 2. Purnell Resolution Masterclass
+    function updatePurnell() {
+      const nSlider = document.getElementById('purnellNSlider');
+      const aSlider = document.getElementById('purnellAlphaSlider');
+      const kSlider = document.getElementById('purnellKSlider');
+      if (!nSlider || !aSlider || !kSlider) return;
+
+      const N = parseFloat(nSlider.value);
+      const alpha = parseFloat(aSlider.value);
+      const k2 = parseFloat(kSlider.value);
+
+      // Rs = (sqrt(N) / 4) * ((alpha - 1) / alpha) * (k2 / (1 + k2))
+      const termN = Math.sqrt(N) / 4.0;
+      const termAlpha = (alpha - 1.0) / alpha;
+      const termK = k2 / (1.0 + k2);
+      const Rs = termN * termAlpha * termK;
+
+      document.getElementById('purnellNDisp').textContent = `N = ${N.toLocaleString()}`;
+      document.getElementById('purnellAlphaDisp').textContent = `α = ${alpha.toFixed(2)}`;
+      document.getElementById('purnellKDisp').textContent = `k₂' = ${k2.toFixed(1)}`;
+      document.getElementById('purnellRsDisp').textContent = `R_s = ${Rs.toFixed(2)}`;
+
+      const badge = document.getElementById('purnellStatusBadge');
+      if (Rs >= 1.50) {
+        badge.textContent = 'USP PASS (≥1.5 Baseline)';
+        badge.style.background = 'rgba(34,197,94,0.2)';
+        badge.style.borderColor = '#22c55e';
+        badge.style.color = '#22c55e';
+      } else if (Rs >= 1.0) {
+        badge.textContent = 'MARGINAL (Partial Overlap)';
+        badge.style.background = 'rgba(251,191,36,0.2)';
+        badge.style.borderColor = '#fbbf24';
+        badge.style.color = '#fbbf24';
+      } else {
+        badge.textContent = 'FAILED (Co-eluting)';
+        badge.style.background = 'rgba(239,68,68,0.2)';
+        badge.style.borderColor = '#ef4444';
+        badge.style.color = '#ef4444';
+      }
+
+      // Draw Live 2-Peak Chromatogram on Canvas
+      const canvas = document.getElementById('purnellCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Peak 1 at t1 = 3.0 min, Peak 2 at t2 = 3.0 * alpha
+      const t1 = 3.0;
+      const t2 = t1 * alpha;
+      // sigma = t / sqrt(N)
+      const sig1 = t1 / Math.sqrt(N);
+      const sig2 = t2 / Math.sqrt(N);
+
+      // Baseline & Axes
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(20, h - 20); ctx.lineTo(w - 10, h - 20);
+      ctx.stroke();
+
+      // Plot Chromatogram Curve (from t = 2.0 to 5.5 min)
+      const tMin = 2.0;
+      const tMax = 5.5;
+      ctx.strokeStyle = Rs >= 1.5 ? '#34d399' : (Rs >= 1.0 ? '#fbbf24' : '#f87171');
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+
+      const numPts = 140;
+      for (let i = 0; i <= numPts; i++) {
+        const time = tMin + (i / numPts) * (tMax - tMin);
+        // Sum of Gaussian peaks
+        const g1 = 1.0 * Math.exp(-Math.pow(time - t1, 2) / (2 * sig1 * sig1));
+        const g2 = 0.9 * Math.exp(-Math.pow(time - t2, 2) / (2 * sig2 * sig2));
+        const totalA = g1 + g2;
+
+        const px = 20 + (i / numPts) * (w - 30);
+        const py = (h - 20) - (totalA / 1.4) * (h - 30);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Peak Annotations
+      ctx.fillStyle = '#64748b';
+      ctx.font = '8px monospace';
+      ctx.fillText(`Peak 1 (${t1.toFixed(1)}m)`, 20 + ((t1 - tMin) / (tMax - tMin)) * (w - 30) - 20, 15);
+      ctx.fillText(`Peak 2 (${t2.toFixed(1)}m)`, 20 + ((t2 - tMin) / (tMax - tMin)) * (w - 30) - 10, 15);
+    }
+
+    const nSlider = document.getElementById('purnellNSlider');
+    const aSlider = document.getElementById('purnellAlphaSlider');
+    const kSlider = document.getElementById('purnellKSlider');
+    if (nSlider) nSlider.oninput = updatePurnell;
+    if (aSlider) aSlider.oninput = updatePurnell;
+    if (kSlider) kSlider.oninput = updatePurnell;
+    updatePurnell();
   });
 </script>
 
