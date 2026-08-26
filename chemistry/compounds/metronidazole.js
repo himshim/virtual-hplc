@@ -6,7 +6,7 @@ export const METRONIDAZOLE = new Compound({
   formula: 'C6H9N3O3',
   mw: 171.15,
   properties: { logP: -0.05, solubility: 'High' },
-  chromatography: { kw: 4.5, S: 2.0, pKa: 2.6, ionType: 'base' },
+  chromatography: { kw: 4.5, S: 2.0, pKa: 2.4, ionType: 'base' },
   uv: {
     lambdaMax: [277, 320],
     spectralPeaks: [

@@ -71,6 +71,50 @@ export const FTIR_COMPOUND_DATABASE = {
       { wavenumber: 1290, width: 40, depth: 0.85, mode: 'Carboxylic C-O stretch', region: 'Fingerprint' },
       { wavenumber: 710, width: 30, depth: 0.80, mode: 'Monosubstituted benzene C-H out-of-plane bend', region: 'Fingerprint' }
     ]
+  },
+  polystyrene: {
+    name: 'Polystyrene (PS)',
+    formula: '(C8H8)n',
+    mw: 10400,
+    description: 'ASTM E1421 / ISO 10553 FTIR wavenumber calibration reference standard. The characteristic bands at 3027, 1601, 1492, 906, and 699 cm⁻¹ are used to verify spectrometer wavenumber accuracy to ±1 cm⁻¹.',
+    bands: [
+      { wavenumber: 3027, width: 30, depth: 0.68, mode: 'Aromatic C-H stretch (monosubstituted)', region: 'Functional Group' },
+      { wavenumber: 2920, width: 38, depth: 0.55, mode: 'Aliphatic CH₂ asymmetric stretch', region: 'Functional Group' },
+      { wavenumber: 1601, width: 25, depth: 0.85, mode: 'Aromatic C=C ring stretch (calibration band)', region: 'Functional Group' },
+      { wavenumber: 1492, width: 22, depth: 0.92, mode: 'Aromatic C=C ring stretch (calibration band)', region: 'Fingerprint' },
+      { wavenumber: 1452, width: 22, depth: 0.78, mode: 'CH₂ scissors bending', region: 'Fingerprint' },
+      { wavenumber: 906, width: 18, depth: 0.70, mode: 'Monosubstituted vinyl C-H out-of-plane bend', region: 'Fingerprint' },
+      { wavenumber: 756, width: 20, depth: 0.88, mode: 'Monosubstituted benzene C-H OOP bend (5 adj. H)', region: 'Fingerprint' },
+      { wavenumber: 699, width: 18, depth: 0.95, mode: 'Monosubstituted benzene ring puckering (calibration band)', region: 'Fingerprint' }
+    ]
+  },
+  chloroform: {
+    name: 'Chloroform (CHCl₃)',
+    formula: 'CHCl3',
+    mw: 119.37,
+    description: 'Common halogenated organic solvent. Three C-Cl stretching modes and a sharp C-H stretch. FTIR reference for halogenated compound identification and solvent background subtraction.',
+    bands: [
+      { wavenumber: 3020, width: 22, depth: 0.72, mode: 'C-H stretch (CHCl₃)', region: 'Functional Group' },
+      { wavenumber: 1220, width: 30, depth: 0.55, mode: 'C-H in-plane bend (deformation)', region: 'Fingerprint' },
+      { wavenumber: 762, width: 28, depth: 0.95, mode: 'C-Cl asymmetric stretch (A₁ mode)', region: 'Fingerprint' },
+      { wavenumber: 669, width: 24, depth: 0.88, mode: 'C-Cl symmetric stretch (E mode)', region: 'Fingerprint' },
+      { wavenumber: 365, width: 20, depth: 0.60, mode: 'CCl₃ deformation', region: 'Fingerprint' }
+    ]
+  },
+  toluene: {
+    name: 'Toluene (C₆H₅CH₃)',
+    formula: 'C6H5CH3',
+    mw: 92.14,
+    description: 'Monosubstituted benzene with methyl group. Classic aromatic fingerprint pattern. Monosubstituted benzene ring gives characteristic strong OOP bands at 728 cm⁻¹ and 694 cm⁻¹.',
+    bands: [
+      { wavenumber: 3027, width: 28, depth: 0.75, mode: 'Aromatic C-H stretch', region: 'Functional Group' },
+      { wavenumber: 2925, width: 35, depth: 0.50, mode: 'sp3 C-H stretch (methyl)', region: 'Functional Group' },
+      { wavenumber: 1605, width: 22, depth: 0.82, mode: 'Aromatic C=C ring stretch 1', region: 'Functional Group' },
+      { wavenumber: 1496, width: 20, depth: 0.78, mode: 'Aromatic C=C ring stretch 2', region: 'Fingerprint' },
+      { wavenumber: 1380, width: 18, depth: 0.55, mode: 'CH₃ symmetric umbrella bend', region: 'Fingerprint' },
+      { wavenumber: 728, width: 22, depth: 0.90, mode: 'Monosubstituted benzene C-H OOP bend (5H)', region: 'Fingerprint' },
+      { wavenumber: 694, width: 20, depth: 0.95, mode: 'Monosubstituted benzene ring puckering (OOP)', region: 'Fingerprint' }
+    ]
   }
 };
 

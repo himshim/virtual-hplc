@@ -10,21 +10,21 @@
     { "lambdaMax": 278, "bandwidth": 14, "epsilonFraction": 0.17 },
     { "lambdaMax": 288, "bandwidth": 10, "epsilonFraction": 0.05 }
   ],
-  "description": "L-Tryptophan displays a strong aromatic absorption band at ~219 nm (epsilon ~33000) from the indole pi-pi* 1Bb transition, and a characteristic near-UV band at 278 nm (epsilon ~5600) from the 1La pi-pi* transition of the indole ring, with a vibronic shoulder near 288 nm.",
-  "chromophore": "Indole ring system",
-  "transition": "pi-pi* (1La at 278 nm; 1Bb at 219 nm)",
-  "clinicalNote": "The 278 nm band of tryptophan residues (epsilon approx 5540 per residue) is the primary basis for A280 protein concentration determination in biochemistry and biopharmaceutical quality control.",
+  "description": "L-Tryptophan displays a strong aromatic absorption band at ~219 nm (\u03b5 ~33000, \u00b9B\u1d47 \u03c0\u2192\u03c0* transition of the indole ring), and a characteristic near-UV band at 278 nm (\u03b5 ~5600, \u00b9L\u2090 \u03c0\u2192\u03c0*) with a vibronic shoulder near 288 nm. The 278 nm band is used for protein A280 quantification.",
+  "chromophore": "Indole ring system (3-indolylmethyl side chain)",
+  "transition": "\u03c0\u2192\u03c0* (\u00b9L\u2090 at 278 nm; \u00b9B\u1d47 at 219 nm) of the indole chromophore",
+  "clinicalNote": "The 278 nm band (\u03b5 ~5540 per residue) is the primary basis for A280 protein concentration determination in biochemistry and biopharmaceutical QC. Tryptophan and tyrosine account for >95% of protein UV absorption at 280 nm.",
   "sources": [
     {
       "type": "PubChem",
       "cid": 6305,
-      "purpose": "Chemical identity, molecular formula (C11H12N2O2) and molecular weight (204.23 g/mol)"
+      "purpose": "Chemical identity (CID 6305, MW 204.23, CAS 73-22-3)"
     },
     {
       "type": "PubMed",
       "pmid": "1595904",
       "doi": "10.1016/0003-2697(92)90279-g",
-      "purpose": "epsilon(280 nm) = 5540 per tryptophan residue in native proteins, statistical determination across >30 proteins (Mach et al., Anal Biochem 1992)"
+      "purpose": "\u03b5(278 nm) = 5540 per tryptophan residue in native proteins (Mach et al., Anal Biochem 1992)"
     }
   ]
 }

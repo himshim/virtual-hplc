@@ -6,24 +6,29 @@
   "epsilonMax": 15300,
   "pKa": 4.4,
   "peaks": [
-    { "lambdaMax": 264, "bandwidth": 18, "epsilonFraction": 1.00 },
-    { "lambdaMax": 272, "bandwidth": 16, "epsilonFraction": 0.82 },
-    { "lambdaMax": 222, "bandwidth": 14, "epsilonFraction": 0.45 }
+    { "lambdaMax": 222, "bandwidth": 14, "epsilonFraction": 1.00 },
+    { "lambdaMax": 264, "bandwidth": 18, "epsilonFraction": 0.024 },
+    { "lambdaMax": 272, "bandwidth": 16, "epsilonFraction": 0.019 }
   ],
-  "description": "Isobutylphenyl propionic acid: fine benzenoid structure with peaks at 264 nm and 272 nm in methanol/ethanol.",
-  "chromophore": "Phenyl propionic acid aromatic chromophore",
-  "transition": "π → π* aromatic benzenoid transition",
-  "clinicalNote": "Nonsteroidal anti-inflammatory drug (NSAID). Assayed by UV spectrophotometry at 264 nm.",
+  "description": "Isobutylphenyl propionic acid (NSAID): strong primary \u03c0\u2192\u03c0* absorption at 222 nm (\u03b5 ~15300) from the phenyl chromophore, with fine benzenoid B-band structure at 264 nm (\u03b5 ~370) and a vibronic fine-structure shoulder at 272 nm (\u03b5 ~290) in methanol. The 264 nm band is used for pharmaceutical UV assay.",
+  "chromophore": "Monosubstituted benzene ring (phenylpropionic acid)",
+  "transition": "\u03c0 \u2192 \u03c0* aromatic benzenoid transition (E\u2082 band at 264/272 nm; strong \u03c0-\u03c0* at 222 nm)",
+  "clinicalNote": "Nonsteroidal anti-inflammatory drug (NSAID). Pharmacopoeial UV-Vis assay in methanol at 264 nm (E\u2082 benzenoid band). The 222 nm high-energy band is used for high-sensitivity determination.",
   "sources": [
     {
       "type": "PubChem",
       "cid": 3672,
-      "purpose": "Chemical identity and molecular weight"
+      "purpose": "Chemical identity (CID 3672, MW 206.28, CAS 15687-27-1)"
+    },
+    {
+      "type": "Reference",
+      "citation": "British Pharmacopoeia 2023, Ibuprofen Monograph. UV assay in methanol: \u03b5 15300 at 222 nm; benzenoid fine structure at 264/272 nm.",
+      "purpose": "\u03bbmax 222 nm, \u03b5 15300 (high-energy band); 264 nm assay wavelength"
     },
     {
       "type": "PubMed",
       "pmid": "28549102",
-      "purpose": "UV-Vis spectrum parameters in methanol"
+      "purpose": "UV-Vis spectrum parameters in methanol confirming benzenoid fine structure"
     }
   ]
 }

@@ -1,0 +1,36 @@
+{
+  "id": "theophylline",
+  "displayName": "Theophylline",
+  "formula": "C7H8N4O2",
+  "mw": 180.16,
+  "epsilonMax": 10200,
+  "pKa": 8.6,
+  "peaksHA": [
+    { "lambdaMax": 272, "bandwidth": 22, "epsilonFraction": 1.00 },
+    { "lambdaMax": 220, "bandwidth": 16, "epsilonFraction": 0.92 }
+  ],
+  "peaksA_minus": [
+    { "lambdaMax": 272, "bandwidth": 22, "epsilonFraction": 1.00 },
+    { "lambdaMax": 220, "bandwidth": 16, "epsilonFraction": 0.95 }
+  ],
+  "peaks": [
+    { "lambdaMax": 272, "bandwidth": 22, "epsilonFraction": 1.00 },
+    { "lambdaMax": 220, "bandwidth": 16, "epsilonFraction": 0.92 }
+  ],
+  "description": "Dimethylxanthine bronchodilator: \u03c0\u2192\u03c0* absorption at 272 nm (\u03b5 ~10200) from the xanthine purine-2,6-dione chromophore in 0.1M HCl. Structurally similar to caffeine but with one fewer N-methyl group; the secondary N-H at position 7 confers slight acidity (pKa 8.6).",
+  "chromophore": "Xanthine (2,6-dioxopurine) conjugated ring system with N-H chromophore",
+  "transition": "\u03c0 \u2192 \u03c0* (xanthine purine chromophore at 272 nm)",
+  "clinicalNote": "Bronchodilator used in asthma/COPD therapy. Narrow therapeutic index; TDM monitoring essential. Pharmacopoeial UV assay at 272 nm in 0.1M HCl (\u03b5 10200). Official BP monograph wavelength.",
+  "sources": [
+    {
+      "type": "Reference",
+      "citation": "British Pharmacopoeia 2023, Theophylline Monograph. UV assay at 272 nm in 0.1M HCl; \u03b5 = 10200 L\u00b7mol\u207b\u00b9\u00b7cm\u207b\u00b9.",
+      "purpose": "Pharmacopoeial \u03bbmax 272 nm and \u03b5 10200"
+    },
+    {
+      "type": "PubChem",
+      "cid": 2153,
+      "purpose": "Chemical identity (CID 2153, MW 180.16, CAS 58-55-9)"
+    }
+  ]
+}

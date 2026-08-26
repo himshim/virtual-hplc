@@ -235,9 +235,11 @@
           <div style="margin-bottom:12px;">
             <label style="display:block; font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:4px;">SAMPLE MIXTURE</label>
             <select id="gcSampleSelect" style="width:100%; padding:8px; background:var(--bg-app); border:1px solid var(--border-subtle); color:var(--text-primary); border-radius:4px; font-family:'JetBrains Mono',monospace;">
-              <option value="residual_solvents">USP &lt;467&gt; Residual Solvents (Class 2 & 3)</option>
-              <option value="essential_oils">Essential Oil Volatiles & Terpenes</option>
-              <option value="alcoholic_beverage">Fermentation & Alcoholic Beverage Congeners</option>
+              <option value="residual_solvents">USP &lt;467&gt; Residual Solvents (Class 2 &amp; 3)</option>
+              <option value="essential_oils">Essential Oil Volatiles &amp; Terpenes</option>
+              <option value="alcoholic_beverage">Fermentation &amp; Alcoholic Beverage Congeners</option>
+              <option value="fatty_acid_methyl_esters">Fatty Acid Methyl Esters (FAMEs)</option>
+              <option value="btex">BTEX Aromatic Hydrocarbons (EPA 8260B)</option>
             </select>
           </div>
 
@@ -759,7 +761,9 @@
       const labelMap = {
         residual_solvents: 'USP <467> Residual Solvents (Loaded)',
         essential_oils: 'Essential Oil Terpenes (Loaded)',
-        alcoholic_beverage: 'Fermentation Volatiles (Loaded)'
+        alcoholic_beverage: 'Fermentation Volatiles (Loaded)',
+        fatty_acid_methyl_esters: 'FAMEs — Lipid Profile (Loaded)',
+        btex: 'BTEX Aromatics EPA 8260B (Loaded)'
       };
       document.getElementById('chkSampleLabel').textContent = labelMap[sampleKey] || 'Sample Loaded';
       updateDiagnosticGuidance();

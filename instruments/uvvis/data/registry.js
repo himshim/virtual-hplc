@@ -24,6 +24,8 @@ import metronidazole      from './samples/metronidazole.json'      with { type: 
 import ibuprofen          from './samples/ibuprofen.json'          with { type: 'json' };
 import diclofenac_sodium  from './samples/diclofenac_sodium.json'  with { type: 'json' };
 import ciprofloxacin      from './samples/ciprofloxacin.json'      with { type: 'json' };
+import theophylline       from './samples/theophylline.json'       with { type: 'json' };
+import copper_sulfate     from './samples/copper_sulfate.json'     with { type: 'json' };
 
 // Solvents
 import water        from './solvents/water.json'        with { type: 'json' };
@@ -60,7 +62,9 @@ const SAMPLES_MAP = {
   metronidazole,
   ibuprofen,
   diclofenac_sodium,
-  ciprofloxacin
+  ciprofloxacin,
+  theophylline,
+  copper_sulfate
 };
 
 const SOLVENTS_MAP = {

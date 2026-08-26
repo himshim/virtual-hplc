@@ -1,0 +1,12 @@
+{
+  "datasetName": "BTEX Aromatic Hydrocarbons (EPA 8260B)",
+  "description": "Benzene, Toluene, Ethylbenzene, and Xylenes (BTEX) environmental standard mixture per US EPA Method 8260B for volatile organic compounds (VOCs) in water and soil by GC-FID/MS on DB-5 or equivalent column. Kovats indices from NIST WebBook; ECN from Sternberg correction for aromatic compounds.",
+  "compounds": [
+    { "id": "benzene",       "name": "Benzene",      "formula": "C6H6",     "boilingPoint": 80.1,  "kovatsIndex": 662,  "ecn": 6.0, "cas": "71-43-2",   "epaClass": "Priority VOC" },
+    { "id": "toluene",       "name": "Toluene",      "formula": "C6H5CH3",  "boilingPoint": 110.6, "kovatsIndex": 770,  "ecn": 6.0, "cas": "108-88-3",  "epaClass": "Priority VOC" },
+    { "id": "ethylbenzene",  "name": "Ethylbenzene", "formula": "C8H10",    "boilingPoint": 136.2, "kovatsIndex": 866,  "ecn": 6.0, "cas": "100-41-4",  "epaClass": "Priority VOC" },
+    { "id": "m_xylene",      "name": "m-Xylene",     "formula": "C8H10",    "boilingPoint": 139.1, "kovatsIndex": 882,  "ecn": 6.0, "cas": "108-38-3",  "epaClass": "Priority VOC" },
+    { "id": "p_xylene",      "name": "p-Xylene",     "formula": "C8H10",    "boilingPoint": 138.4, "kovatsIndex": 885,  "ecn": 6.0, "cas": "106-42-3",  "epaClass": "Priority VOC" },
+    { "id": "o_xylene",      "name": "o-Xylene",     "formula": "C8H10",    "boilingPoint": 144.4, "kovatsIndex": 911,  "ecn": 6.0, "cas": "95-47-6",   "epaClass": "Priority VOC" }
+  ]
+}

@@ -8,7 +8,7 @@ export const THEOPHYLLINE = new Compound({
   properties: { logP: -0.02, solubility: 'Moderate' },
   chromatography: { kw: 6.0, S: 2.2, pKa: 8.8, ionType: 'acid' },
   uv: {
-    lambdaMax: [272, 274],
+    lambdaMax: [205, 272],
     spectralPeaks: [
       { lambda: 272, width: 20, height: 1.00 },
       { lambda: 205, width: 15, height: 0.75 }

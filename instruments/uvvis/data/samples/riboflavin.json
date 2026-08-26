@@ -3,15 +3,32 @@
   "displayName": "Riboflavin (Vitamin B2)",
   "formula": "C17H20N4O6",
   "mw": 376.36,
-  "epsilonMax": 12500,
+  "epsilonMax": 27700,
   "pKa": 10.2,
   "peaks": [
     { "lambdaMax": 266, "bandwidth": 22, "epsilonFraction": 1.00 },
-    { "lambdaMax": 373, "bandwidth": 28, "epsilonFraction": 0.85 },
-    { "lambdaMax": 445, "bandwidth": 32, "epsilonFraction": 0.98 }
+    { "lambdaMax": 373, "bandwidth": 30, "epsilonFraction": 0.38 },
+    { "lambdaMax": 445, "bandwidth": 35, "epsilonFraction": 0.45 }
   ],
-  "description": "Multi-band spectrum with 3 distinct absorbance maxima at 266 nm (UV), 373 nm (near-UV), and 445 nm (visible).",
-  "chromophore": "Isoalloxazine conjugated ring system",
-  "transition": "π → π* and n → π* electronic transitions",
-  "clinicalNote": "Water-soluble vitamin B complex coenzyme. Used in photo-degradation and food quality assays."
+  "description": "Isoalloxazine (flavin) ring system produces three characteristic UV-Vis bands: 266 nm (S\u2080\u2192S\u2082, \u03b5 ~27700), 373 nm (S\u2080\u2192S\u2081 shoulder, \u03b5 ~10600), and 445 nm (S\u2080\u2192S\u2081, \u03b5 ~12500) \u2014 the visible bands giving riboflavin its characteristic yellow colour.",
+  "chromophore": "Isoalloxazine (7,8-dimethyl-10-alkylisoalloxazine) tricyclic conjugated ring system",
+  "transition": "\u03c0 \u2192 \u03c0* (S\u2080\u2192S\u2082 at 266 nm; S\u2080\u2192S\u2081 at 445 nm) and n \u2192 \u03c0* vibronic bands",
+  "clinicalNote": "Water-soluble B-complex coenzyme (FMN/FAD precursor). Pharmacopoeial assay at 444 nm in water. Photosensitive \u2014 store in amber vessels.",
+  "sources": [
+    {
+      "type": "Reference",
+      "citation": "Koziol J (1966) 'Fluorimetric analyses of riboflavin and its coenzymes', Methods Enzymol 18B:253-285. \u03b5 266 nm = 27700, \u03b5 373 nm = 10600, \u03b5 445 nm = 12500 in water.",
+      "purpose": "Molar absorptivity at all three characteristic bands"
+    },
+    {
+      "type": "PubChem",
+      "cid": 493570,
+      "purpose": "Chemical identity (CID 493570, MW 376.36, CAS 83-88-5)"
+    },
+    {
+      "type": "Reference",
+      "citation": "British Pharmacopoeia 2023, Riboflavin Monograph. UV assay at 444 nm in water.",
+      "purpose": "Pharmacopoeial assay wavelength"
+    }
+  ]
 }

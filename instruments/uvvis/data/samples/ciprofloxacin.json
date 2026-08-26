@@ -3,27 +3,32 @@
   "displayName": "Ciprofloxacin HCl",
   "formula": "C17H18FN3O3",
   "mw": 331.34,
-  "epsilonMax": 32000,
+  "epsilonMax": 25000,
   "pKa": 6.1,
   "peaks": [
     { "lambdaMax": 277, "bandwidth": 20, "epsilonFraction": 1.00 },
-    { "lambdaMax": 315, "bandwidth": 24, "epsilonFraction": 0.35 },
-    { "lambdaMax": 329, "bandwidth": 22, "epsilonFraction": 0.30 }
+    { "lambdaMax": 315, "bandwidth": 24, "epsilonFraction": 0.34 },
+    { "lambdaMax": 329, "bandwidth": 18, "epsilonFraction": 0.26 }
   ],
-  "description": "Fluoroquinolone: intense primary π→π* absorption at 277 nm with characteristic double peaks at 315 nm and 329 nm in 0.1 M HCl.",
-  "chromophore": "4-Quinolone ring with fluorine substituent",
-  "transition": "π → π* conjugated carbonyl-quinoline transition",
-  "clinicalNote": "Broad-spectrum fluoroquinolone antibiotic. Assayed in 0.1 M HCl at 277 nm.",
+  "description": "Fluoroquinolone antibiotic: intense primary \u03c0\u2192\u03c0* absorption at 277 nm (\u03b5 ~25000 in 0.1M HCl) from the 4-quinolone-3-carboxylic acid chromophore, with a double-shoulder at 315 nm and 329 nm from vibronic fine structure of the \u03b2-band.",
+  "chromophore": "4-Quinolone-3-carboxylic acid with C-6 fluorine substituent",
+  "transition": "\u03c0 \u2192 \u03c0* conjugated carbonyl-quinoline transition",
+  "clinicalNote": "Broad-spectrum fluoroquinolone antibiotic. Pharmacopoeial UV assay in 0.1M HCl at 277 nm (\u03b5 ~25000). Amphoteric: pKa\u2081 6.1 (COOH) and pKa\u2082 8.7 (piperazine NH).",
   "sources": [
+    {
+      "type": "Reference",
+      "citation": "British Pharmacopoeia 2023, Ciprofloxacin Hydrochloride Monograph. UV assay at 277 nm in 0.1M HCl; \u03b5 25000 L\u00b7mol\u207b\u00b9\u00b7cm\u207b\u00b9.",
+      "purpose": "Pharmacopoeial \u03bbmax and \u03b5"
+    },
     {
       "type": "PubChem",
       "cid": 2764,
-      "purpose": "Chemical identity and MW"
+      "purpose": "Chemical identity (CID 2764, MW 331.34, CAS 85721-33-1)"
     },
     {
       "type": "PubMed",
       "pmid": "19427610",
-      "purpose": "Spectrophotometric assay conditions and extinction coefficients"
+      "purpose": "Spectrophotometric assay conditions and extinction coefficients in 0.1M HCl"
     }
   ]
 }

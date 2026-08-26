@@ -40,7 +40,15 @@ export class GcController {
         const res = await fetch(`./data/${sampleKey}.json`);
         if (res.ok) {
           const data = await res.json();
-          this._compounds = data.compounds || [];
+          // Map compounds, preserving ecn from JSON if present (for accurate FID response)
+          this._compounds = (data.compounds || []).map(c => ({
+            id: c.id,
+            name: c.name,
+            formula: c.formula,
+            kovatsIndex: c.kovatsIndex || 600,
+            boilingPoint: c.boilingPoint || 100.0,
+            ...(typeof c.ecn === 'number' ? { ecn: c.ecn } : {})
+          }));
           return;
         }
       }

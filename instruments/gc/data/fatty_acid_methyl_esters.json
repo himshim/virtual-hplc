@@ -1,0 +1,13 @@
+{
+  "datasetName": "Fatty Acid Methyl Esters (FAMEs)",
+  "description": "FAME standard mixture for lipid profiling by GC-FID on BPX70 or equivalent polar column. Kovats indices from AOCS official method Ce 1-62 and Supelco FAME mix reference data. ECN values from Sternberg (1966) for FID response correction.",
+  "compounds": [
+    { "id": "c14_0",  "name": "Methyl Myristate (C14:0)",       "formula": "C15H30O2",  "boilingPoint": 204.0, "kovatsIndex": 1725, "ecn": 13.5, "cas": "124-10-7"  },
+    { "id": "c16_0",  "name": "Methyl Palmitate (C16:0)",        "formula": "C17H34O2",  "boilingPoint": 224.5, "kovatsIndex": 1924, "ecn": 15.5, "cas": "112-39-0"  },
+    { "id": "c18_0",  "name": "Methyl Stearate (C18:0)",         "formula": "C19H38O2",  "boilingPoint": 248.0, "kovatsIndex": 2121, "ecn": 17.5, "cas": "112-61-8"  },
+    { "id": "c18_1",  "name": "Methyl Oleate (C18:1 \u03c9-9)",       "formula": "C19H36O2",  "boilingPoint": 218.5, "kovatsIndex": 2143, "ecn": 16.5, "cas": "112-62-9"  },
+    { "id": "c18_2",  "name": "Methyl Linoleate (C18:2 \u03c9-6)",     "formula": "C19H34O2",  "boilingPoint": 215.0, "kovatsIndex": 2177, "ecn": 15.5, "cas": "112-63-0"  },
+    { "id": "c18_3",  "name": "Methyl Linolenate (C18:3 \u03c9-3)",    "formula": "C19H32O2",  "boilingPoint": 210.0, "kovatsIndex": 2214, "ecn": 14.5, "cas": "301-00-8"  },
+    { "id": "c20_4",  "name": "Methyl Arachidonate (C20:4 \u03c9-6)",  "formula": "C21H34O2",  "boilingPoint": 250.0, "kovatsIndex": 2446, "ecn": 15.5, "cas": "2566-89-4" }
+  ]
+}

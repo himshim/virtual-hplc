@@ -3,13 +3,26 @@
   "displayName": "Caffeine",
   "formula": "C8H10N4O2",
   "mw": 194.19,
-  "epsilonMax": 9200,
+  "epsilonMax": 9750,
+  "pKa": 14.0,
   "peaks": [
     { "lambdaMax": 273, "bandwidth": 24, "epsilonFraction": 1.00 },
-    { "lambdaMax": 206, "bandwidth": 14, "epsilonFraction": 0.38 }
+    { "lambdaMax": 206, "bandwidth": 14, "epsilonFraction": 0.15 }
   ],
-  "description": "Purine-2,6-dione: π→π* at 273 nm (primary), high-energy band at 206 nm.",
-  "chromophore": "Conjugated purine dione system",
-  "transition": "π → π* electronic transition",
-  "clinicalNote": "Used as UV-Vis linearity standard in pharmacopoeial compliance testing."
+  "description": "Methylxanthine purine-2,6-dione: primary \u03c0\u2192\u03c0* absorption at 273 nm (\u03b5 9750 in 0.01M HCl). Caffeine is effectively non-ionisable at physiological pH (pKa >13).",
+  "chromophore": "Conjugated purine-2,6-dione (xanthine) ring system",
+  "transition": "\u03c0 \u2192 \u03c0* electronic transition (purine chromophore)",
+  "clinicalNote": "USP UV-Vis linearity and system suitability standard. Assayed at 273 nm in 0.01M HCl. Standard component in paracetamol/caffeine tablet HPLC system suitability testing.",
+  "sources": [
+    {
+      "type": "Reference",
+      "citation": "United States Pharmacopeia USP 41, Caffeine Monograph. UV assay at 273 nm; \u03b5 = 9750 L\u00b7mol\u207b\u00b9\u00b7cm\u207b\u00b9 in 0.01M HCl.",
+      "purpose": "Pharmacopoeial \u03bbmax 273 nm and \u03b5 9750"
+    },
+    {
+      "type": "PubChem",
+      "cid": 2519,
+      "purpose": "Chemical identity (CID 2519, MW 194.19, CAS 58-08-2)"
+    }
+  ]
 }

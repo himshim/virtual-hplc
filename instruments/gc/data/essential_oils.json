@@ -1,9 +1,12 @@
 {
   "datasetName": "Essential Oil Terpenes & Volatiles",
+  "description": "Monoterpene and oxygenated monoterpene volatiles in essential oils analyzed by GC-FID on non-polar DB-5 column. Kovats indices from Adams (2007) Identification of Essential Oils by Ion Trap Mass Spectroscopy, 4th ed., and NIST Chemistry WebBook.",
   "compounds": [
-    { "id": "alpha_pinene", "name": "α-Pinene", "formula": "C10H16", "boilingPoint": 155.0, "kovatsIndex": 930 },
-    { "id": "limonene", "name": "D-Limonene", "formula": "C10H16", "boilingPoint": 176.0, "kovatsIndex": 1030 },
-    { "id": "linalool", "name": "Linalool", "formula": "C10H18O", "boilingPoint": 198.0, "kovatsIndex": 1100 },
-    { "id": "menthol", "name": "Menthol", "formula": "C10H20O", "boilingPoint": 212.0, "kovatsIndex": 1170 }
+    { "id": "alpha_pinene", "name": "\u03b1-Pinene",   "formula": "C10H16",   "boilingPoint": 155.0, "kovatsIndex": 939,  "ecn": 10.0, "cas": "80-56-8" },
+    { "id": "beta_pinene",  "name": "\u03b2-Pinene",   "formula": "C10H16",   "boilingPoint": 166.0, "kovatsIndex": 979,  "ecn": 10.0, "cas": "127-91-3" },
+    { "id": "limonene",     "name": "D-Limonene",     "formula": "C10H16",   "boilingPoint": 176.0, "kovatsIndex": 1031, "ecn": 10.0, "cas": "5989-27-5" },
+    { "id": "linalool",     "name": "Linalool",        "formula": "C10H18O",  "boilingPoint": 198.0, "kovatsIndex": 1099, "ecn": 9.5,  "cas": "78-70-6" },
+    { "id": "menthol",      "name": "(-)-Menthol",     "formula": "C10H20O",  "boilingPoint": 212.0, "kovatsIndex": 1169, "ecn": 9.5,  "cas": "2216-51-5" },
+    { "id": "geraniol",     "name": "Geraniol",        "formula": "C10H18O",  "boilingPoint": 230.0, "kovatsIndex": 1256, "ecn": 9.5,  "cas": "106-24-1" }
   ]
 }

@@ -15,7 +15,9 @@
     "metronidazole",
     "ibuprofen",
     "diclofenac_sodium",
-    "ciprofloxacin"
+    "ciprofloxacin",
+    "theophylline",
+    "copper_sulfate"
   ],
   "solvents": [
     "water",

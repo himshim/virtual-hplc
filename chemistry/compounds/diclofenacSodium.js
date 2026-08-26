@@ -8,10 +8,10 @@ export const DICLOFENAC_SODIUM = new Compound({
   properties: { logP: 4.51, solubility: 'Moderate' },
   chromatography: { kw: 14.5, S: 2.55, pKa: 4.0, ionType: 'acid' },
   uv: {
-    lambdaMax: [276, 282],
+    lambdaMax: [276, 300],
     spectralPeaks: [
-      { lambda: 276, width: 20, height: 1.00 },
-      { lambda: 282, width: 22, height: 0.85 }
+      { lambda: 276, width: 22, height: 1.00 },
+      { lambda: 300, width: 20, height: 0.42 }
     ]
   },
   compatibility: { acidSensitive: false, baseSensitive: false, oxidizerSensitive: false }

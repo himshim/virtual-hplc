@@ -1,0 +1,27 @@
+{
+  "id": "copper_sulfate",
+  "displayName": "Copper(II) Sulfate (CuSO\u2084)",
+  "formula": "CuSO4",
+  "mw": 159.61,
+  "epsilonMax": 14,
+  "peaks": [
+    { "lambdaMax": 810, "bandwidth": 90, "epsilonFraction": 1.00 },
+    { "lambdaMax": 300, "bandwidth": 40, "epsilonFraction": 0.21 }
+  ],
+  "description": "Copper(II) ion in aqueous solution: broad, weak d-d transition absorption centred at ~810 nm (\u03b5 ~14 L\u00b7mol\u207b\u00b9\u00b7cm\u207b\u00b9) from the octahedral [Cu(H\u2082O)\u2086]\u00b2\u207a complex. The blue colour is caused by this d\u2192d transition (spin-allowed [\u00b2E\u2089\u2192\u00b2T\u2082\u2089] in O\u2095 field). A ligand-to-metal charge transfer (LMCT) band appears at ~300 nm.",
+  "chromophore": "Octahedral aqua Cu(II) complex [Cu(H\u2082O)\u2086]\u00b2\u207a",
+  "transition": "d\u2192d crystal-field transition (\u00b2E\u2089 \u2192 \u00b2T\u2082\u2089 in O\u2095 symmetry) at 810 nm; LMCT at 300 nm",
+  "clinicalNote": "Classic inorganic d-d transition example \u2014 demonstrates that d\u2192d transitions have very low \u03b5 (~14) compared to organic chromophores (hundreds to hundreds of thousands). Used as copper deficiency treatment (Wilson\u2019s disease antidote and agricultural fungicide).",
+  "sources": [
+    {
+      "type": "Reference",
+      "citation": "Shriver DF, Atkins P (2006) Inorganic Chemistry, 4th ed., Oxford University Press. Chapter 20: d-d spectra of copper(II) complexes in aqueous solution; \u03b5 \u2248 14 at 810 nm.",
+      "purpose": "d-d transition \u03bbmax 810 nm and molar absorptivity \u03b5 ~14"
+    },
+    {
+      "type": "PubChem",
+      "cid": 24462,
+      "purpose": "Chemical identity (CID 24462, MW 159.61, CAS 7758-98-7)"
+    }
+  ]
+}

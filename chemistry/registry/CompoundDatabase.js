@@ -22,11 +22,13 @@ export const COMPOUND_DATABASE = {
     },
     ftir: {
       bands: [
-        { wavenumber: 3325, intensity: 85, assignment: 'Phenolic O-H stretch', type: 'stretch' },
-        { wavenumber: 1650, intensity: 95, assignment: 'Amide I (C=O stretch)', type: 'stretch' },
-        { wavenumber: 1565, intensity: 90, assignment: 'Amide II (N-H bend + C-N stretch)', type: 'bend' },
-        { wavenumber: 1506, intensity: 75, assignment: 'Aromatic C=C ring stretch', type: 'ring' },
-        { wavenumber: 1260, intensity: 70, assignment: 'C-O phenolic stretch', type: 'stretch' }
+        { wavenumber: 3325, width: 80, intensity: 85, assignment: 'Phenolic O-H stretch (H-bonded)', type: 'stretch' },
+        { wavenumber: 3165, width: 60, intensity: 70, assignment: 'Secondary N-H stretch (amide)', type: 'stretch' },
+        { wavenumber: 1668, width: 28, intensity: 95, assignment: 'Amide I (C=O conjugated stretch)', type: 'stretch' },
+        { wavenumber: 1565, width: 30, intensity: 90, assignment: 'Amide II (N-H bend + C-N stretch)', type: 'bend' },
+        { wavenumber: 1506, width: 22, intensity: 75, assignment: 'Aromatic C=C ring stretch (para-substituted)', type: 'ring' },
+        { wavenumber: 1260, width: 35, intensity: 70, assignment: 'C-O phenolic stretch', type: 'stretch' },
+        { wavenumber: 832, width: 20, intensity: 65, assignment: 'Para-substituted C-H out-of-plane bend', type: 'bend' }
       ]
     },
     hplc: { kw: 20.0, S: 2.8, targetTR: 2.1, pKa: 9.5 },
@@ -50,11 +52,11 @@ export const COMPOUND_DATABASE = {
     },
     ftir: {
       bands: [
-        { wavenumber: 1695, intensity: 92, assignment: 'Amide carbonyl C=O stretch', type: 'stretch' },
-        { wavenumber: 1655, intensity: 90, assignment: 'Purine ring C=C / C=N stretch', type: 'stretch' },
-        { wavenumber: 1548, intensity: 78, assignment: 'Imidazolyl C=N stretch', type: 'stretch' },
-        { wavenumber: 1238, intensity: 65, assignment: 'C-N stretch', type: 'stretch' },
-        { wavenumber: 745, intensity: 70, assignment: 'Purine out-of-plane ring bend', type: 'bend' }
+        { wavenumber: 1695, width: 28, intensity: 92, assignment: 'Amide carbonyl C=O stretch (C-2 & C-6)', type: 'stretch' },
+        { wavenumber: 1655, width: 30, intensity: 90, assignment: 'Purine ring C=C / C=N stretch', type: 'stretch' },
+        { wavenumber: 1548, width: 25, intensity: 78, assignment: 'Imidazolyl C=N asymmetric stretch', type: 'stretch' },
+        { wavenumber: 1238, width: 35, intensity: 65, assignment: 'C-N stretch (purine ring)', type: 'stretch' },
+        { wavenumber: 745, width: 22, intensity: 70, assignment: 'Purine ring out-of-plane C-H bend', type: 'bend' }
       ]
     },
     hplc: { kw: 45.0, S: 3.1, targetTR: 4.8, pKa: 14.0 },
@@ -81,10 +83,12 @@ export const COMPOUND_DATABASE = {
     },
     ftir: {
       bands: [
-        { wavenumber: 1754, intensity: 95, assignment: 'Ester C=O stretch', type: 'stretch' },
-        { wavenumber: 1685, intensity: 90, assignment: 'Carboxylic acid C=O stretch', type: 'stretch' },
-        { wavenumber: 1605, intensity: 75, assignment: 'Aromatic C=C stretch', type: 'stretch' },
-        { wavenumber: 1185, intensity: 80, assignment: 'Ester C-O-C stretch', type: 'stretch' }
+        { wavenumber: 3000, width: 350, intensity: 75, assignment: 'Carboxylic acid O-H broad dimer stretch (2500-3300 cm⁻¹)', type: 'stretch' },
+        { wavenumber: 1754, width: 25, intensity: 95, assignment: 'Ester C=O stretch (acetyl)', type: 'stretch' },
+        { wavenumber: 1685, width: 28, intensity: 90, assignment: 'Carboxylic acid C=O stretch', type: 'stretch' },
+        { wavenumber: 1605, width: 22, intensity: 75, assignment: 'Aromatic C=C ring stretch', type: 'stretch' },
+        { wavenumber: 1250, width: 40, intensity: 80, assignment: 'Ester C-O-C asymmetric stretch', type: 'stretch' },
+        { wavenumber: 760, width: 20, intensity: 72, assignment: 'Ortho-disubstituted C-H out-of-plane bend', type: 'bend' }
       ]
     },
     hplc: { kw: 30.0, S: 2.9, targetTR: 3.2, pKa: 3.5 },
@@ -112,10 +116,12 @@ export const COMPOUND_DATABASE = {
     },
     ftir: {
       bands: [
-        { wavenumber: 2955, intensity: 88, assignment: 'Aliphatic C-H stretch (isobutyl)', type: 'stretch' },
-        { wavenumber: 1708, intensity: 95, assignment: 'Carboxylic acid C=O stretch', type: 'stretch' },
-        { wavenumber: 1508, intensity: 65, assignment: 'Aromatic C=C stretch', type: 'stretch' },
-        { wavenumber: 1230, intensity: 72, assignment: 'Carboxylic C-O stretch', type: 'stretch' }
+        { wavenumber: 2955, width: 45, intensity: 88, assignment: 'Aliphatic C-H stretch (isobutyl CH₃)', type: 'stretch' },
+        { wavenumber: 2750, width: 300, intensity: 60, assignment: 'Carboxylic acid O-H dimer stretch (broad)', type: 'stretch' },
+        { wavenumber: 1708, width: 28, intensity: 95, assignment: 'Carboxylic acid C=O stretch', type: 'stretch' },
+        { wavenumber: 1514, width: 22, intensity: 65, assignment: 'Para-substituted aromatic C=C stretch', type: 'stretch' },
+        { wavenumber: 1230, width: 38, intensity: 72, assignment: 'Carboxylic C-O asymmetric stretch', type: 'stretch' },
+        { wavenumber: 819, width: 18, intensity: 68, assignment: 'Para-substituted C-H out-of-plane bend', type: 'bend' }
       ]
     },
     hplc: { kw: 120.0, S: 3.8, targetTR: 7.5, pKa: 4.4 },
@@ -142,9 +148,11 @@ export const COMPOUND_DATABASE = {
     },
     ftir: {
       bands: [
-        { wavenumber: 1705, intensity: 90, assignment: 'Quinolone carboxylic C=O stretch', type: 'stretch' },
-        { wavenumber: 1625, intensity: 92, assignment: 'Pyridone C=O stretch', type: 'stretch' },
-        { wavenumber: 1450, intensity: 75, assignment: 'C-F aromatic stretch', type: 'stretch' }
+        { wavenumber: 1705, width: 28, intensity: 90, assignment: 'Quinolone carboxylic C=O stretch', type: 'stretch' },
+        { wavenumber: 1625, width: 30, intensity: 92, assignment: 'Pyridone C=O stretch (quinolone ring)', type: 'stretch' },
+        { wavenumber: 1520, width: 22, intensity: 70, assignment: 'Aromatic C=C ring stretch', type: 'stretch' },
+        { wavenumber: 1450, width: 25, intensity: 68, assignment: 'C-N piperazine ring stretch', type: 'stretch' },
+        { wavenumber: 1260, width: 30, intensity: 75, assignment: 'C-F aromatic stretch (C-6 fluorine)', type: 'stretch' }
       ]
     },
     hplc: { kw: 15.0, S: 2.5, targetTR: 1.8, pKa: 6.1 },
@@ -171,10 +179,11 @@ export const COMPOUND_DATABASE = {
     },
     ftir: {
       bands: [
-        { wavenumber: 3388, intensity: 82, assignment: 'Secondary N-H stretch', type: 'stretch' },
-        { wavenumber: 1575, intensity: 94, assignment: 'Carboxylate COO- asymmetric stretch', type: 'stretch' },
-        { wavenumber: 1506, intensity: 80, assignment: 'Aromatic C=C stretch', type: 'stretch' },
-        { wavenumber: 746, intensity: 85, assignment: 'C-Cl stretch', type: 'stretch' }
+        { wavenumber: 3388, width: 65, intensity: 82, assignment: 'Secondary N-H stretch (diphenylamine)', type: 'stretch' },
+        { wavenumber: 1575, width: 30, intensity: 94, assignment: 'Carboxylate COO⁻ asymmetric stretch', type: 'stretch' },
+        { wavenumber: 1506, width: 22, intensity: 80, assignment: 'Aromatic C=C stretch', type: 'stretch' },
+        { wavenumber: 1400, width: 28, intensity: 72, assignment: 'Carboxylate COO⁻ symmetric stretch', type: 'stretch' },
+        { wavenumber: 746, width: 22, intensity: 85, assignment: 'C-Cl stretch (ortho-dichlorophenyl)', type: 'stretch' }
       ]
     },
     hplc: { kw: 95.0, S: 3.6, targetTR: 6.2, pKa: 4.0 },
@@ -201,9 +210,11 @@ export const COMPOUND_DATABASE = {
     },
     ftir: {
       bands: [
-        { wavenumber: 3220, intensity: 85, assignment: 'Alcohol O-H stretch', type: 'stretch' },
-        { wavenumber: 1535, intensity: 95, assignment: 'Nitro asymmetric NO2 stretch', type: 'stretch' },
-        { wavenumber: 1368, intensity: 90, assignment: 'Nitro symmetric NO2 stretch', type: 'stretch' }
+        { wavenumber: 3220, width: 80, intensity: 85, assignment: 'Alcohol O-H stretch (hydroxymethyl)', type: 'stretch' },
+        { wavenumber: 1535, width: 28, intensity: 95, assignment: 'Nitro asymmetric NO₂ stretch', type: 'stretch' },
+        { wavenumber: 1490, width: 25, intensity: 82, assignment: 'Imidazole ring C=N asymmetric stretch', type: 'stretch' },
+        { wavenumber: 1368, width: 25, intensity: 90, assignment: 'Nitro symmetric NO₂ stretch', type: 'stretch' },
+        { wavenumber: 1040, width: 38, intensity: 78, assignment: 'Hydroxymethyl C-O primary alcohol stretch', type: 'stretch' }
       ]
     },
     hplc: { kw: 18.0, S: 2.6, targetTR: 2.3, pKa: 2.4 },
@@ -230,9 +241,12 @@ export const COMPOUND_DATABASE = {
     },
     ftir: {
       bands: [
-        { wavenumber: 3250, intensity: 80, assignment: 'Secondary O-H stretch', type: 'stretch' },
-        { wavenumber: 1620, intensity: 88, assignment: 'Quinoline ring C=N / C=C stretch', type: 'stretch' },
-        { wavenumber: 1508, intensity: 75, assignment: 'Aromatic C=C stretch', type: 'stretch' }
+        { wavenumber: 3400, width: 90, intensity: 80, assignment: 'Secondary O-H stretch (carbinol)', type: 'stretch' },
+        { wavenumber: 3060, width: 30, intensity: 58, assignment: 'Aromatic C-H stretch (quinoline ring)', type: 'stretch' },
+        { wavenumber: 1640, width: 28, intensity: 72, assignment: 'Vinyl C=C stretch (quinuclidine vinyl group)', type: 'stretch' },
+        { wavenumber: 1620, width: 30, intensity: 88, assignment: 'Quinoline ring C=N / C=C stretch', type: 'stretch' },
+        { wavenumber: 1508, width: 22, intensity: 75, assignment: 'Aromatic C=C stretch', type: 'stretch' },
+        { wavenumber: 1090, width: 35, intensity: 70, assignment: 'C-O-C methoxy ether stretch', type: 'stretch' }
       ]
     },
     hplc: { kw: 35.0, S: 3.0, targetTR: 4.1, pKa: 8.5 },
@@ -454,8 +468,12 @@ export const COMPOUND_DATABASE = {
     },
     ftir: {
       bands: [
-        { wavenumber: 3120, intensity: 80, assignment: 'Purine imidazole N-H stretch', type: 'stretch' },
-        { wavenumber: 1665, intensity: 95, assignment: 'Xanthine C=O stretch', type: 'stretch' }
+        { wavenumber: 3120, width: 70, intensity: 80, assignment: 'Purine imidazole N-H stretch', type: 'stretch' },
+        { wavenumber: 1665, width: 28, intensity: 95, assignment: 'Xanthine C=O stretch (C-2)', type: 'stretch' },
+        { wavenumber: 1540, width: 30, intensity: 82, assignment: 'N-H in-plane bend (imidazole NH)', type: 'bend' },
+        { wavenumber: 1470, width: 25, intensity: 75, assignment: 'Purine ring C=N stretching', type: 'stretch' },
+        { wavenumber: 1230, width: 35, intensity: 68, assignment: 'C-N purine ring stretch', type: 'stretch' },
+        { wavenumber: 620, width: 20, intensity: 62, assignment: 'N-H out-of-plane bend (imidazole NH wagging)', type: 'bend' }
       ]
     },
     hplc: { kw: 28.0, S: 2.9, targetTR: 3.1, pKa: 8.6 },

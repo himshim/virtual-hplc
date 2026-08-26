@@ -1,10 +1,13 @@
 {
   "datasetName": "USP <467> Residual Solvents Class 2 & 3",
+  "description": "Residual solvents in pharmaceutical products per ICH Q3C and USP <467> guidelines, analyzed by headspace GC-FID on DB-624 or equivalent capillary column. Kovats indices from NIST WebBook on DB-624.",
   "compounds": [
-    { "id": "methanol", "name": "Methanol", "formula": "CH3OH", "boilingPoint": 64.7, "kovatsIndex": 530 },
-    { "id": "ethanol", "name": "Ethanol", "formula": "CH3CH2OH", "boilingPoint": 78.37, "kovatsIndex": 590 },
-    { "id": "acetone", "name": "Acetone", "formula": "CH3COCH3", "boilingPoint": 56.05, "kovatsIndex": 610 },
-    { "id": "isopropanol", "name": "Isopropanol (IPA)", "formula": "CH3CH(OH)CH3", "boilingPoint": 82.6, "kovatsIndex": 640 },
-    { "id": "toluene", "name": "Toluene", "formula": "C6H5CH3", "boilingPoint": 110.6, "kovatsIndex": 780 }
+    { "id": "methanol",      "name": "Methanol",             "formula": "CH3OH",           "boilingPoint": 64.7,  "kovatsIndex": 530,  "ecn": 0.75, "cas": "67-56-1",   "uspClass": 3,  "rl_ppm": 3000 },
+    { "id": "acetone",       "name": "Acetone",              "formula": "CH3COCH3",         "boilingPoint": 56.05, "kovatsIndex": 796,  "ecn": 2.0,  "cas": "67-64-1",   "uspClass": 3,  "rl_ppm": 5000 },
+    { "id": "ethanol",       "name": "Ethanol",              "formula": "CH3CH2OH",         "boilingPoint": 78.37, "kovatsIndex": 590,  "ecn": 1.5,  "cas": "64-17-5",   "uspClass": 3,  "rl_ppm": 5000 },
+    { "id": "isopropanol",   "name": "Isopropanol (IPA)",    "formula": "CH3CH(OH)CH3",    "boilingPoint": 82.6,  "kovatsIndex": 697,  "ecn": 2.0,  "cas": "67-63-0",   "uspClass": 3,  "rl_ppm": 5000 },
+    { "id": "dcm",           "name": "Dichloromethane (DCM)","formula": "CH2Cl2",           "boilingPoint": 39.6,  "kovatsIndex": 749,  "ecn": 0.5,  "cas": "75-09-2",   "uspClass": 2,  "rl_ppm": 600  },
+    { "id": "ethyl_acetate", "name": "Ethyl Acetate",        "formula": "CH3COOC2H5",       "boilingPoint": 77.1,  "kovatsIndex": 803,  "ecn": 3.0,  "cas": "141-78-6",  "uspClass": 3,  "rl_ppm": 5000 },
+    { "id": "toluene",       "name": "Toluene",              "formula": "C6H5CH3",          "boilingPoint": 110.6, "kovatsIndex": 770,  "ecn": 6.0,  "cas": "108-88-3",  "uspClass": 2,  "rl_ppm": 890  }
   ]
 }

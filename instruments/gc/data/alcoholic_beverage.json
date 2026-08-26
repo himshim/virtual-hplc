@@ -1,10 +1,13 @@
 {
   "datasetName": "Fermentation Volatiles & Beverage Congeners",
+  "description": "Volatile compounds in fermented beverages analyzed by GC-FID on non-polar capillary column (DB-5 equivalent). Kovats indices referenced to n-alkane scale on DB-5 (Adams 2007; NIST WebBook).",
   "compounds": [
-    { "id": "acetaldehyde", "name": "Acetaldehyde", "formula": "CH3CHO", "boilingPoint": 20.2, "kovatsIndex": 410 },
-    { "id": "methanol", "name": "Methanol", "formula": "CH3OH", "boilingPoint": 64.7, "kovatsIndex": 530 },
-    { "id": "ethanol", "name": "Ethanol", "formula": "CH3CH2OH", "boilingPoint": 78.4, "kovatsIndex": 590 },
-    { "id": "n_propanol", "name": "n-Propanol", "formula": "CH3CH2CH2OH", "boilingPoint": 97.0, "kovatsIndex": 650 },
-    { "id": "isobutanol", "name": "Isobutanol", "formula": "(CH3)2CHCH2OH", "boilingPoint": 108.0, "kovatsIndex": 720 }
+    { "id": "acetaldehyde",  "name": "Acetaldehyde",         "formula": "CH3CHO",          "boilingPoint": 20.2,  "kovatsIndex": 570,  "ecn": 1.0,  "cas": "75-07-0" },
+    { "id": "methanol",     "name": "Methanol",              "formula": "CH3OH",            "boilingPoint": 64.7,  "kovatsIndex": 530,  "ecn": 0.75, "cas": "67-56-1" },
+    { "id": "ethanol",      "name": "Ethanol",               "formula": "CH3CH2OH",         "boilingPoint": 78.4,  "kovatsIndex": 590,  "ecn": 1.5,  "cas": "64-17-5" },
+    { "id": "n_propanol",   "name": "n-Propanol",            "formula": "CH3CH2CH2OH",      "boilingPoint": 97.0,  "kovatsIndex": 655,  "ecn": 2.5,  "cas": "71-23-8" },
+    { "id": "isobutanol",   "name": "Isobutanol (2-MB-1-ol)","formula": "(CH3)2CHCH2OH",   "boilingPoint": 108.0, "kovatsIndex": 757,  "ecn": 3.0,  "cas": "78-83-1" },
+    { "id": "isoamyl_alcohol","name": "Isoamyl Alcohol (3-MB-1-ol)","formula": "(CH3)2CHCH2CH2OH","boilingPoint": 131.1, "kovatsIndex": 756,  "ecn": 4.0,  "cas": "123-51-3" },
+    { "id": "ethyl_acetate","name": "Ethyl Acetate",         "formula": "CH3COOC2H5",       "boilingPoint": 77.1,  "kovatsIndex": 603,  "ecn": 3.0,  "cas": "141-78-6" }
   ]
 }

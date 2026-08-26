@@ -3,13 +3,21 @@
   "displayName": "Double-Stranded DNA (dsDNA)",
   "formula": "Nucleic Acid Polymer",
   "mw": 650.0,
+  "mwNote": "~650 Da per nucleotide base pair (average)",
   "epsilonMax": 6600,
   "peaks": [
     { "lambdaMax": 260, "bandwidth": 26, "epsilonFraction": 1.00 },
     { "lambdaMax": 280, "bandwidth": 14, "epsilonFraction": 0.36 }
   ],
-  "description": "Purine and pyrimidine base stacking: strong peak at 260 nm (A260/A280 purity ratio standard).",
-  "chromophore": "Heterocyclic purine (A, G) & pyrimidine (C, T) bases",
-  "transition": "π → π* aromatic base stacking transition",
-  "clinicalNote": "Standard molecular biology quantification. Pure dsDNA exhibits A260/A280 ratio of 1.80 ± 0.05."
+  "description": "Purine (A, G) and pyrimidine (C, T) base stacking in B-form dsDNA produces a strong \u03c0\u2192\u03c0* absorption peak at 260 nm (\u03b5 ~6600 L\u00b7mol\u207b\u00b9\u00b7cm\u207b\u00b9 per nucleotide). The 280 nm shoulder arises from aromatic amino acid-like contributions. Pure dsDNA has A260/A280 = 1.80 \u00b1 0.05.",
+  "chromophore": "Heterocyclic purine (A, G) and pyrimidine (C, T) bases",
+  "transition": "\u03c0 \u2192 \u03c0* aromatic base stacking transition",
+  "clinicalNote": "Standard molecular biology quantification: A260 = 1.0 corresponds to ~50 \u03bcg/mL dsDNA. Pure dsDNA exhibits A260/A280 \u2248 1.80; protein contamination reduces this ratio. RNA gives A260/A280 ~2.0.",
+  "sources": [
+    {
+      "type": "Reference",
+      "citation": "Sambrook J, Russell DW (2001) Molecular Cloning: A Laboratory Manual, 3rd ed. CSHL Press. Appendix B: Spectrophotometric determination of nucleic acid concentration.",
+      "purpose": "\u03b5 6600 per nucleotide at 260 nm; A260/A280 = 1.80 for pure dsDNA"
+    }
+  ]
 }
