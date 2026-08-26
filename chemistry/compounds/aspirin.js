@@ -6,7 +6,7 @@ export const ASPIRIN = new Compound({
   formula: "C9H8O4",
   mw: 180.16,
   properties: { logP: 1.19, solubility: "Moderate" },
-  chromatography: { kw: 150, S: 4.2, pKa: 3.5, ionType: "acid" },
+  chromatography: { kw: 10.0, S: 2.4, pKa: 3.5, ionType: "acid" },
   uv: {
     lambdaMax: [226, 276],
     spectralPeaks: [

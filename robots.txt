@@ -1,0 +1,6 @@
+# Virtual Analytical Lab - Robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap Location
+Sitemap: https://himshim.github.io/virtual-analytical-lab/sitemap.xml

@@ -18,7 +18,9 @@ export const HPLC_EVENTS = Object.freeze({
   RUN_STARTED:            'runStarted',
   TICK:                   'tick',
   WARNING_RAISED:         'warningRaised',
+  WARNING_EMITTED:        'warningRaised',
   BASELINE_STABILIZED:    'baselineStabilized',
   PEAK_DETECTED_LIVE:     'peakDetectedLive',
+  RUNTIME_CHANGED:        'runtimeChanged',
   RUN_COMPLETED:          'runCompleted'
 });

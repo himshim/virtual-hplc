@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Agent Skills & Internal Tooling
+.agents/
+skills-lock.json
+.licenses/
+
+# Scratch directory & temporary test scripts
+scratch/
+*.log
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.git/
+server.mjs

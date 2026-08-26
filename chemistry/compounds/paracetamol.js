@@ -6,7 +6,7 @@ export const PARACETAMOL = new Compound({
   formula: "C8H9NO2",
   mw: 151.16,
   properties: { logP: 0.46, solubility: "High" },
-  chromatography: { kw: 20, S: 2.8, pKa: 9.5, ionType: "acid" },
+  chromatography: { kw: 8.0, S: 2.3, pKa: 9.5, ionType: "acid" },
   uv: {
     lambdaMax: [205, 243],
     spectralPeaks: [

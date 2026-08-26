@@ -10,7 +10,27 @@
  * - Benzoic Acid (O-H broad 2500–3300 cm^-1, C=O 1685 cm^-1, Aromatic C=C 1600/1450 cm^-1)
  */
 
+import { COMPOUND_DATABASE } from '../../../chemistry/registry/CompoundDatabase.js';
+
 export const FTIR_COMPOUND_DATABASE = {
+  ...Object.fromEntries(
+    Object.entries(COMPOUND_DATABASE).map(([k, v]) => [
+      k,
+      {
+        name: v.name,
+        formula: v.formula,
+        mw: v.mw,
+        description: `${v.name} FTIR spectrum with characteristic functional group absorption bands.`,
+        bands: (v.ftir?.bands || []).map(b => ({
+          wavenumber: b.wavenumber,
+          width: b.width || 35,
+          depth: (b.intensity || 80) / 100,
+          mode: b.assignment || b.label || 'IR Active Band',
+          region: b.wavenumber >= 1500 ? 'Functional Group' : 'Fingerprint'
+        }))
+      }
+    ])
+  ),
   ethanol: {
     name: 'Ethanol (C2H5OH)',
     formula: 'CH3CH2OH',
@@ -48,8 +68,8 @@ export const FTIR_COMPOUND_DATABASE = {
       { wavenumber: 1685, width: 35, depth: 0.92, mode: 'Conjugated Ar-C=O carbonyl stretch', region: 'Functional Group' },
       { wavenumber: 1600, width: 25, depth: 0.65, mode: 'Aromatic C=C ring stretch 1', region: 'Functional Group' },
       { wavenumber: 1450, width: 25, depth: 0.60, mode: 'Aromatic C=C ring stretch 2', region: 'Fingerprint' },
-      { wavenumber: 1290, width: 40, depth: 0.80, mode: 'C-O carboxylic acid stretch', region: 'Fingerprint' },
-      { wavenumber: 710, width: 30, depth: 0.88, mode: 'Mono-substituted benzene C-H out-of-plane bend', region: 'Fingerprint' }
+      { wavenumber: 1290, width: 40, depth: 0.85, mode: 'Carboxylic C-O stretch', region: 'Fingerprint' },
+      { wavenumber: 710, width: 30, depth: 0.80, mode: 'Monosubstituted benzene C-H out-of-plane bend', region: 'Fingerprint' }
     ]
   }
 };
@@ -108,24 +128,6 @@ export class FtirEngine {
       wavenumber,
       transmittance,
       absorbance
-    };
-  }
-
-  /**
-   * Full-spectrum sweep 4000-400 cm^-1 (bulk calculations)
-   */
-  static calculateSpectrum(sampleKey = 'ethanol', mode = 'atr') {
-    const compound = FTIR_COMPOUND_DATABASE[sampleKey] || FTIR_COMPOUND_DATABASE.ethanol;
-    const spectrumData = [];
-
-    for (let nu = 4000; nu >= 400; nu -= 2) {
-      spectrumData.push(FtirEngine.computeTransmittanceAtWavenumber(sampleKey, nu, mode));
-    }
-
-    return {
-      compound,
-      spectrumData,
-      bands: compound.bands
     };
   }
 }

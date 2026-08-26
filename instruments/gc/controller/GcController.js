@@ -6,6 +6,7 @@
 
 import { GcEngine } from '../engine/gcEngine.js';
 import { GC_EVENTS } from './GcEvents.js';
+import { COMPOUND_DATABASE } from '../../../chemistry/registry/CompoundDatabase.js';
 
 export class GcController {
   constructor() {
@@ -13,7 +14,13 @@ export class GcController {
     this.capabilities = { playback: true, speedControl: true, step: true };
 
     this.engine           = new GcEngine();
-    this._compounds       = [];
+    this._compounds       = Object.entries(COMPOUND_DATABASE).map(([id, c]) => ({
+      id,
+      name: c.name,
+      kovatsIndex: c.gc?.kovatsIndex || 600,
+      boilingPoint: c.gc?.boilingPoint || 100.0,
+      formula: c.formula
+    })).slice(0, 5);
     this._selectedSample  = 'residual_solvents';
     this._maxRunTime      = 8.0; // minutes
     this._expertiseMode   = 'beginner';
@@ -23,25 +30,22 @@ export class GcController {
     this._precomputedPeaks = [];
     this._lifecycleStatus  = 'IDLE';
 
-    // Load default dataset asynchronously
+    // Load default dataset asynchronously if in browser
     this.loadSampleDataset(this._selectedSample);
   }
 
   async loadSampleDataset(sampleKey = 'residual_solvents') {
     try {
-      const res = await fetch(`./data/${sampleKey}.json`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      this._compounds = data.compounds || [];
+      if (typeof fetch === 'function' && typeof window !== 'undefined') {
+        const res = await fetch(`./data/${sampleKey}.json`);
+        if (res.ok) {
+          const data = await res.json();
+          this._compounds = data.compounds || [];
+          return;
+        }
+      }
     } catch (err) {
-      console.warn('[GcController] Using fallback compound dataset:', err.message);
-      this._compounds = [
-        { id: 'methanol', name: 'Methanol', kovatsIndex: 530, boilingPoint: 64.7 },
-        { id: 'ethanol', name: 'Ethanol', kovatsIndex: 590, boilingPoint: 78.4 },
-        { id: 'acetone', name: 'Acetone', kovatsIndex: 610, boilingPoint: 56.1 },
-        { id: 'isopropanol', name: 'Isopropanol (IPA)', kovatsIndex: 640, boilingPoint: 82.6 },
-        { id: 'toluene', name: 'Toluene', kovatsIndex: 780, boilingPoint: 110.6 }
-      ];
+      // Fallback already initialized from COMPOUND_DATABASE
     }
   }
 

@@ -21,8 +21,7 @@ export class UiCoordinator {
     this._maxRunTime = 0;
     this.bindEvents();
     this.bindWhyModal();
-    this.bindFloatingDockAndDrawers();
-    this.bindStickyObserverAndPip();
+    this.bindBottomSheet();
     // Expose globally so CDS toolbar Compare button can call toggleCompareOverlay
     window._uiCoordinator = this;
   }
@@ -39,10 +38,13 @@ export class UiCoordinator {
     }
 
     bus.on(HPLC_EVENTS.PUMP_STARTED, () => {
-
       if (this.views.graphView)   this.views.graphView.reset();
       if (this.views.runTimeline) this.views.runTimeline.setPhase('prime');
       this._setAcqPhaseLabel('⚡ PRIMING: Ramping pressure...');
+      const diag = document.getElementById('diagText');
+      if (diag) diag.innerHTML = '<strong>Stage 1 (Priming &amp; Equilibrating)</strong>: High-pressure dual-piston pump is drawing mobile phase through the reversed-phase C18 column to establish stable baseline pressure.';
+      const phaseBadge = document.getElementById('hplcPhaseBadge');
+      if (phaseBadge) phaseBadge.textContent = 'STATUS: PRIMING';
     });
 
     bus.on(HPLC_EVENTS.STATUS_CHANGED, ({ newState }) => {
@@ -51,6 +53,8 @@ export class UiCoordinator {
       if (this.views.runTimeline)  this._updateTimelinePhase(newState);
       this.renderTelemetry({ state: newState });
       this._updateFabDockForState(newState);
+      const phaseBadge = document.getElementById('hplcPhaseBadge');
+      if (phaseBadge) phaseBadge.textContent = `STATUS: ${newState}`;
     });
 
     bus.on(HPLC_EVENTS.PRESSURE_CHANGED, ({ pressure }) => {
@@ -68,6 +72,10 @@ export class UiCoordinator {
     bus.on(HPLC_EVENTS.INJECTING_STARTED, () => {
       if (this.views.runTimeline) this.views.runTimeline.setPhase('inject');
       this._setAcqPhaseLabel('💉 INJECTING SAMPLE (Valve turning...)');
+      const diag = document.getElementById('diagText');
+      if (diag) diag.innerHTML = '<strong>Stage 2 (Sample Injection)</strong>: Rheodyne 6-port rotary injection valve switched. Sample plug is swept into the high-pressure mobile phase stream.';
+      const phaseBadge = document.getElementById('hplcPhaseBadge');
+      if (phaseBadge) phaseBadge.textContent = 'STATUS: INJECTING';
     });
 
     bus.on(HPLC_EVENTS.RUN_STARTED, ({ expectedAnalytes, isBlank, sampleName, estimatedMaxTime }) => {
@@ -82,6 +90,11 @@ export class UiCoordinator {
       this.pipDataPoints  = [];
       this._isBlankRun    = !!isBlank;
       this._maxRunTime    = estimatedMaxTime || 0;
+
+      const diag = document.getElementById('diagText');
+      if (diag) diag.innerHTML = '<strong>Stage 3 (Chromatographic Separation)</strong>: Analyte molecules partition between moving solvent (%B) and C18 stationary phase beads. Polar molecules elute faster; non-polar molecules stick longer.';
+      const phaseBadge = document.getElementById('hplcPhaseBadge');
+      if (phaseBadge) phaseBadge.textContent = 'STATUS: SEPARATING';
 
       // Update CDS metadata strip
       this._updateMetaStrip({ sampleName: sampleName || '—', estimatedMaxTime });
@@ -110,6 +123,19 @@ export class UiCoordinator {
     bus.on(HPLC_EVENTS.PEAK_DETECTED_LIVE, ({ compound }) => {
       if (this.views.interactiveChromatogram) {
         this.views.interactiveChromatogram.markLiveDetected(compound);
+      }
+      const diag = document.getElementById('diagText');
+      if (diag && compound) {
+        diag.innerHTML = `🎉 <strong>Peak Eluted!</strong> Detected <strong>${compound.name || 'Analyte'}</strong> at $t_R = ${compound.retentionTime?.toFixed(2) || '—'}\\text{ min}$ (Signal: ${(compound.height || 0).toFixed(1)} mAU).`;
+      }
+    });
+
+    bus.on(HPLC_EVENTS.RUNTIME_CHANGED, ({ runTimeMinutes }) => {
+      this._maxRunTime = runTimeMinutes;
+      if (this.views.graphView?.chart?.options?.scales?.x) {
+        this.views.graphView.chart.options.scales.x.max = runTimeMinutes;
+        this.views.graphView.chart.options.scales.x.suggestedMax = runTimeMinutes;
+        this.views.graphView.chart.update('none');
       }
     });
 
@@ -149,6 +175,13 @@ export class UiCoordinator {
 
     bus.on(HPLC_EVENTS.RUN_COMPLETED, ({ runResult, exerciseProfile, methodComparison, methodHistory }) => {
       if (this.views.runTimeline) this.views.runTimeline.setPhase('report');
+      const diag = document.getElementById('diagText');
+      if (diag) {
+        const peakCount = runResult?.peaks?.length || 0;
+        diag.innerHTML = `✅ <strong>Separation Complete!</strong> Successfully resolved <strong>${peakCount} analyte peak${peakCount === 1 ? '' : 's'}</strong>. Switch to <strong>Tab 2 (Results &amp; System Suitability)</strong> to inspect retention times, theoretical plates ($N$), and USP resolution ($R_s$).`;
+      }
+      const phaseBadge = document.getElementById('hplcPhaseBadge');
+      if (phaseBadge) phaseBadge.textContent = 'STATUS: COMPLETE';
 
 
       // Capture run trace for comparison overlay
@@ -165,8 +198,11 @@ export class UiCoordinator {
       if (runResult?.peaks && this.views.interactiveChromatogram) {
         this.views.interactiveChromatogram.setPeaks(runResult.peaks);
       }
+      if (runResult?.peaks && this.views.graphView?.setPeaks) {
+        this.views.graphView.setPeaks(runResult.peaks);
+      }
 
-      if (this.previousRunTrace && snapshot.length) {
+      if (this._showCompareOverlay && this.previousRunTrace && snapshot.length) {
         if (this.views.interactiveChromatogram) {
           this.views.interactiveChromatogram.setReferenceRun(this.previousRunTrace.data);
         }
@@ -221,24 +257,42 @@ export class UiCoordinator {
     const s = this.controller.simState;
     const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 
-    set('metaSample',     sampleName || '—');
+    set('metaSample',     sampleName || '-');
     set('metaFlow',       formatFlowRate(s.flowRate || 1.0));
     set('metaWavelength', formatWavelength(s.wavelengthNm || 254));
     set('metaTemp',       (s.temperature  || 25)  + ' °C');
-    set('metaRunTime',    estimatedMaxTime ? formatTimeDecimal(estimatedMaxTime, 2) : '—');
+    set('metaRunTime',    estimatedMaxTime ? formatTimeDecimal(estimatedMaxTime, 2) : '-');
+
+    // Reactively update physical SVG Visualizer Hero text nodes
+    const elTemp = document.getElementById('heroColumnTemp');
+    if (elTemp) elTemp.textContent = `COLUMN OVEN (C18, ${(s.temperature || 25).toFixed(0)}°C)`;
+
+    const elUv = document.getElementById('heroUvWavelength');
+    if (elUv) elUv.textContent = `${(s.wavelengthNm || 254).toFixed(0)} nm`;
+
+    const elSolvA = document.getElementById('heroSolventA');
+    if (elSolvA) elSolvA.textContent = `A:${s.solventA || 'H₂O'}`;
+
+    const elSolvB = document.getElementById('heroSolventB');
+    if (elSolvB) elSolvB.textContent = `B:${s.solventB || 'ACN'}`;
   }
 
   /* ── Compare Overlay Toggle (for CDS toolbar "Compare" button) ───────────── */
-
   toggleCompareOverlay() {
+    this._showCompareOverlay = !this._showCompareOverlay;
+    if (this.views.interactiveChromatogram) {
+      if (this._showCompareOverlay && this.previousRunTrace) {
+        this.views.interactiveChromatogram.setReferenceRun(this.previousRunTrace.data);
+      } else {
+        this.views.interactiveChromatogram.clearReference();
+      }
+    }
     const card = document.getElementById('teacherSummaryCard');
-    if (!card) return;
-    const isHidden = card.style.display === 'none' || !card.style.display;
-    card.style.display = isHidden ? 'block' : 'none';
-    // C1.4: track user intent so _generateTeacherSummary won't re-open
-    this._compareCardUserDismissed = !isHidden;
+    if (card) {
+      card.style.display = this._showCompareOverlay ? 'block' : 'none';
+    }
     const btn = document.getElementById('toolCompare');
-    if (btn) btn.classList.toggle('active', isHidden);
+    if (btn) btn.classList.toggle('active', this._showCompareOverlay);
   }
 
   _updateTimelinePhase(state) {
@@ -410,20 +464,6 @@ export class UiCoordinator {
   }
 
   // _updateCdsStateVal / _updateCdsPressureVal / _updateCdsUvVal replaced by renderTelemetry — C2.5
-
-  _updateTimelinePhase(state) {
-    if (!this.views.runTimeline) return;
-    const phaseMap = {
-      PRIMING:      'prime',
-      EQUILIBRATING:'equilibrate',
-      READY:        'ready',
-      INJECTING:    'inject',
-      RUNNING:      'separation',
-      COMPLETED:    'complete'
-    };
-    if (phaseMap[state]) this.views.runTimeline.setPhase(phaseMap[state]);
-  }
-
   // _updateStepHighlight removed C2.1 — guided-step-banner deleted; RunTimeline is sole workflow indicator.
 
   /** C1.1: Bind 'Why?' explanation triggers — Bottom Sheet is the ONLY educational overlay */
@@ -495,15 +535,55 @@ export class UiCoordinator {
     this.openBottomSheet(`Why? ${exp.parameter}`, '❓', htmlContent);
   }
 
-  /** Sprint E3: Bind Floating Quick Action Dock & Off-Canvas Drawers */
-  bindFloatingDockAndDrawers() {
+  /** Contextual Bottom Sheet Overlay Handlers */
+  bindBottomSheet() {
+    const bottomSheetBackdrop = document.getElementById('bottomSheetBackdrop');
+    const closeBottomSheetBtn = document.getElementById('closeBottomSheetBtn');
+    const closeSheet = () => {
+      const sheet = document.getElementById('bottomSheet');
+      if (sheet) sheet.classList.remove('active');
+      if (bottomSheetBackdrop) bottomSheetBackdrop.classList.remove('active');
+    };
+    if (closeBottomSheetBtn) {
+      closeBottomSheetBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); closeSheet(); };
+    }
+    if (bottomSheetBackdrop) {
+      bottomSheetBackdrop.onclick = (e) => { e.preventDefault(); closeSheet(); };
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSheet();
+    });
+  }
+
+  openBottomSheet(title, icon, contentHtmlOrElement) {
+    const sheet = document.getElementById('bottomSheet');
+    const backdrop = document.getElementById('bottomSheetBackdrop');
+    const titleText = document.getElementById('bottomSheetTitleText');
+    const iconEl = document.getElementById('bottomSheetIcon');
+    const sheetBody = document.getElementById('bottomSheetBody');
+
+    if (!sheet || !backdrop || !sheetBody) return;
+
+    if (titleText) titleText.textContent = title;
+    if (iconEl) iconEl.textContent = icon;
+
+    if (typeof contentHtmlOrElement === 'string') {
+      sheetBody.innerHTML = contentHtmlOrElement;
+    } else if (contentHtmlOrElement instanceof HTMLElement) {
+      sheetBody.innerHTML = '';
+      sheetBody.appendChild(contentHtmlOrElement);
+    }
+
+    backdrop.classList.add('active');
+    sheet.classList.add('active');
+  }
+
+  /** Sprint E3: Bind Floating Quick Action Dock */
+  bindFloatingDock() {
     const fabMethod = document.getElementById('fabMethodBtn');
     const fabSample = document.getElementById('fabSampleBtn');
     const fabWhy = document.getElementById('fabWhyBtn');
     const fabNotebook = document.getElementById('fabNotebookBtn');
-    const drawer = document.getElementById('slideOverDrawer');
-    const backdrop = document.getElementById('drawerBackdrop');
-    const closeBtn = document.getElementById('closeDrawerBtn');
 
     if (fabMethod) {
       fabMethod.addEventListener('click', () => {
@@ -527,168 +607,10 @@ export class UiCoordinator {
 
     if (fabNotebook) {
       fabNotebook.addEventListener('click', () => {
-        const notebookContainer = document.getElementById('experiment-notebook-container');
-        if (notebookContainer) {
-          this.openDrawer('Experiment Notebook', '📝', notebookContainer);
-        } else {
-          const resultsTab = document.getElementById('tabBtn-results');
-          if (resultsTab) resultsTab.click();
-        }
+        const resultsTab = document.getElementById('tabBtn-results');
+        if (resultsTab) resultsTab.click();
       });
     }
-
-    const closeDrawer = () => {
-      if (drawer) drawer.classList.remove('active');
-      if (backdrop) backdrop.classList.remove('active');
-    };
-
-    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-    if (backdrop) backdrop.addEventListener('click', closeDrawer);
-  }
-
-  openDrawer(title, icon, contentElement) {
-    const drawer = document.getElementById('slideOverDrawer');
-    const backdrop = document.getElementById('drawerBackdrop');
-    const titleText = document.getElementById('drawerTitleText');
-    const iconEl = document.getElementById('drawerIcon');
-    const drawerBody = document.getElementById('drawerBody');
-
-    if (!drawer || !backdrop || !drawerBody) return;
-
-    if (titleText) titleText.textContent = title;
-    if (iconEl) iconEl.textContent = icon;
-
-    // Temporarily mount content inside drawer if needed
-    drawerBody.innerHTML = '';
-    if (contentElement) {
-      const clone = contentElement.cloneNode(true);
-      drawerBody.appendChild(clone);
-    }
-
-    backdrop.classList.add('active');
-    drawer.classList.add('active');
-  }
-
-  /** Sprint U5 & U6: Morphing Single-Graph PiP & Contextual Bottom Sheets */
-  bindStickyObserverAndPip() {
-    this.pipDataPoints = [];
-    const heroStrip = document.getElementById('cds-telemetry-strip');
-    const chromContainer = document.querySelector('.chromatogram-container');
-    const stickyPip = document.getElementById('stickyTelemetryPip');
-    const bottomSheetBackdrop = document.getElementById('bottomSheetBackdrop');
-    const closeBottomSheetBtn = document.getElementById('closeBottomSheetBtn');
-
-    if (heroStrip && stickyPip && 'IntersectionObserver' in window) {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) {
-            stickyPip.classList.add('visible');
-          } else {
-            stickyPip.classList.remove('visible');
-          }
-        });
-      }, { threshold: 0.1 });
-      observer.observe(heroStrip);
-    }
-
-    // Single GraphView Morphing PiP Observer & DOM Portal Manager
-    if (chromContainer && 'IntersectionObserver' in window) {
-      const originalParent = chromContainer.parentElement;
-      const nextSibling = chromContainer.nextSibling;
-
-      const setPipActive = (active) => {
-        if (active) {
-          if (!chromContainer.classList.contains('morph-pip-active')) {
-            chromContainer.classList.add('morph-pip-active');
-            if (chromContainer.parentElement !== document.body) {
-              document.body.appendChild(chromContainer);
-            }
-          }
-        } else {
-          if (chromContainer.classList.contains('morph-pip-active')) {
-            chromContainer.classList.remove('morph-pip-active');
-            if (chromContainer.parentElement !== originalParent) {
-              if (nextSibling) originalParent.insertBefore(chromContainer, nextSibling);
-              else originalParent.appendChild(chromContainer);
-            }
-          }
-        }
-      };
-
-      const checkEligibility = () => {
-        const state = this.controller.getState();
-        const dataLen = this.views.graphView?.chart?.data?.datasets?.[0]?.data?.length || 0;
-        return state === 'RUNNING' || state === 'INJECTING' || state === 'COMPLETED' || dataLen > 0;
-      };
-
-      const sentinel = document.getElementById('chromatogramSentinel');
-      const morphObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          const eligible = checkEligibility();
-          if (!entry.isIntersecting && eligible) {
-            setPipActive(true);
-          } else if (entry.isIntersecting) {
-            setPipActive(false);
-          }
-        });
-      }, { threshold: 0.1 });
-
-      morphObserver.observe(sentinel || originalParent);
-
-      // Handle Tab Switch: Morph graph into PiP when navigating away from Run tab if run has data
-      document.querySelectorAll('.nav-tab-item').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const tab = btn.getAttribute('data-tab');
-          if (tab !== 'tab-run' && checkEligibility()) {
-            setPipActive(true);
-          } else if (tab === 'tab-run') {
-            setPipActive(false);
-          }
-        });
-      });
-
-      chromContainer.addEventListener('click', (e) => {
-        if (chromContainer.classList.contains('morph-pip-active')) {
-          e.stopPropagation();
-          setPipActive(false);
-          const runTabBtn = document.getElementById('tabBtn-run');
-          if (runTabBtn) runTabBtn.click();
-          chromContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      });
-    }
-
-    const closeSheet = () => {
-      const sheet = document.getElementById('bottomSheet');
-      if (sheet) sheet.classList.remove('active');
-      if (bottomSheetBackdrop) bottomSheetBackdrop.classList.remove('active');
-    };
-
-    if (closeBottomSheetBtn) closeBottomSheetBtn.addEventListener('click', closeSheet);
-    if (bottomSheetBackdrop) bottomSheetBackdrop.addEventListener('click', closeSheet);
-  }
-
-  openBottomSheet(title, icon, contentHtmlOrElement) {
-    const sheet = document.getElementById('bottomSheet');
-    const backdrop = document.getElementById('bottomSheetBackdrop');
-    const titleText = document.getElementById('bottomSheetTitleText');
-    const iconEl = document.getElementById('bottomSheetIcon');
-    const sheetBody = document.getElementById('bottomSheetBody');
-
-    if (!sheet || !backdrop || !sheetBody) return;
-
-    if (titleText) titleText.textContent = title;
-    if (iconEl) iconEl.textContent = icon;
-
-    sheetBody.innerHTML = '';
-    if (typeof contentHtmlOrElement === 'string') {
-      sheetBody.innerHTML = contentHtmlOrElement;
-    } else if (contentHtmlOrElement) {
-      sheetBody.appendChild(contentHtmlOrElement.cloneNode(true));
-    }
-
-    backdrop.classList.add('active');
-    sheet.classList.add('active');
   }
 
   /** Render real-time mini sparkline trace inside PiP Canvas */

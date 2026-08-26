@@ -69,6 +69,9 @@ export class InteractiveChromatogram {
     this._expectedMarkers = [];
     this._hideInspector();
     this._clearAnnotations();
+    if (this.chart && this.chart.clearPeakAnnotations) {
+      this.chart.clearPeakAnnotations();
+    }
   }
 
   /* ── Live Retention Markers Canvas Plugin ────────────────────────────── */
@@ -83,6 +86,7 @@ export class InteractiveChromatogram {
     Chart.register({
       id: pluginId,
       afterDraw(chart) {
+        if (chart._showPeakCallouts === false) return;
         const ctx = chart.ctx;
         const xAxis = chart.scales.x;
         const yAxis = chart.scales.y;

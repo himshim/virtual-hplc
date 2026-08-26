@@ -17,7 +17,6 @@ import { OpticalInstrumentModel, STRAY_LIGHT_PRESETS } from '../engine/opticalIn
 import { LaboratoryPracticeModel, SMUDGE_LEVELS } from '../engine/laboratoryPracticeModel.js';
 import { DiagnosticEngine } from '../engine/diagnosticEngine.js';
 import { MixtureSpectrumModel } from '../engine/MixtureSpectrumModel.js';
-import { SpectralSimilarityEngine } from '../engine/spectralSimilarityEngine.js';
 import { UVVIS_EVENTS } from './UvVisEvents.js';
 
 export class UvVisController {
@@ -140,13 +139,7 @@ export class UvVisController {
     this._lambdaMax          = null;
     this._fullMaxAbsorbance  = 0;
     this._fullLambdaMax      = null;
-    this._uv400Emitted       = false;
     this._lifecyclePhase     = 'IDLE';
-  }
-
-  async warmup() {
-    this._lifecyclePhase = 'LAMP_WARMUP';
-    return Promise.resolve();
   }
 
   setReady() {
@@ -160,11 +153,6 @@ export class UvVisController {
 
   run() {
     this.startSampleScan();
-  }
-
-  setSample(sampleKey) {
-    if (typeof this.setSampleKey === 'function') this.setSampleKey(sampleKey);
-    else this._sampleKey = sampleKey;
   }
 
   complete() {
@@ -289,13 +277,17 @@ export class UvVisController {
     this._fullSpectrumPoints = finalPoints;
     this._fullMaxAbsorbance  = maxAbs;
     this._fullLambdaMax      = peakLambda;
+    this._revealedIndex      = this._playbackConfig.direction === 'highToLow'
+      ? this._fullSpectrumPoints.length - 1
+      : 0;
   }
 
   // ── Private Tick Helpers ─────────────────────────────────────────────────
   _advanceLambda(ctx) {
-    const dtMin   = ctx ? ctx.deltaTime / 60 : 0.05 / 60;
+    const mult    = ctx?.speedMultiplier || 1.0;
     const speed   = this._method.scanSpeedNmMin || 300;
-    const stepNm  = speed * dtMin;
+    const dtMin   = ctx ? (ctx.deltaTime * mult * 30.0) / 60 : (0.05 * 30.0) / 60;
+    const stepNm  = Math.max(1.5, speed * dtMin);
 
     if (this._playbackConfig.direction === 'highToLow') {
       this._currentLambda -= stepNm;
@@ -353,10 +345,12 @@ export class UvVisController {
   _onScanComplete(ctx) {
     if (this._blankMode) {
       this._blankDone = true;
+      this._lifecyclePhase = 'BLANK COMPLETE';
       if (ctx?.eventBus) {
         ctx.eventBus.emit(UVVIS_EVENTS.BLANK_COMPLETE, { solventKey: this._solventKey });
       }
     } else {
+      this._lifecyclePhase = 'SCAN COMPLETE';
       if (ctx?.eventBus) {
         ctx.eventBus.emit(UVVIS_EVENTS.SCAN_COMPLETE, {
           lambdaMax:     this._lambdaMax || this._fullLambdaMax,
@@ -380,26 +374,22 @@ export class UvVisController {
   }
 
   _buildStatus(scanComplete) {
-    const totalRange = this._scanEnd - this._scanStart;
-    const progress   = (this._currentLambda - this._scanStart) / totalRange;
+    const totalRange = Math.abs(this._scanEnd - this._scanStart) || 600;
+    const progress   = Math.abs(this._currentLambda - (this._playbackConfig.direction === 'highToLow' ? this._scanEnd : this._scanStart)) / totalRange;
     return {
-      progress:      Math.min(1, progress),
+      progress:      Math.min(1, Math.max(0, progress)),
       scanComplete,
-      currentPhase:  this._lifecyclePhase,
-      currentLambda: Math.min(this._scanEnd, Math.round(this._currentLambda)),
+      currentPhase:  scanComplete ? (this._blankMode ? 'BLANK COMPLETE' : 'SCAN COMPLETE') : this._lifecyclePhase,
+      currentLambda: Math.min(this._scanEnd, Math.max(this._scanStart, Math.round(this._currentLambda))),
     };
   }
 
-  // ── Diagnostic & Spectral Similarity Analysis APIs ────────────────────────
+  // ── Diagnostic Analysis API ──────────────────────────────────────────────
   getDiagnostics() {
     return DiagnosticEngine.analyzeSpectrum(this._fullSpectrumPoints, {
       ...this._labPractice,
       sampleSolvent: this._solventKey
     });
-  }
-
-  compareWithReference(refKey = 'paracetamol') {
-    return SpectralSimilarityEngine.compareSpectra(this._fullSpectrumPoints, refKey);
   }
 
   // ── Param setters ────────────────────────────────────────────────────────

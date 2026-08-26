@@ -8,13 +8,11 @@
 
 import { SIMULATION_EVENTS, SimulationEventBus } from './SimulationEvents.js';
 import { SimulationClock } from './SimulationClock.js';
-import { SimulationContext } from './SimulationContext.js';
 import { SimulationRandom } from './SimulationRandom.js';
 
 export const SIMULATION_STATES = Object.freeze({
   IDLE: 'IDLE',
   INITIALIZE: 'INITIALIZE',
-  WARMUP: 'WARMUP',
   READY: 'READY',
   RUNNING: 'RUNNING',
   PAUSED: 'PAUSED',
@@ -22,19 +20,6 @@ export const SIMULATION_STATES = Object.freeze({
   RESET: 'RESET',
   ERROR: 'ERROR'
 });
-
-// Explicit Allowed State Machine Transitions Matrix
-const ALLOWED_TRANSITIONS = new Map([
-  [SIMULATION_STATES.IDLE, new Set([SIMULATION_STATES.INITIALIZE])],
-  [SIMULATION_STATES.INITIALIZE, new Set([SIMULATION_STATES.WARMUP, SIMULATION_STATES.READY, SIMULATION_STATES.ERROR])],
-  [SIMULATION_STATES.WARMUP, new Set([SIMULATION_STATES.READY, SIMULATION_STATES.ERROR])],
-  [SIMULATION_STATES.READY, new Set([SIMULATION_STATES.RUNNING, SIMULATION_STATES.RESET])],
-  [SIMULATION_STATES.RUNNING, new Set([SIMULATION_STATES.PAUSED, SIMULATION_STATES.COMPLETED, SIMULATION_STATES.ERROR])],
-  [SIMULATION_STATES.PAUSED, new Set([SIMULATION_STATES.RUNNING, SIMULATION_STATES.RESET])],
-  [SIMULATION_STATES.COMPLETED, new Set([SIMULATION_STATES.RESET])],
-  [SIMULATION_STATES.RESET, new Set([SIMULATION_STATES.READY, SIMULATION_STATES.IDLE])],
-  [SIMULATION_STATES.ERROR, new Set([SIMULATION_STATES.RESET])]
-]);
 
 export class SimulationRunner {
   /**
@@ -67,10 +52,6 @@ export class SimulationRunner {
    * Throws an error if an illegal state transition is attempted
    */
   _transitionTo(nextState) {
-    const allowed = ALLOWED_TRANSITIONS.get(this.state);
-    if (!allowed || !allowed.has(nextState)) {
-      throw new Error(`[SimulationRunner] Illegal state transition: ${this.state} -> ${nextState}`);
-    }
     const prevState = this.state;
     this.state = nextState;
     this.eventBus.emit(SIMULATION_EVENTS.STATE_CHANGE || 'simulation:state_change', {
@@ -88,20 +69,6 @@ export class SimulationRunner {
     this.eventBus.emit(SIMULATION_EVENTS.INIT, { instrumentId: this.instrument?.id });
   }
 
-  /** Lifecycle: Warmup hardware */
-  async warmup() {
-    this._transitionTo(SIMULATION_STATES.WARMUP);
-    this.eventBus.emit(SIMULATION_EVENTS.WARMUP_START);
-    try {
-      if (this.instrument && typeof this.instrument.warmup === 'function') {
-        await this.instrument.warmup();
-      }
-      this.setReady();
-    } catch (err) {
-      this._handleError(err);
-    }
-  }
-
   /** Lifecycle: Set ready for acquisition */
   setReady() {
     if (this.state !== SIMULATION_STATES.READY) {
@@ -115,11 +82,9 @@ export class SimulationRunner {
 
   /** Lifecycle: Start/run acquisition loop */
   start() {
-    if (this.state === SIMULATION_STATES.READY || this.state === SIMULATION_STATES.PAUSED) {
+    if (this.state === SIMULATION_STATES.READY || this.state === SIMULATION_STATES.PAUSED || this.state === SIMULATION_STATES.INITIALIZE || this.state === SIMULATION_STATES.IDLE) {
       this._transitionTo(SIMULATION_STATES.RUNNING);
-      if (this.state === SIMULATION_STATES.RUNNING) {
-        this.clock.start();
-      }
+      this.clock.start();
     }
   }
 
@@ -164,10 +129,6 @@ export class SimulationRunner {
     if (this.instrument && typeof this.instrument.reset === 'function') {
       this.instrument.reset();
     }
-    // Transition to RESET then READY
-    if (this.state !== SIMULATION_STATES.IDLE) {
-      this._transitionTo(SIMULATION_STATES.RESET);
-    }
     this._transitionTo(SIMULATION_STATES.READY);
     this.eventBus.emit(SIMULATION_EVENTS.RESET);
   }
@@ -182,8 +143,8 @@ export class SimulationRunner {
 
     this.elapsedTime += dt;
 
-    // Construct immutable SimulationContext
-    const context = new SimulationContext({
+    // Lean plain object tick payload
+    const context = {
       elapsedTime: this.elapsedTime,
       deltaTime: dt,
       speedMultiplier: this.clock.speedMultiplier,
@@ -191,7 +152,7 @@ export class SimulationRunner {
       lifecycleState: this.state,
       random: this.random,
       eventBus: this.eventBus
-    });
+    };
 
     // SimulationErrorBoundary: Crash Isolation
     try {

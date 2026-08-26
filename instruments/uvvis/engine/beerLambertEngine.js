@@ -9,13 +9,15 @@
  *  - KMnO₄:   5 LMCT vibronic bands (502–590 nm)
  *  - Others:   primary + shoulder
  *
- * Per-tick API: computeAbsorbanceAtLambda() — called by UvVisController.tick()
- * Static API:   calculateSpectrum()         — kept for calibration tab (backward compat)
+ * Advanced Features:
+ *  - Savitzky-Golay numerical derivative computation (1st & 2nd derivative)
+ *  - Photometric Twyman-Lothian noise modeling (shot noise + dark current)
+ *  - pH ionization equilibrium (Henderson-Hasselbalch)
+ *  - Solvent UV cutoff exponential attenuation
  */
 
 import { UvVisDataRegistry, CHROMOPHORE_DATABASE as COMPOUND_DB, SOLVENT_DATABASE as SOLVENT_DB } from '../data/registry.js';
 
-// Re-export for legacy import paths (controller, index.html still use CHROMOPHORE_DATABASE)
 export const CHROMOPHORE_DATABASE = COMPOUND_DB;
 export const SOLVENT_DATABASE     = SOLVENT_DB;
 
@@ -76,7 +78,7 @@ export class BeerLambertEngine {
    * @param {number} lambda
    * @param {number} concentrationUgMl
    * @param {number} pathLengthCm       - default 1.0
-   * @param {number} strayLight         - default 0.001 (0.1%)
+   * @param {number} strayLight         - default 0.0005
    * @param {Object|null} rng           - SimulationRandom (seeded PRNG, not Math.random)
    * @param {string} noiseMode          - 'none' | 'standard' | 'advanced'
    * @param {string} solventKey         - for blank subtraction on demand
@@ -85,7 +87,7 @@ export class BeerLambertEngine {
    */
   static computeAbsorbanceAtLambda(
     sampleKey, lambda, concentrationUgMl, pathLengthCm = 1.0,
-    strayLight = 0.001, rng = null, noiseMode = 'none', solventKey = 'water',
+    strayLight = 0.0005, rng = null, noiseMode = 'none', solventKey = 'water',
     cuvetteMaterial = 'quartz', pH = 7.0
   ) {
     const compound = COMPOUND_DB[sampleKey] ?? COMPOUND_DB.paracetamol;
@@ -99,14 +101,24 @@ export class BeerLambertEngine {
       idealA = idealA * (1.0 - 0.05 * dev * dev);
     }
 
-    // Optical Path Transmission: Glass cuvette absorbs 99% of light (T_glass = 0.01) below 340 nm
+    // Optical Path Transmission: Glass cuvette absorbs 99% of UV light (T_glass = 0.01) below 340 nm
     const tGlass = (cuvetteMaterial === 'glass' && lambda < 340) ? 0.01 : 1.0;
     const T_sample = Math.pow(10, -idealA) * tGlass;
     const T_obs    = T_sample + strayLight;
 
-    const noiseFactor = { none: 0, standard: 0.008, advanced: 0.025 }[noiseMode] ?? 0;
-    // ponytail: SimulationRandom.next() returns [0,1); (rng.next()-0.5)*2 = [-1,1)
-    const noise = (noiseFactor > 0 && rng) ? (rng.next() - 0.5) * 2 * noiseFactor * idealA : 0;
+    // Twyman-Lothian Physical Noise Model (Photon Shot Noise ~ sqrt(T) + Dark Current Noise)
+    let noise = 0;
+    if (noiseMode !== 'none' && rng) {
+      const noiseMultiplier = noiseMode === 'advanced' ? 0.006 : 0.002;
+      const sigmaDark = 0.0003;
+      const sigmaShot = Math.sqrt(Math.max(0.0001, T_obs)) * noiseMultiplier;
+      const sigmaT = Math.sqrt(sigmaDark * sigmaDark + sigmaShot * sigmaShot);
+      
+      const randomNormal = (rng.next() + rng.next() + rng.next() - 1.5) * 1.63; // approx Gaussian N(0,1)
+      const deltaT = randomNormal * sigmaT;
+      const noisyT = Math.max(1e-4, T_obs + deltaT);
+      noise = -Math.log10(noisyT) - (-Math.log10(T_obs));
+    }
 
     const sampleAbs = Math.max(0, -Math.log10(T_obs) + noise);
     const blankAbs  = BeerLambertEngine.computeBlankAbsorbance(solventKey, lambda);
@@ -118,13 +130,64 @@ export class BeerLambertEngine {
     };
   }
 
+  /**
+   * Savitzky-Golay Numerical Derivative Calculation (1st & 2nd Order).
+   * 1st derivative: eliminates constant baseline smudges.
+   * 2nd derivative: resolves overlapping bands with negative minimum at peak apex.
+   * @param {Array<{x: number, y: number}>} points - raw spectrum data
+   * @param {number} order - 1 for 1st derivative (dA/dλ), 2 for 2nd derivative (d²A/dλ²)
+   * @returns {Array<{x: number, y: number}>} derivative spectrum points
+   */
+  static computeDerivativeSpectrum(points = [], order = 1) {
+    if (!points || points.length < 5) return points;
+
+    const n = points.length;
+    const derivPoints = [];
+    const deltaLambda = points.length > 1 ? (points[1].x - points[0].x) : 1;
+
+    // 5-point quadratic Savitzky-Golay convolution kernels
+    const c1 = [-2, -1, 0, 1, 2]; // normalization factor 10 * deltaLambda
+    const norm1 = 10 * deltaLambda;
+
+    const c2 = [2, -1, -2, -1, 2]; // normalization factor 7 * (deltaLambda^2)
+    const norm2 = 7 * Math.pow(deltaLambda, 2);
+
+    for (let i = 0; i < n; i++) {
+      const lambda = points[i].x;
+
+      if (i < 2 || i >= n - 2) {
+        // Boundary handling: simple forward/backward finite differences
+        if (order === 1) {
+          const dy = i < n - 1 ? (points[i + 1].y - points[i].y) / deltaLambda : (points[i].y - points[i - 1].y) / deltaLambda;
+          derivPoints.push({ x: lambda, y: Math.round(dy * 100000) / 100000 });
+        } else {
+          derivPoints.push({ x: lambda, y: 0 });
+        }
+        continue;
+      }
+
+      if (order === 1) {
+        const sum = c1[0] * points[i - 2].y + c1[1] * points[i - 1].y + c1[2] * points[i].y + c1[3] * points[i + 1].y + c1[4] * points[i + 2].y;
+        const dy = sum / norm1;
+        derivPoints.push({ x: lambda, y: Math.round(dy * 100000) / 100000 });
+      } else if (order === 2) {
+        const sum = c2[0] * points[i - 2].y + c2[1] * points[i - 1].y + c2[2] * points[i].y + c2[3] * points[i + 1].y + c2[4] * points[i + 2].y;
+        const d2y = sum / norm2;
+        derivPoints.push({ x: lambda, y: Math.round(d2y * 100000) / 100000 });
+      } else {
+        derivPoints.push({ x: lambda, y: points[i].y });
+      }
+    }
+
+    return derivPoints;
+  }
+
   // ── Backward-compatible bulk API (calibration tab + static renders) ──────
 
   /**
-   * Full-spectrum sweep 200–800 nm (synchronous, used by calibration tab).
-   * Now uses multi-peak model internally.
+   * Full-spectrum sweep 200–800 nm (synchronous, used by calibration and assay tools).
    */
-  static calculateSpectrum(sampleKey, concentrationUgMl, pathLengthCm = 1.0, strayLight = 0.001, noiseMode = 'none', pH = 7.0) {
+  static calculateSpectrum(sampleKey, concentrationUgMl, pathLengthCm = 1.0, strayLight = 0.0005, noiseMode = 'none', pH = 7.0) {
     const compound = COMPOUND_DB[sampleKey] ?? COMPOUND_DB.paracetamol;
     const spectrumData = [];
     let maxAbs = 0, peakLambda = compound.peaks[0].lambdaMax;
@@ -141,35 +204,25 @@ export class BeerLambertEngine {
 
   /**
    * Linear regression (A = m·c + b) and R² for calibration curves.
-   * Unchanged from v1.
    */
-  static calculateLinearRegression(points = []) {
-    if (points.length < 2) {
-      return { slope: 0, intercept: 0, rSquared: 0, equationStr: 'A = 0.0000 · c + 0.0000' };
-    }
-    const n = points.length;
-    let sumC = 0, sumA = 0, sumCA = 0, sumC2 = 0;
-    points.forEach(p => { sumC += p.conc; sumA += p.abs; sumCA += p.conc * p.abs; sumC2 += p.conc * p.conc; });
-    const meanC = sumC / n, meanA = sumA / n;
-    const denom = (n * sumC2) - (sumC * sumC);
-    const slope = denom !== 0 ? ((n * sumCA) - (sumC * sumA)) / denom : 0;
-    const intercept = meanA - slope * meanC;
-
-    let numR = 0, denC = 0, denA = 0;
-    points.forEach(p => {
-      const dC = p.conc - meanC, dA = p.abs - meanA;
-      numR += dC * dA; denC += dC * dC; denA += dA * dA;
-    });
-    const rSquared = (denC * denA) !== 0 ? Math.pow(numR, 2) / (denC * denA) : 0;
+  static calculateLinearRegression(pts = []) {
+    if (pts.length < 2) return { slope: 0, intercept: 0, rSquared: 0, equationStr: 'A = 0.0000 · c + 0.0000' };
+    const n = pts.length, sX = pts.reduce((s, p) => s + p.conc, 0), sY = pts.reduce((s, p) => s + p.abs, 0);
+    const sXY = pts.reduce((s, p) => s + p.conc * p.abs, 0), sXX = pts.reduce((s, p) => s + p.conc ** 2, 0);
+    const slope = (n * sXY - sX * sY) / (n * sXX - sX ** 2 || 1);
+    const intercept = (sY - slope * sX) / n;
+    const meanY = sY / n, ssTot = pts.reduce((s, p) => s + (p.abs - meanY) ** 2, 0);
+    const ssRes = pts.reduce((s, p) => s + (p.abs - (slope * p.conc + intercept)) ** 2, 0);
+    const r2 = ssTot ? Math.max(0, 1 - ssRes / ssTot) : 0;
     const sign = intercept >= 0 ? '+' : '-';
     return {
       slope, intercept,
-      rSquared: Math.min(1.0, rSquared),
-      equationStr: `A = ${slope.toFixed(4)} · c ${sign} ${Math.abs(intercept).toFixed(4)}`,
+      rSquared: Math.min(1.0, r2),
+      equationStr: `A = ${slope.toFixed(4)} · c ${sign} ${Math.abs(intercept).toFixed(4)}`
     };
   }
 
-  /** Back-calculate concentration from absorbance via calibration line. Unchanged. */
+  /** Back-calculate concentration from absorbance via calibration line. */
   static estimateUnknownConcentration(abs, slope, intercept) {
     if (slope === 0) return 0;
     return Math.max(0, (abs - intercept) / slope);

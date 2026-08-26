@@ -1,65 +1,69 @@
 /**
  * gcEngine.js — Gas Chromatography Physical Engine
  *
- * Implements 6 sub-models: Column, Carrier Gas, Oven Program, Retention, Injection, FID Detector.
+ * Implements capillary column retention, carrier gas velocity, oven temperature ramp, and FID signal.
  */
 
-export class ColumnModel {
-  constructor(options = {}) {
-    this.length = options.length || 30; // meters
-    this.internalDiameter = options.internalDiameter || 0.25; // mm
-    this.filmThickness = options.filmThickness || 0.25; // micrometers
-    this.phase = options.phase || '5% Phenyl Polysiloxane (DB-5)';
-  }
-}
-
-export class CarrierGasModel {
-  constructor(gasType = 'Helium') {
-    this.gasType = gasType;
-    this.properties = {
-      Helium: { viscosity: 1.96e-5, uOpt: 35, pros: 'Optimal resolution & safety balance', cons: 'Non-renewable supply' },
-      Hydrogen: { viscosity: 0.89e-5, uOpt: 45, pros: 'Fastest analysis time & high efficiency', cons: 'Flammable gas hazard' },
-      Nitrogen: { viscosity: 1.78e-5, uOpt: 15, pros: 'Inexpensive & safe', cons: 'Narrow optimal velocity range' }
-    };
-  }
-
-  getOptimumVelocity() {
-    return (this.properties[this.gasType] || this.properties.Helium).uOpt;
-  }
-}
-
-export class OvenModel {
-  constructor(options = {}) {
-    this.initialTemp = options.initialTemp || 60; // °C
-    this.holdTime = options.holdTime || 1.0; // min
-    this.rampRate = options.rampRate || 10; // °C/min
-    this.finalTemp = options.finalTemp || 200; // °C
-  }
-
-  getTemperatureAtTime(t) {
-    if (t <= this.holdTime) return this.initialTemp;
-    const rampedTemp = this.initialTemp + (t - this.holdTime) * this.rampRate;
-    return Math.min(rampedTemp, this.finalTemp);
-  }
-}
+const CARRIER_GAS_PROPERTIES = {
+  Helium:   { uOpt: 35, pros: 'Optimal resolution & safety balance', cons: 'Non-renewable supply' },
+  Hydrogen: { uOpt: 45, pros: 'Fastest analysis time & high efficiency', cons: 'Flammable gas hazard' },
+  Nitrogen: { uOpt: 15, pros: 'Inexpensive & safe', cons: 'Narrow optimal velocity range' }
+};
 
 export class GcEngine {
   constructor() {
-    this.column = new ColumnModel();
-    this.carrierGas = new CarrierGasModel('Helium');
-    this.oven = new OvenModel();
+    this.carrierGas = {
+      gasType: 'Helium',
+      getOptimumVelocity() {
+        return (CARRIER_GAS_PROPERTIES[this.gasType] || CARRIER_GAS_PROPERTIES.Helium).uOpt;
+      }
+    };
+    this.oven = {
+      initialTemp: 60,
+      holdTime: 1.0,
+      rampRate: 10,
+      finalTemp: 200,
+      getTemperatureAtTime(t) {
+        if (t <= this.holdTime) return this.initialTemp;
+        const ramped = this.initialTemp + (t - this.holdTime) * this.rampRate;
+        return Math.min(ramped, this.finalTemp);
+      }
+    };
     this.splitRatio = 20; // 1:20 split
     this.injectionMode = 'split'; // 'split' | 'splitless'
   }
 
   /**
+   * Calculate Effective Carbon Number (ECN) for Flame Ionization Detector response
+   * @param {{formula: string, name: string, ecn?: number}} c
+   * @returns {number}
+   */
+  getEffectiveCarbonNumber(c) {
+    if (typeof c.ecn === 'number') return c.ecn;
+    const formula = c.formula || '';
+    const cMatch = formula.match(/C(\d*)/);
+    let cCount = 1;
+    if (cMatch) {
+      cCount = cMatch[1] ? parseInt(cMatch[1], 10) : 1;
+    }
+    // ECN reduction rules for oxygenated functional groups (Sternberg et al.)
+    let ecn = cCount;
+    if (formula.includes('OH')) {
+      ecn = Math.max(0.6, cCount - 0.5);
+    } else if (formula.includes('O')) {
+      ecn = Math.max(0.8, cCount - 1.0);
+    }
+    return Math.max(0.5, ecn);
+  }
+
+  /**
    * Pre-compute peak parameters at injection time.
    * Single source of truth for retention time, width, and peak height.
-   * @param {Array<{name: string, kovatsIndex: number}>} compounds
+   * @param {Array<{name: string, kovatsIndex: number, formula?: string}>} compounds
    * @returns {Array<{name, tR, sigma, height, area}>}
    */
   computePeaks(compounds = []) {
-    const velocityFactor = 35 / this.carrierGas.getOptimumVelocity(); // He=1.0, H2≈0.78, N2≈2.33
+    const velocityFactor = 35 / this.carrierGas.getOptimumVelocity();
     const tempFactor = Math.exp(-0.015 * (this.oven.initialTemp + this.oven.rampRate));
     
     return compounds.map(c => {
@@ -67,16 +71,19 @@ export class GcEngine {
       const tR     = Math.max(0.8, (kovats / 100) * 0.8 * velocityFactor * tempFactor);
       const sigma  = 0.08 + tR * 0.015;
       
-      // Peak height & area scaling
-      const height = this.injectionMode === 'split' 
-        ? (100 / Math.max(1, this.splitRatio)) * 50 
-        : 500.0;
+      // FID Ionization signal proportional to Effective Carbon Number (ECN)
+      const ecn = this.getEffectiveCarbonNumber(c);
+      const baseSens = this.injectionMode === 'split' 
+        ? (100 / Math.max(1, this.splitRatio)) * 18.0 
+        : 180.0;
+      const height = Math.max(10, baseSens * ecn);
       const area = Math.round(height * sigma * Math.sqrt(2 * Math.PI) * 10) / 10;
 
       return {
         name: c.name,
         formula: c.formula || '',
         kovatsIndex: kovats,
+        ecn: Math.round(ecn * 10) / 10,
         tR: Math.round(tR * 100) / 100,
         sigma: Math.round(sigma * 1000) / 1000,
         width: Math.round(sigma * 4 * 100) / 100, // Peak width W = 4*sigma
@@ -105,18 +112,5 @@ export class GcEngine {
       signal += p.height * Math.exp(-Math.pow(t - p.tR, 2) / (2 * Math.pow(p.sigma, 2)));
     }
     return signal;
-  }
-
-  calculateChromatogram(compounds = [], totalTime = 8.0) {
-    const points = [];
-    const dt = 0.02;
-    const peaks = this.computePeaks(compounds);
-
-    for (let t = 0; t <= totalTime; t += dt) {
-      const signal = this.getFidSignal(t, peaks);
-      points.push({ x: Number(t.toFixed(2)), y: Number(signal.toFixed(2)) });
-    }
-
-    return { maxTime: totalTime, points, peaks };
   }
 }

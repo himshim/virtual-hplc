@@ -25,6 +25,8 @@ export class ControlsView {
     this.sensitivityInput = document.getElementById("sensitivityInput");
     this.sensitivityVal   = document.getElementById("sensitivityVal");
     this.compoundSelect   = document.getElementById("compoundSelect");
+    this.runtimeSelect    = document.getElementById("runtimeSelect");
+    this.runtimeVal       = document.getElementById("runtimeVal");
     this.speedSelect      = document.getElementById("speedSelect");
     this.profileSelect    = document.getElementById("profileSelect");
     this.exerciseSelect   = document.getElementById("exerciseSelect");
@@ -37,9 +39,13 @@ export class ControlsView {
 
     this.bindEvents();
     this.bindSteppers();
-    // NOTE: educational info-icon tooltips are handled exclusively by
-    // UiCoordinator.bindWhyModal() → bottom sheet. Do NOT register onclick
-    // here to avoid double-handler bug (C1.1).
+    this.bindPresets();
+    
+    const initialMode = localStorage.getItem('val_expertise_mode') || 'beginner';
+    this.applyExpertiseMode(initialMode);
+    window.addEventListener('expertise-mode-changed', (e) => {
+      this.applyExpertiseMode(e.detail.mode);
+    });
   }
 
   bindEvents() {
@@ -106,6 +112,15 @@ export class ControlsView {
     if (this.compoundSelect) {
       this.compoundSelect.onchange = (e) => {
         this.controller.setSampleKey(e.target.value);
+        if (window._graphViewInstance) {
+          window._graphViewInstance.reset();
+        }
+        const ghost = document.getElementById('ghostOverlay');
+        if (ghost) ghost.classList.remove('hidden');
+        const diag = document.getElementById('diagText');
+        if (diag) {
+          diag.innerHTML = `Loaded <strong>${this.compoundSelect.options[this.compoundSelect.selectedIndex].text}</strong>. Tap <strong>▶ Start Separation</strong> to run this sample.`;
+        }
       };
     }
 
@@ -125,6 +140,40 @@ export class ControlsView {
       this.exerciseSelect.onchange = (e) => {
         this.controller.setExerciseProfile(e.target.value);
       };
+    }
+
+    if (this.runtimeSelect) {
+      this.runtimeSelect.onchange = (e) => {
+        const val = e.target.value;
+        if (this.runtimeVal) this.runtimeVal.textContent = `${parseFloat(val).toFixed(1)} min`;
+        this.controller.setRunTime(val);
+      };
+    }
+
+    // Sync initial DOM states to controller
+    if (this.compoundSelect && this.compoundSelect.value) {
+      this.controller.setSampleKey(this.compoundSelect.value);
+    }
+    if (this.runtimeSelect && this.runtimeSelect.value) {
+      this.controller.setRunTime(this.runtimeSelect.value);
+    }
+    if (this.flowInput && this.flowInput.value) {
+      this.controller.setFlowRate(this.flowInput.value);
+    }
+    if (this.organicInput && this.organicInput.value) {
+      this.controller.setOrganicPercent(this.organicInput.value);
+    }
+    if (this.tempInput && this.tempInput.value) {
+      this.controller.setTemperature(this.tempInput.value);
+    }
+    if (this.wavelengthInput && this.wavelengthInput.value) {
+      this.controller.setWavelength(this.wavelengthInput.value);
+    }
+    if (this.bufferSelect && this.bufferSelect.value) {
+      this.controller.setBufferKey(this.bufferSelect.value);
+    }
+    if (this.speedSelect && this.speedSelect.value) {
+      this.controller.setSpeed(Number(this.speedSelect.value));
     }
 
     // Action Dock Buttons
@@ -157,21 +206,10 @@ export class ControlsView {
     if (runExpBtn) {
       runExpBtn.onclick = () => {
         const state = this.controller.getState();
-        if (state === 'IDLE' || state === 'STOPPED' || state === 'COMPLETED' || state === 'OVERPRESSURE') {
-          this.controller.startPump();
-          const checkReady = setInterval(() => {
-            const currentState = this.controller.getState();
-            if (currentState === 'READY') {
-              clearInterval(checkReady);
-              this.controller.injectSample();
-            } else if (currentState === 'OVERPRESSURE' || currentState === 'STOPPED') {
-              clearInterval(checkReady);
-            }
-          }, 150);
-        } else if (state === 'READY') {
-          this.controller.injectSample();
-        } else {
+        if (state === 'RUNNING' || state === 'INJECTING') {
           this.controller.stopPump();
+        } else {
+          this.controller.run();
         }
       };
     }
@@ -325,6 +363,93 @@ export class ControlsView {
 
     if (this.stopBtn) {
       this.stopBtn.disabled = isOff;
+    }
+  }
+
+  bindPresets() {
+    const presetStandard = document.getElementById('presetStandard');
+    const presetFast = document.getElementById('presetFast');
+    const presetHighRes = document.getElementById('presetHighRes');
+
+    const updatePresetButtons = (activeBtn) => {
+      [presetStandard, presetFast, presetHighRes].forEach(btn => {
+        if (!btn) return;
+        const isActive = (btn === activeBtn);
+        btn.style.background = isActive ? '#0284c7' : 'rgba(255, 255, 255, 0.06)';
+        btn.style.color = isActive ? 'white' : '#cbd5e1';
+        btn.style.border = isActive ? 'none' : '1px solid var(--border-subtle)';
+      });
+    };
+
+    if (presetStandard) {
+      presetStandard.onclick = () => {
+        updatePresetButtons(presetStandard);
+        if (this.organicInput) {
+          this.organicInput.value = 40;
+          if (this.organicVal) this.organicVal.textContent = '40%';
+          this.controller.setOrganicPercent(40);
+        }
+        if (this.compoundSelect) {
+          this.compoundSelect.value = 'paracetamol';
+          this.controller.setCompound('paracetamol');
+        }
+        const diag = document.getElementById('diagText');
+        if (diag) diag.innerHTML = '<strong>Standard Pharmacopoeial Recipe (40% B)</strong>: Balanced reversed-phase conditions for separating Paracetamol (t_R ≈ 1.8 min) and Caffeine (t_R ≈ 3.2 min).';
+      };
+    }
+
+    if (presetFast) {
+      presetFast.onclick = () => {
+        updatePresetButtons(presetFast);
+        if (this.organicInput) {
+          this.organicInput.value = 70;
+          if (this.organicVal) this.organicVal.textContent = '70%';
+          this.controller.setOrganicPercent(70);
+        }
+        const diag = document.getElementById('diagText');
+        if (diag) diag.innerHTML = '<strong>Fast Screening Recipe (70% B)</strong>: High organic solvent strength accelerates analyte desorption, reducing run time but bringing peaks closer together.';
+      };
+    }
+
+    if (presetHighRes) {
+      presetHighRes.onclick = () => {
+        updatePresetButtons(presetHighRes);
+        if (this.organicInput) {
+          this.organicInput.value = 25;
+          if (this.organicVal) this.organicVal.textContent = '25%';
+          this.controller.setOrganicPercent(25);
+        }
+        const diag = document.getElementById('diagText');
+        if (diag) diag.innerHTML = '<strong>High-Resolution Recipe (25% B)</strong>: Lower organic strength maximizes stationary phase partitioning, creating wide baseline separation between peaks.';
+      };
+    }
+  }
+
+  applyExpertiseMode(mode) {
+    const rank = { beginner: 0, standard: 1, advanced: 2 }[mode] ?? 0;
+    document.querySelectorAll('[data-mode-min]').forEach(el => {
+      const minRank = { beginner: 0, standard: 1, advanced: 2 }[el.dataset.modeMin] ?? 0;
+      el.style.display = rank >= minRank ? '' : 'none';
+    });
+
+    const badge = document.getElementById('hplcModeBadge');
+    if (badge) {
+      if (mode === 'beginner') {
+        badge.innerHTML = '🟢 Beginner Mode';
+        badge.style.background = 'rgba(34, 197, 94, 0.15)';
+        badge.style.color = '#4ade80';
+        badge.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+      } else if (mode === 'standard') {
+        badge.innerHTML = '🟡 Standard Mode';
+        badge.style.background = 'rgba(234, 179, 8, 0.15)';
+        badge.style.color = '#fde047';
+        badge.style.borderColor = 'rgba(234, 179, 8, 0.3)';
+      } else {
+        badge.innerHTML = '🟣 Advanced Mode';
+        badge.style.background = 'rgba(168, 85, 247, 0.15)';
+        badge.style.color = '#c084fc';
+        badge.style.borderColor = 'rgba(168, 85, 247, 0.3)';
+      }
     }
   }
 }

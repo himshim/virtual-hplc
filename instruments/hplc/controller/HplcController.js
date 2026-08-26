@@ -65,6 +65,7 @@ export class HplcController extends SimulationController {
     this.methodHistory    = new MethodHistory();
     this.criteriaProfile  = 'USP';
     this.exerciseProfileId= 'QC_ASSAY';
+    this.configuredRunTime= 5.0;
     this.maxRunTimeMinutes= 5.0;
 
     this._primingTime      = 0;
@@ -90,17 +91,18 @@ export class HplcController extends SimulationController {
    * @returns {Object} TickResult containing telemetry, graph points, events
    */
   tick(ctx) {
-    const dt = ctx ? ctx.deltaTime : (this.clock ? this.clock.intervalMs / 1000 : 0.05);
-    const tickResult = this.onTick(dt);
+    this.onTick(ctx.deltaSimMin, ctx.totalSimMin);
     return {
       telemetry: {
-        pressure: this.simState.pressure,
-        flowRate: this.simState.flowRate,
+        pressureBar:    this.simState.pressure,
+        wavelengthNm:   this.simState.wavelengthNm,
+        flowRateMlMin:  this.simState.flowRate,
         organicPercent: this.simState.organicPercent,
-        uvAbsorbance: this.simState.detectorSignal,
-        runTime: this.simState.time
+        temperatureC:   this.simState.temperature,
+        timeMin:        this.simState.time
       },
-      graphPoints: tickResult?.point ? [tickResult.point] : []
+      graphPoints: this.chromatogram.getPoints().slice(-1),
+      events:      []
     };
   }
 
@@ -137,8 +139,8 @@ export class HplcController extends SimulationController {
       });
     }
 
-    // Beginner & Standard auto-sequence
-    if (this.stateMachine.state === 'IDLE' || this.stateMachine.state === 'BOOTING') {
+    // Beginner & Standard auto-sequence (Supports initial and repeated runs)
+    if (this.stateMachine.state === 'IDLE' || this.stateMachine.state === 'BOOTING' || this.stateMachine.state === 'COMPLETED' || this.stateMachine.state === 'STOPPED') {
       this.startPump();
       this.eventBus.once(HPLC_EVENTS.BASELINE_STABILIZED, () => {
         this.injectSample();
@@ -183,8 +185,26 @@ export class HplcController extends SimulationController {
     this.eventBus.emit(HPLC_EVENTS.EXERCISE_CHANGED, { exerciseProfileId: exerciseId });
   }
 
+  setRunTime(minutes) {
+    this.configuredRunTime = Math.max(1, Number(minutes));
+    this.maxRunTimeMinutes = this.configuredRunTime;
+    this.eventBus.emit(HPLC_EVENTS.RUNTIME_CHANGED, { runTimeMinutes: this.maxRunTimeMinutes });
+  }
+
   getSampleEntity() {
-    const mix = globalEntityRegistry.getMixture(this.simState.sampleKey);
+    const key = this.simState.sampleKey;
+    if (key === 'paracetamol' || key === 'paracetamol_caffeine') {
+      const mix = globalEntityRegistry.getMixture('paracetamol_caffeine');
+      if (mix) {
+        const resolvedComp = mix.components.map(c => ({
+          compound:      globalEntityRegistry.getCompound(c.compoundId),
+          concentration: c.concentration,
+          role:          c.role
+        })).filter(c => c.compound !== null);
+        return { ...mix, components: resolvedComp };
+      }
+    }
+    const mix = globalEntityRegistry.getMixture(key);
     if (mix) {
       const resolvedComp = mix.components.map(c => ({
         compound:      globalEntityRegistry.getCompound(c.compoundId),
@@ -193,7 +213,7 @@ export class HplcController extends SimulationController {
       })).filter(c => c.compound !== null);
       return { ...mix, components: resolvedComp };
     }
-    const singleComp = globalEntityRegistry.getCompound(this.simState.sampleKey);
+    const singleComp = globalEntityRegistry.getCompound(key);
     return singleComp
       ? { name: singleComp.name, components: [{ compound: singleComp, concentration: 1.0 }] }
       : null;
@@ -253,6 +273,29 @@ export class HplcController extends SimulationController {
     return false;
   }
 
+  /**
+   * 1-Click Automated Run Sequence:
+   * Handles Prime -> Equilibrate -> Baseline Stabilized -> Auto-Inject Sample
+   */
+  run() {
+    const currentState = this.getState();
+    if (currentState === 'READY') {
+      return this.injectSample();
+    }
+
+    const onStabilized = () => {
+      this.eventBus.off(HPLC_EVENTS.BASELINE_STABILIZED, onStabilized);
+      setTimeout(() => {
+        if (this.getState() === 'READY') {
+          this.injectSample();
+        }
+      }, 100);
+    };
+    this.eventBus.on(HPLC_EVENTS.BASELINE_STABILIZED, onStabilized);
+
+    return this.startPump();
+  }
+
   stopPump() {
     this.clock.stop();
     this.stateMachine.transitionTo('STOPPED');
@@ -286,7 +329,9 @@ export class HplcController extends SimulationController {
       }
     }
     this._expectedAnalytes.sort((a, b) => a.tR - b.tR);
-    this.maxRunTimeMinutes = Math.max(2.5, maxTR + 1.2);
+    const estimatedRequiredTime = Math.max(2.5, maxTR + 1.0);
+    this.maxRunTimeMinutes = Math.max(this.configuredRunTime || 5.0, estimatedRequiredTime);
+    this.eventBus.emit(HPLC_EVENTS.RUNTIME_CHANGED, { runTimeMinutes: this.maxRunTimeMinutes });
 
     setTimeout(() => {
       if (this.getState() !== 'INJECTING') return;
@@ -313,6 +358,8 @@ export class HplcController extends SimulationController {
     this._lastRunWasBlank  = true;
     this._expectedAnalytes = [];
     this._detectedLiveSet.clear();
+    this.maxRunTimeMinutes = this.configuredRunTime || 3.0;
+    this.eventBus.emit(HPLC_EVENTS.RUNTIME_CHANGED, { runTimeMinutes: this.maxRunTimeMinutes });
 
     if (!this.stateMachine.transitionTo('INJECTING')) return false;
 
@@ -566,8 +613,18 @@ export class HplcController extends SimulationController {
       const match = expectedAnalytes.find(a =>
         Math.abs(a.expectedTR - dp.tR) <= Math.max(0.15, 2.5 * a.sigma)
       );
-      return new Peak({ ...dp, compound: match ? match.compound.name : dp.compound });
+      const isSolventFront = Math.abs(dp.tR - t0) <= 0.08;
+      const compoundName = match
+        ? match.compound.name
+        : (isSolventFront ? 'Solvent Front (t₀)' : (dp.compound || 'Unidentified Peak'));
+      return new Peak({ ...dp, compound: compoundName, isSolventFront });
     });
+
+    // For analyte reporting and system suitability, exclude solvent front baseline artifact
+    const analytePeaks = peaks.filter(p => !p.isSolventFront);
+    if (analytePeaks.length > 0) {
+      peaks = analytePeaks;
+    }
 
     peaks.sort((a, b) => a.tR - b.tR);
     this._lastNonBlankPeaks = peaks;
@@ -620,7 +677,9 @@ export class HplcController extends SimulationController {
     this.methodHistory.addRun(runResult);
     const methodComparison= prevRun ? new MethodComparison(prevRun, runResult) : null;
 
+    this.clock.stop();
     this.stateMachine.transitionTo('COMPLETED');
+    this.eventBus.emit(HPLC_EVENTS.STATUS_CHANGED, { newState: 'COMPLETED' });
     this.eventBus.emit(HPLC_EVENTS.RUN_COMPLETED, {
       runResult,
       exerciseProfile,

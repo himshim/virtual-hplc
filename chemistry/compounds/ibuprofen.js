@@ -6,7 +6,7 @@ export const IBUPROFEN = new Compound({
   formula: "C13H18O2",
   mw: 206.28,
   properties: { logP: 3.50, solubility: "Low" },
-  chromatography: { kw: 900, S: 5.1, pKa: 4.4, ionType: "acid" },
+  chromatography: { kw: 16.0, S: 2.6, pKa: 4.4, ionType: "acid" },
   uv: {
     lambdaMax: [220, 264],
     spectralPeaks: [

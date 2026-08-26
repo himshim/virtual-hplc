@@ -2,56 +2,135 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Gas Chromatography (GC-FID) — Virtual Analytical Lab</title>
+  <title>GC-FID Gas Chromatograph Simulator - Virtual Analytical Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gas chromatography GC-FID simulator with capillary oven temperature ramp programming, carrier gas optimization, and flame ionization detector signal." />
+  <link rel="canonical" href="https://himshim.github.io/virtual-analytical-lab/instruments/gc/index.html" />
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Virtual Analytical Lab" />
+  <meta property="og:title" content="GC-FID Gas Chromatograph Simulator - Virtual Analytical Lab" />
+  <meta property="og:description" content="Simulate Gas Chromatography Flame Ionization Detection (GC-FID) with capillary column kinetics, Kovats retention indices, and temperature ramps." />
+  <meta property="og:url" content="https://himshim.github.io/virtual-analytical-lab/instruments/gc/index.html" />
+  <meta property="og:image" content="https://himshim.github.io/virtual-analytical-lab/assets/icon-512.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="GC-FID Gas Chromatograph Simulator - Virtual Analytical Lab" />
+  <meta name="twitter:description" content="Simulate Gas Chromatography Flame Ionization Detection (GC-FID) with capillary column kinetics, Kovats retention indices, and temperature ramps." />
+  <meta name="twitter:image" content="https://himshim.github.io/virtual-analytical-lab/assets/icon-512.png" />
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "GC-FID Gas Chromatograph Simulator",
+    "url": "https://himshim.github.io/virtual-analytical-lab/instruments/gc/index.html",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires HTML5/JavaScript",
+    "description": "Interactive Gas Chromatography Flame Ionization Detector simulation with van Deemter carrier gas linear velocity and isothermal/programmed oven ramps.",
+    "educationalUse": "Chemistry Education, Gas Chromatography, Kovats Retention Indices",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+
+  <link rel="icon" type="image/svg+xml" href="../../assets/val-logo-mark.svg" />
+  <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
   <link rel="stylesheet" href="../../css/global.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="../../ui/components/LabHeader.js"></script>
+  <script type="module" src="../../ui/components/LabTabs.js"></script>
+  <script type="module" src="../../ui/components/LabBottomSheet.js"></script>
+  <style>
+    :root {
+      --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+      --ease-tactile: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Range Slider Styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      transition: background 0.2s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #38bdf8;
+      border: 2px solid #ffffff;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: #0284c7;
+    }
+    input[type="range"]:focus {
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    /* Button Tactile Feedback */
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* Projection Mode High-Contrast Overrides for GC-FID */
+    body.projection-mode .instrument-card,
+    body.projection-mode .readiness-card {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+    }
+    body.projection-mode .cds-timeline-wrap,
+    body.projection-mode .cds-telemetry-strip {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.projection-mode .cds-telemetry-label {
+      color: #475569 !important;
+    }
+    body.projection-mode .cds-telemetry-val {
+      color: #020617 !important;
+    }
+    body.projection-mode select {
+      background: #ffffff !important;
+      color: #020617 !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.projection-mode #diagText {
+      color: #1e293b !important;
+    }
+    body.projection-mode table tr {
+      border-bottom-color: #e2e8f0 !important;
+    }
+  </style>
 </head>
 
 <body>
 
-<script>
-  if (window.location.protocol === 'file:') {
-    document.addEventListener('DOMContentLoaded', () => {
-      const banner = document.createElement('div');
-      banner.style.cssText = 'background:#ef4444; color:white; padding:12px; font-weight:700; text-align:center; font-family:sans-serif; z-index:9999; position:relative;';
-      banner.innerHTML = '⚠️ Browser CORS Warning: ES Modules cannot run directly over file:// protocol. Please open via local server: <a href="http://localhost:8000/instruments/gc/index.html" style="color:white; text-decoration:underline; font-weight:bold;">http://localhost:8000/instruments/gc/index.html</a>';
-      document.body.prepend(banner);
-    });
-  }
-</script>
-
 <!-- Header Bar -->
-<header class="app-header" role="banner">
-  <h1 class="app-title">
-    <a href="../../index.html" class="nav-home-link" aria-label="Virtual Analytical Lab Home">🏠 Home</a>
-    <span class="nav-separator">/</span>
-    <span class="instrument-title-name">Gas Chromatograph (GC-FID)</span>
-  </h1>
-  <div class="mode-selector" id="gcModeSelector" role="radiogroup" aria-label="Expertise Mode">
-    <button class="mode-btn active" id="modeBtnBeginner" data-mode="beginner" title="Isothermal separation & FID detector baseline">🟢 Beginner</button>
-    <button class="mode-btn" id="modeBtnStandard" data-mode="standard" title="Oven temperature programming, Kovats retention index & carrier flow">🟡 Standard</button>
-    <button class="mode-btn" id="modeBtnAdvanced" data-mode="advanced" title="Split vs Splitless injection ratio & van Deemter carrier gas velocity">🔴 Advanced</button>
-  </div>
-</header>
+<lab-header title="Gas Chromatograph (GC-FID)"></lab-header>
 
 <!-- Universal 3-Tab Navigation Bar -->
-<nav class="nav-tab-bar" id="platformNav" aria-label="Main Navigation" role="navigation">
-  <button class="nav-tab-item active" id="tabBtn-chrom" data-tab="tab-chrom-view" role="tab" aria-selected="true">
-    <span class="tab-icon" aria-hidden="true">📈</span>
-    <span>Chromatogram</span>
-  </button>
-  <button class="nav-tab-item" id="tabBtn-peaks" data-tab="tab-peaks-view" role="tab" aria-selected="false">
-    <span class="tab-icon" aria-hidden="true">📊</span>
-    <span>Peak Table & Quantitation</span>
-  </button>
-  <button class="nav-tab-item" id="tabBtn-learn" data-tab="tab-learn-view" role="tab" aria-selected="false">
-    <span class="tab-icon" aria-hidden="true">🎓</span>
-    <span>Learn</span>
-  </button>
-</nav>
+<lab-tabs tabs='[{"id":"tab-chrom-view","label":"📈 Chromatogram"},{"id":"tab-peaks-view","label":"📊 Peak Table & Quantitation"},{"id":"tab-learn-view","label":"🎓 Learn"}]'></lab-tabs>
 
 <main class="platform-container" id="main-content" role="main">
+  <h1 class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">GC-FID Gas Chromatograph Flame Ionization Detector Simulation</h1>
 
   <!-- Laboratory Workflow Hero Timeline -->
   <div class="cds-timeline-wrap" id="labWorkflowStepper" style="margin-bottom:12px;">
@@ -95,11 +174,29 @@
       <!-- Primary Graph Card -->
       <div>
         <div class="instrument-card" style="padding:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
             <h2 style="margin:0; font-size:1.05rem; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;">
               GC-FID Real-Time Chromatogram
             </h2>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <button id="btnToggleGcTheme" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#e2e8f0; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Toggle between Authentic Lab White and OLED Dark Theme">
+                🌙 Dark
+              </button>
+              <button id="btnExportGcPng" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#e2e8f0; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Export High-Resolution PNG Chromatogram">
+                📷 PNG
+              </button>
+              <button id="btnToggleGcLabels" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#fbbf24; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Toggle Peak Labels and Integration Tangents">
+                🏷️ Labels
+              </button>
+              <button id="toolFitAllGc" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#38bdf8; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Auto-Scale and Fit Entire Chromatogram">
+                Fit All
+              </button>
+              <button id="toolFitPeaksGc" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#38bdf8; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Zoom into Eluted Analyte Peaks">
+                Fit Peaks
+              </button>
+              <button id="toolResetGc" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#94a3b8; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Reset Zoom to Default">
+                Reset
+              </button>
               <span id="gcStatusBadge" class="status-badge">● IDLE</span>
               <span id="selectedPeakBadge" class="status-badge info" style="display:none;">Selected Peak: None</span>
             </div>
@@ -148,8 +245,8 @@
             <label style="display:block; font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:4px;">CARRIER GAS</label>
             <select id="gcCarrierSelect" style="width:100%; padding:8px; background:var(--bg-app); border:1px solid var(--border-subtle); color:var(--text-primary); border-radius:4px; font-family:'JetBrains Mono',monospace;">
               <option value="Helium">Helium (He, u_opt = 35 cm/s)</option>
-              <option value="Hydrogen">Hydrogen (H2, u_opt = 45 cm/s — Fast)</option>
-              <option value="Nitrogen">Nitrogen (N2, u_opt = 15 cm/s — Slow)</option>
+              <option value="Hydrogen">Hydrogen (H2, u_opt = 45 cm/s, Fast)</option>
+              <option value="Nitrogen">Nitrogen (N2, u_opt = 15 cm/s, Slow)</option>
             </select>
           </div>
 
@@ -159,7 +256,7 @@
               <label style="font-size:0.85rem; color:var(--text-primary); cursor:pointer;"><input type="radio" name="injMode" value="split" checked> Split</label>
               <label style="font-size:0.85rem; color:var(--text-primary); cursor:pointer;"><input type="radio" name="injMode" value="splitless"> Splitless</label>
             </div>
-            <div id="splitRatioWrap">
+            <div id="splitRatioWrap" style="transition: opacity 0.25s ease, transform 0.25s ease;">
               <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:2px;">
                 <span>Split Ratio:</span><span id="splitRatioDisp" style="color:var(--brand-primary); font-weight:700;">1:20</span>
               </div>
@@ -181,8 +278,9 @@
             <input type="range" id="rampRateSlider" min="0" max="30" value="10" step="2" style="width:100%;">
           </div>
 
-          <button id="btnStartRun" style="width:100%; min-height:46px; padding:12px; border-radius:6px; border:none; background:linear-gradient(135deg, #16a34a 0%, #15803d 100%); color:white; font-size:0.95rem; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(22,163,74,0.3);">
-            💉 Inject Sample &amp; Start GC Run
+          <button id="btnStartRun" style="width:100%; min-height:48px; padding:10px 14px 10px 20px; border-radius:9999px; border:1px solid rgba(255,255,255,0.2); background:linear-gradient(135deg, #16a34a 0%, #15803d 100%); color:white; font-size:0.95rem; font-weight:800; cursor:pointer; box-shadow:0 4px 16px rgba(22,163,74,0.35); display:flex; justify-content:space-between; align-items:center; transition:transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;">
+            <span>💉 Inject Sample &amp; Start GC Run</span>
+            <span style="width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:0.85rem;">⚡</span>
           </button>
 
           <!-- Playback Controls & Speed Multiplier -->
@@ -216,18 +314,18 @@
       <div style="overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse; font-family:'JetBrains Mono',monospace; font-size:0.85rem;">
           <thead>
-            <tr style="border-bottom:1px solid var(--border-subtle); color:var(--text-muted); text-align:left;">
-              <th style="padding:8px;">Peak #</th>
-              <th style="padding:8px;">Compound</th>
-              <th style="padding:8px;">t_R (min)</th>
-              <th style="padding:8px;">Height (pA)</th>
-              <th style="padding:8px;">Area (pA·s)</th>
-              <th style="padding:8px;">Width (min)</th>
-              <th style="padding:8px;">% Area</th>
-              <th style="padding:8px;">Status</th>
+            <tr style="border-bottom:1px solid var(--border-subtle); color:var(--text-muted);">
+              <th style="padding:8px; text-align:left;">Peak #</th>
+              <th style="padding:8px; text-align:left;">Compound</th>
+              <th style="padding:8px; text-align:right;">t<sub>R</sub> (min)</th>
+              <th style="padding:8px; text-align:right;">Height (pA)</th>
+              <th style="padding:8px; text-align:right;">Area (pA·s)</th>
+              <th style="padding:8px; text-align:right;">Width (min)</th>
+              <th style="padding:8px; text-align:right;">% Area</th>
+              <th style="padding:8px; text-align:center;">Status</th>
             </tr>
           </thead>
-          <tbody id="peakTableBody">
+          <tbody id="peakTableBody" class="tabular-nums">
             <!-- Dynamically populated -->
           </tbody>
         </table>
@@ -303,10 +401,21 @@
 
 </main>
 
+<!-- Mobile Sticky Action Dock -->
+<div id="mobileActionDock" class="mobile-action-dock">
+  <button id="mobileBtnStartRun" onclick="document.getElementById('btnStartRun')?.click()" style="flex:2; min-height:48px; border-radius:8px; border:none; background:linear-gradient(135deg, #16a34a 0%, #15803d 100%); color:white; font-weight:800; font-size:0.95rem; cursor:pointer;">
+    💉 Inject &amp; Start Run
+  </button>
+  <button id="mobileBtnReset" onclick="document.getElementById('gcResetBtn')?.click()" style="flex:1; min-height:48px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.06); color:var(--text-primary); font-weight:700; cursor:pointer;">
+    ↺ Reset
+  </button>
+</div>
+
 <script type="module">
   import { GcController } from './controller/GcController.js';
   import { SimulationRunner } from '../../platform/simulation/SimulationRunner.js';
   import { SimulationPlayback } from '../../platform/simulation/SimulationPlayback.js';
+  import { ScientificChart } from '../../ui/components/ScientificChart.js';
 
   const controller = new GcController();
   const runner     = new SimulationRunner({ instrument: controller });
@@ -325,45 +434,27 @@
       console.warn('[GC] Chart.js CDN not available; skipping chart instantiation.');
       return;
     }
-    const ctx = canvas.getContext('2d');
     if (chart) chart.destroy();
 
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'FID Signal (pA)',
-          data: [],
-          borderColor: '#38bdf8',
-          borderWidth: 2,
-          pointRadius: 0,
-          fill: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        scales: {
-          x: {
-            type: 'linear',
-            min: 0,
-            suggestedMax: 5.0,
-            title: { display: true, text: 'Retention Time (min)', color: '#64748b' },
-            ticks: { color: '#475569' },
-            grid: { color: 'rgba(255,255,255,0.04)' }
-          },
-          y: {
-            title: { display: true, text: 'FID Signal (pA)', color: '#64748b' },
-            min: 0,
-            ticks: { color: '#475569' },
-            grid: { color: 'rgba(255,255,255,0.04)' }
-          }
-        },
-        plugins: { legend: { display: false } }
-      }
+    chart = ScientificChart.create(canvas, {
+      instrumentType: 'gc',
+      xTitle: 'Retention Time (min)',
+      yTitle: 'FID Signal (pA)',
+      xMin: 0,
+      xMax: 5.0,
+      yMin: 0,
+      yMax: 120,
+      datasets: [{
+        label: 'FID Signal (pA)',
+        data: [],
+        borderColor: '#38bdf8',
+        borderWidth: 1.8,
+        pointRadius: 0,
+        fill: false,
+        tension: 0.1
+      }]
     });
+    window._gcChartInstance = chart;
   }
 
   initChart();
@@ -386,6 +477,53 @@
   document.getElementById('tabBtn-chrom').onclick = () => switchTab('chrom');
   document.getElementById('tabBtn-peaks').onclick = () => switchTab('peaks');
   document.getElementById('tabBtn-learn').onclick = () => switchTab('learn');
+
+  // Chart Toolbar Handlers
+  const btnToggleGcTheme = document.getElementById('btnToggleGcTheme');
+  if (btnToggleGcTheme) {
+    btnToggleGcTheme.onclick = () => {
+      if (!chart) return;
+      const next = chart.toggleTheme();
+      btnToggleGcTheme.innerHTML = next === 'light' ? '🌙 Dark' : '☀️ Lab White';
+    };
+  }
+  const btnExportGcPng = document.getElementById('btnExportGcPng');
+  if (btnExportGcPng) {
+    btnExportGcPng.onclick = () => {
+      if (!chart) return;
+      chart.exportImage('gc_chromatogram.png');
+    };
+  }
+
+  const btnToggleGcLabels = document.getElementById('btnToggleGcLabels');
+  if (btnToggleGcLabels) {
+    btnToggleGcLabels.onclick = () => {
+      if (!chart) return;
+      const show = chart.togglePeakCallouts ? chart.togglePeakCallouts() : true;
+      btnToggleGcLabels.innerHTML = show ? '🏷️ Labels' : '👁️ Raw Trace';
+    };
+  }
+
+  const toolFitAllGc = document.getElementById('toolFitAllGc');
+  if (toolFitAllGc) {
+    toolFitAllGc.onclick = () => {
+      if (chart && chart.fitAll) chart.fitAll();
+    };
+  }
+
+  const toolFitPeaksGc = document.getElementById('toolFitPeaksGc');
+  if (toolFitPeaksGc) {
+    toolFitPeaksGc.onclick = () => {
+      if (chart && chart.fitPeaks) chart.fitPeaks();
+    };
+  }
+
+  const toolResetGc = document.getElementById('toolResetGc');
+  if (toolResetGc) {
+    toolResetGc.onclick = () => {
+      if (chart && chart.resetZoom) chart.resetZoom();
+    };
+  }
 
   // Dynamic Stepper Controller
   function setWorkflowStep(stepNum, subtext = '') {
@@ -450,14 +588,14 @@
       const percentArea = ((p.area / totalArea) * 100).toFixed(1);
       return `
         <tr id="peakRow-${p.peakNum}" style="border-bottom:1px solid rgba(255,255,255,0.06); cursor:pointer;">
-          <td style="padding:8px; color:#38bdf8; font-weight:700;">#${p.peakNum}</td>
-          <td style="padding:8px; color:#f8fafc; font-weight:600;">${p.name}</td>
-          <td style="padding:8px; color:#34d399;">${p.retentionTime.toFixed(2)} min</td>
-          <td style="padding:8px; color:#f8fafc;">${p.height.toFixed(1)}</td>
-          <td style="padding:8px; color:#f8fafc;">${p.area.toFixed(1)}</td>
-          <td style="padding:8px; color:#94a3b8;">${p.width.toFixed(2)} min</td>
-          <td style="padding:8px; color:#f59e0b; font-weight:700;">${percentArea}%</td>
-          <td style="padding:8px;"><span class="status-badge success">Resolved</span></td>
+          <td style="padding:8px; text-align:left; color:#38bdf8; font-weight:700;">#${p.peakNum}</td>
+          <td style="padding:8px; text-align:left; color:#f8fafc; font-weight:600;">${p.name}</td>
+          <td style="padding:8px; text-align:right; color:#34d399;">${p.retentionTime.toFixed(2)} min</td>
+          <td style="padding:8px; text-align:right; color:#f8fafc;">${p.height.toFixed(1)}</td>
+          <td style="padding:8px; text-align:right; color:#f8fafc;">${p.area.toFixed(1)}</td>
+          <td style="padding:8px; text-align:right; color:#94a3b8;">${p.width.toFixed(2)} min</td>
+          <td style="padding:8px; text-align:right; color:#f59e0b; font-weight:700;">${percentArea}%</td>
+          <td style="padding:8px; text-align:center;"><span class="status-badge success">Resolved</span></td>
         </tr>
       `;
     }).join('');
@@ -536,9 +674,28 @@
 
     if (btnStartRun) {
       btnStartRun.disabled = false;
-      btnStartRun.textContent = '✓ Run Complete — View Peak Table';
+      btnStartRun.textContent = '✓ Run Complete: View Peak Table';
       btnStartRun.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
       btnStartRun.style.boxShadow = '0 4px 12px rgba(5,150,105,0.4)';
+    }
+
+    const meta = controller.getGraphMetadata();
+    if (meta && meta.peaks && chart && chart.setPeakCallouts) {
+      chart.setPeakCallouts(meta.peaks.map(p => ({
+        x: p.retentionTime,
+        y: p.height,
+        label: `${p.retentionTime.toFixed(2)} min`,
+        sublabel: p.name,
+        color: '#38bdf8'
+      })));
+      chart.setBaselineIntegrations(meta.peaks.map(p => ({
+        startX: p.retentionTime - p.width / 2,
+        endX: p.retentionTime + p.width / 2,
+        apexX: p.retentionTime,
+        apexY: p.height,
+        baselineY1: 0,
+        baselineY2: 0
+      })));
     }
 
     populatePeakTable();
@@ -609,17 +766,10 @@
     };
   }
 
-  // Mode Buttons
-  ['Beginner', 'Standard', 'Advanced'].forEach(m => {
-    const btn = document.getElementById(`modeBtn${m}`);
-    if (btn) {
-      btn.onclick = () => {
-        ['Beginner', 'Standard', 'Advanced'].forEach(b => {
-          const el = document.getElementById(`modeBtn${b}`);
-          if (el) el.classList.toggle('active', b === m);
-        });
-        controller.setExpertiseMode(m.toLowerCase());
-      };
+  // Mode Change Event Listener from LabHeader
+  window.addEventListener('expertise-mode-changed', (e) => {
+    if (controller && typeof controller.setExpertiseMode === 'function') {
+      controller.setExpertiseMode(e.detail.mode);
     }
   });
 

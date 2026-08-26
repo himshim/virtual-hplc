@@ -21,6 +21,19 @@ export class EventBus {
   }
 
   /**
+   * Subscribe to an event topic once.
+   * @param {string} event - Event name
+   * @param {Function} callback - Event listener callback
+   */
+  once(event, callback) {
+    const unsub = this.on(event, (data) => {
+      unsub();
+      callback(data);
+    });
+    return unsub;
+  }
+
+  /**
    * Unsubscribe a callback from an event topic.
    * @param {string} event - Event name
    * @param {Function} callback - Event listener callback

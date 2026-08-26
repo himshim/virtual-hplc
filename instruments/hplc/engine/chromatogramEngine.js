@@ -71,12 +71,12 @@ export function synthesizeInstantSignal(t, sampleEntity, { flowRate, organicPerc
     });
   }
 
-  // 4. Solvent Front / Void Volume Disturbance at t0 (Priority 6)
+  // 4. Solvent Front / Void Volume Disturbance at t0 (Subtle refractive index dip/ripple)
   let solventFrontDisturbance = 0;
   if (t0 > 0) {
     const dt = t - t0;
-    const sigma0 = 0.02; // Sharp solvent front peak
-    solventFrontDisturbance = 0.005 * Math.exp(-0.5 * Math.pow(dt / sigma0, 2));
+    const sigma0 = 0.02; // Sharp solvent front baseline disturbance
+    solventFrontDisturbance = 0.0004 * Math.exp(-0.5 * Math.pow(dt / sigma0, 2));
   }
 
   // 5. Baseline Noise Injection

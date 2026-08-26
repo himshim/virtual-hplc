@@ -3,250 +3,1167 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Virtual Analytical Lab — Classroom Educational Workstation</title>
-  <meta name="description" content="Interactive open-source analytical chemistry simulator for HPLC, UV-Vis, FTIR, and GC-FID in pharmacy and chemistry education.">
-  <link rel="manifest" href="/manifest.webmanifest">
+  <title>Virtual Analytical Lab - Educational Simulation Platform</title>
+  <meta name="description" content="Master analytical chemistry with free interactive HPLC, UV-Vis, FTIR, and GC-FID simulators featuring authentic physical kinetics, peak integration, and method development.">
+  <link rel="canonical" href="https://himshim.github.io/virtual-analytical-lab/index.html">
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Virtual Analytical Lab">
+  <meta property="og:title" content="Virtual Analytical Lab - Educational Simulation Platform">
+  <meta property="og:description" content="Master analytical chemistry with free interactive HPLC, UV-Vis, FTIR, and GC-FID simulators with authentic physical rigor.">
+  <meta property="og:url" content="https://himshim.github.io/virtual-analytical-lab/index.html">
+  <meta property="og:image" content="https://himshim.github.io/virtual-analytical-lab/assets/icon-512.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Virtual Analytical Lab - Educational Simulation Platform">
+  <meta name="twitter:description" content="Master analytical chemistry with free interactive HPLC, UV-Vis, FTIR, and GC-FID simulators with authentic physical rigor.">
+  <meta name="twitter:image" content="https://himshim.github.io/virtual-analytical-lab/assets/icon-512.png">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Virtual Analytical Lab",
+    "url": "https://himshim.github.io/virtual-analytical-lab/index.html",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires HTML5/JavaScript",
+    "description": "Interactive analytical chemistry simulation suite for HPLC, UV-Vis, FTIR, and GC-FID with authentic instrument physics.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "HPLC Reversed-Phase Chromatography Simulator",
+      "Double-Beam UV-Vis Spectrophotometer Simulator",
+      "FTIR Michelson Interferometer Simulator",
+      "GC-FID Capillary Gas Chromatograph Simulator"
+    ]
+  }
+  </script>
+
+  <link rel="icon" type="image/svg+xml" href="assets/val-logo-mark.svg">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/global.css">
   <style>
-    .hero-landing {
-      text-align: center;
-      padding: 48px 16px 32px;
-      max-width: 900px;
-      margin: 0 auto;
+    /* ==========================================================================
+       DESIGN SYSTEM TOKENS - HIGH-END VISUAL DESIGN (AWWWARDS-TIER)
+       ========================================================================== */
+    :root {
+      --bg-base: #050811;
+      --bg-surface: #0b1120;
+      --bg-surface-elevated: #111a2e;
+      --bg-card-inner: #080d19;
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --border-medium: rgba(255, 255, 255, 0.12);
+      --border-strong: rgba(255, 255, 255, 0.18);
+      --border-focus: #38bdf8;
+      
+      --accent: #0284c7;
+      --accent-light: #38bdf8;
+      --accent-glow: rgba(2, 132, 199, 0.28);
+      --accent-secondary: #10b981;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+
+      --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+      --ease-tactile: cubic-bezier(0.16, 1, 0.3, 1);
+      --duration-fast: 150ms;
+      --duration-normal: 250ms;
+      --duration-slow: 400ms;
     }
-    .hero-title {
-      font-size: 2.4rem;
-      font-weight: 800;
-      color: #f8fafc;
-      margin: 0 0 12px 0;
-      letter-spacing: -0.02em;
+
+    /* ==========================================================================
+       PROJECTION MODE - 20-FOOT CLASSROOM HIGH-CONTRAST INVERSION
+       ========================================================================== */
+    body.projection-mode {
+      --bg-base: #ffffff;
+      --bg-surface: #f8fafc;
+      --bg-surface-elevated: #f1f5f9;
+      --bg-card-inner: #ffffff;
+      --border-subtle: #cbd5e1;
+      --border-medium: #94a3b8;
+      --border-strong: #64748b;
+      --text-main: #020617;
+      --text-muted: #334155;
+      --text-dim: #475569;
+      --accent: #0284c7;
+      --accent-light: #0369a1;
+      --accent-glow: rgba(2, 132, 199, 0.18);
     }
-    .hero-subtitle {
-      font-size: 1.1rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin: 0 0 24px 0;
+    body.projection-mode .ambient-radial-glow {
+      display: none !important;
     }
-    .badge-bar {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 32px;
+    body.projection-mode .site-nav-pill {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
     }
-    .badge-item {
-      background: rgba(2, 132, 199, 0.15);
-      border: 1px solid rgba(2, 132, 199, 0.3);
-      color: #38bdf8;
-      padding: 6px 14px;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      font-family: var(--font-mono);
+    body.projection-mode .brand-name {
+      color: #020617 !important;
     }
-    .grid-workstations {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-      padding: 16px;
-      max-width: 1200px;
-      margin: 0 auto 48px;
+    body.projection-mode .bento-card {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
     }
-    .workstation-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 16px;
-      padding: 24px;
+    body.projection-mode .bento-card:hover {
+      border-color: #0284c7 !important;
+      box-shadow: 0 12px 28px rgba(2, 132, 199, 0.15) !important;
+    }
+    body.projection-mode .bento-card-inner {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: none !important;
+    }
+    body.projection-mode .card-instrument-title,
+    body.projection-mode .section-title,
+    body.projection-mode .hero-headline,
+    body.projection-mode .docs-text h3,
+    body.projection-mode .teaser-title {
+      color: #020617 !important;
+    }
+    body.projection-mode .hero-subtext,
+    body.projection-mode .card-description,
+    body.projection-mode .docs-text p {
+      color: #334155 !important;
+    }
+    body.projection-mode .hero-eyebrow {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #0369a1 !important;
+    }
+    body.projection-mode .hero-proof-badge {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #1e293b !important;
+    }
+    body.projection-mode .card-spec-row {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+      color: #1e293b !important;
+    }
+    body.projection-mode .tag-item {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #334155 !important;
+    }
+    body.projection-mode .btn-nested-action {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #020617 !important;
+    }
+    body.projection-mode .bento-card:hover .btn-nested-action {
+      background: #0284c7 !important;
+      border-color: #0284c7 !important;
+      color: #ffffff !important;
+    }
+    body.projection-mode .btn-nested-icon {
+      background: rgba(0, 0, 0, 0.08) !important;
+      color: inherit !important;
+    }
+    body.projection-mode .bento-card:hover .btn-nested-icon {
+      background: rgba(255, 255, 255, 0.25) !important;
+      color: #ffffff !important;
+    }
+    body.projection-mode .teaser-card {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.projection-mode .teaser-box {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.projection-mode .teaser-name {
+      color: #020617 !important;
+    }
+    body.projection-mode .teaser-desc {
+      color: #475569 !important;
+    }
+    body.projection-mode .docs-section {
+      background: #f8fafc !important;
+      border-top-color: #cbd5e1 !important;
+      border-bottom-color: #cbd5e1 !important;
+    }
+    body.projection-mode .btn-secondary {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    body.projection-mode .btn-secondary:hover {
+      border-color: #0284c7 !important;
+      color: #0284c7 !important;
+    }
+    body.projection-mode .site-footer {
+      color: #64748b !important;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* ==========================================================================
+       BASE LAYOUT & SCENERY
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 20px;
+      background: var(--accent);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 0.85rem;
+      z-index: 9999;
+      text-decoration: none;
+      transition: top 0.2s ease;
+    }
+    .skip-link:focus {
+      top: 16px;
+    }
+
+    /* Subtle ambient radial mesh background glow */
+    .ambient-radial-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .glow-orb-primary {
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 450px;
+      background: radial-gradient(ellipse at center, rgba(2, 132, 199, 0.15) 0%, rgba(5, 8, 17, 0) 70%);
+      filter: blur(40px);
+    }
+    .glow-orb-secondary {
+      position: absolute;
+      top: 600px;
+      right: -100px;
+      width: 500px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(5, 8, 17, 0) 65%);
+      filter: blur(50px);
+    }
+
+    /* ==========================================================================
+       FLOATING ISLAND NAVIGATION
+       ========================================================================== */
+    .site-nav-wrap {
+      width: 100%;
+      max-width: 1140px;
+      margin: 18px auto 0;
+      padding: 0 16px;
+      position: relative;
+      z-index: 100;
+    }
+    .site-nav-pill {
+      background: rgba(11, 17, 32, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      height: 58px;
+      padding: 0 16px 0 12px;
+      display: flex;
       justify-content: space-between;
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      align-items: center;
+      box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.35);
+      transition: border-color var(--duration-normal) ease, box-shadow var(--duration-normal) ease;
+    }
+    .site-nav-pill:hover {
+      border-color: var(--border-medium);
+    }
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       text-decoration: none;
       color: inherit;
     }
-    .workstation-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--brand-primary);
-      box-shadow: 0 12px 24px -6px rgba(2, 132, 199, 0.25);
-    }
-    .card-icon {
-      font-size: 2rem;
-      margin-bottom: 12px;
-    }
-    .card-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #f8fafc;
-      margin: 0 0 8px 0;
-    }
-    .card-desc {
-      font-size: 0.88rem;
-      color: var(--text-secondary);
-      line-height: 1.5;
-      margin-bottom: 16px;
-      flex-grow: 1;
-    }
-    .card-tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .tag {
-      background: #0f172a;
-      border: 1px solid var(--border-subtle);
-      color: #94a3b8;
-      font-size: 0.72rem;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-family: var(--font-mono);
-    }
-    .card-btn {
-      background: var(--brand-primary);
-      color: white;
-      text-align: center;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      min-height: 44px;
+    .brand-glyph {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 0.85rem;
+      font-family: 'JetBrains Mono', monospace;
+      box-shadow: 0 2px 10px var(--accent-glow);
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
-    .faculty-section {
-      background: #1e293b;
+    .brand-text-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-name {
+      font-size: 0.96rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+    .brand-subtitle {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.04em;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ==========================================================================
+       HERO SECTION & SPATIAL RHYTHM
+       ========================================================================== */
+    .hero-wrap {
+      max-width: 1140px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 60px 20px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      background: rgba(2, 132, 199, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      margin-bottom: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      box-shadow: 0 2px 12px rgba(2, 132, 199, 0.15);
+    }
+    .hero-eyebrow-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      box-shadow: 0 0 8px var(--accent-light);
+      animation: pulseDot 2.4s infinite ease-in-out;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 0.5; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    .hero-headline {
+      font-size: clamp(2.4rem, 5.5vw, 3.85rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      color: var(--text-main);
+      margin-bottom: 18px;
+      max-width: 24ch;
+      text-wrap: balance;
+    }
+    .hero-subtext {
+      font-size: clamp(0.98rem, 2vw, 1.12rem);
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 28px;
+      max-width: 54ch;
+      text-wrap: balance;
+    }
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    
+    /* Interactive proof badges */
+    .hero-proof-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      max-width: 800px;
+    }
+    .hero-proof-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(11, 17, 32, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 4px 12px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+    .hero-proof-badge span.icon {
+      color: var(--accent-light);
+    }
+
+    /* ==========================================================================
+       BUTTON ARCHITECTURE
+       ========================================================================== */
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      font-size: 0.92rem;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform var(--duration-fast) var(--ease-tactile), box-shadow var(--duration-fast) ease;
+      cursor: pointer;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+    .btn-primary:active,
+    .btn-secondary:active,
+    .bento-card:active {
+      transform: scale(0.98);
+    }
+    .btn-secondary {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+      font-size: 0.84rem;
+      text-decoration: none;
+      border: 1px solid var(--border-subtle);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: border-color var(--duration-fast) ease, transform var(--duration-fast) var(--ease-tactile);
+      cursor: pointer;
+    }
+    .btn-secondary:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+    .btn-secondary.active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent-light);
+    }
+
+    @media (max-width: 540px) {
+      .site-nav-pill {
+        height: auto;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .brand-subtitle {
+        display: none;
+      }
+      .hero-wrap {
+        padding: 36px 16px 24px;
+      }
+      .hero-ctas {
+        flex-direction: column;
+        width: 100%;
+      }
+      .hero-ctas .btn-primary,
+      .hero-ctas .btn-secondary {
+        width: 100%;
+      }
+    }
+
+    /* ==========================================================================
+       DOUBLE-BEZEL CONCENTRIC BENTO WORKSTATIONS
+       ========================================================================== */
+    .workstations-section {
+      max-width: 1140px;
+      margin: 0 auto 50px;
+      padding: 0 16px;
+      width: 100%;
+      position: relative;
+      z-index: 10;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+    .section-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+    @media (max-width: 768px) {
+      .bento-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Concentric Double-Bezel Card */
+    .bento-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 6px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) ease, box-shadow var(--duration-normal) ease;
+      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.35);
+      position: relative;
+      cursor: pointer;
+    }
+    .bento-card-inner {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: calc(var(--radius-xl) - 6px);
+      padding: 24px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .bento-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 0 16px 36px -8px var(--accent-glow);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .card-instrument-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.015em;
+    }
+    .card-status-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      color: #34d399;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .card-description {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    /* Specification Grid */
+    .card-spec-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-bottom: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #cbd5e1;
+    }
+    @media (max-width: 480px) {
+      .card-spec-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .card-spec-row {
+      background: rgba(15, 23, 42, 0.65);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-spec-row::before {
+      content: "•";
+      color: var(--accent-light);
+      font-weight: bold;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 22px;
+    }
+    .tag-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background: var(--bg-surface-elevated);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* Button-in-Button Nested CTA Architecture */
+    .btn-nested-action {
+      background: rgba(17, 26, 46, 0.85);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 8px 10px 8px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--text-main);
+      transition: background var(--duration-normal) ease, color var(--duration-normal) ease, border-color var(--duration-normal) ease;
+    }
+    .btn-nested-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      transition: transform var(--duration-normal) var(--ease-spring), background-color var(--duration-normal) ease, color var(--duration-normal) ease;
+    }
+    .bento-card:hover .btn-nested-action {
+      background: var(--accent);
+      border-color: var(--accent-light);
+      color: #ffffff;
+    }
+    .bento-card:hover .btn-nested-icon {
+      transform: translate(2px, -2px) scale(1.05);
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       COMING SOON EXPANSION TEASER
+       ========================================================================== */
+    .teaser-card {
+      margin-top: 20px;
+      background: rgba(11, 17, 32, 0.45);
+      border: 1px dashed var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+    }
+    .teaser-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .teaser-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .teaser-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fbbf24;
+    }
+    .teaser-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+    .teaser-box {
+      background: rgba(8, 13, 25, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      transition: border-color var(--duration-fast) ease, transform var(--duration-fast) var(--ease-tactile);
+    }
+    .teaser-box:hover {
+      border-color: var(--border-medium);
+      transform: translateY(-2px);
+    }
+    .teaser-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 4px;
+    }
+    .teaser-desc {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       FACULTY & CLASSROOM RESOURCES
+       ========================================================================== */
+    .docs-section {
+      background: var(--bg-surface);
       border-top: 1px solid var(--border-subtle);
       border-bottom: 1px solid var(--border-subtle);
-      padding: 36px 16px;
-      text-align: center;
+      padding: 40px 20px;
+      margin-top: 20px;
+      position: relative;
+      z-index: 10;
+    }
+    .docs-container {
+      max-width: 1140px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .docs-text h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      letter-spacing: -0.015em;
+    }
+    .docs-text p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      max-width: 52ch;
+      line-height: 1.5;
+    }
+    .docs-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* ==========================================================================
+       FOOTER
+       ========================================================================== */
+    .site-footer {
+      max-width: 1140px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 32px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      position: relative;
+      z-index: 10;
+    }
+    .site-footer a {
+      color: var(--accent-light);
+      text-decoration: none;
+    }
+    .site-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Staggered Scroll Animation Elements */
+    .reveal-on-scroll {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s var(--ease-spring), transform 0.7s var(--ease-spring);
+    }
+    .reveal-on-scroll.revealed {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
 <body>
 
-  <!-- HERO SECTION -->
-  <header class="hero-landing">
-    <div class="badge-bar">
-      <span class="badge-item">⚡ LabPlugin SDK v1.0.0</span>
-      <span class="badge-item">📱 PWA Offline Ready</span>
-      <span class="badge-item">🏛️ WCAG 2.2 AA Compliant</span>
-    </div>
-    <h1 class="hero-title">🧪 Virtual Analytical Lab</h1>
-    <p class="hero-subtitle">
-      Interactive, open-source analytical chemistry simulator for B.Pharm and M.Pharm education.<br>
-      Explore physical retention models, Beer-Lambert regression, FTIR spectra, and gas chromatography.
-    </p>
+  <!-- Skip link for accessibility -->
+  <a class="skip-link" href="#workstations">Skip to content</a>
 
-    <!-- CLASSROOM & FACULTY CONTROLS -->
-    <div style="display:flex; justify-content:center; gap:12px; margin-top:16px;">
-      <button id="toggleProjectionBtn" style="padding:10px 18px; min-height:44px; background:#334155; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">
-        📺 Toggle Projection Mode
-      </button>
-      <a href="docs/STUDENT_GUIDE.md" style="padding:10px 18px; min-height:44px; background:rgba(2,132,199,0.2); color:#38bdf8; border:1px solid rgba(2,132,199,0.4); border-radius:8px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center;">
-        📖 Student Practical Guide
+  <!-- Ambient background glow mesh -->
+  <div class="ambient-radial-glow" aria-hidden="true">
+    <div class="glow-orb-primary"></div>
+    <div class="glow-orb-secondary"></div>
+  </div>
+
+  <!-- FLOATING ISLAND NAVIGATION -->
+  <header class="site-nav-wrap">
+    <nav class="site-nav-pill" aria-label="Main Navigation">
+      <a class="brand-mark" href="index.html">
+        <div class="brand-glyph" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 4L28 26H4L16 4Z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(2, 132, 199, 0.25)"/>
+            <path d="M16 12L24 26" stroke="#34d399" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M16 12L28 22" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M10 26L14 18L18 26" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="16" cy="12" r="2" fill="#ffffff"/>
+          </svg>
+        </div>
+        <div class="brand-text-group">
+          <div class="brand-name">Virtual Analytical Lab</div>
+          <div class="brand-subtitle">PHYSICAL SIMULATION SUITE</div>
+        </div>
       </a>
-    </div>
+      <div class="nav-actions">
+        <button id="toggleProjectionBtn" class="btn-secondary" aria-label="Toggle 20-foot classroom projection mode">
+          📺 Projection Mode
+        </button>
+        <a href="docs/STUDENT_GUIDE.md" class="btn-secondary">
+          Documentation
+        </a>
+      </div>
+    </nav>
   </header>
 
-  <!-- WORKSTATIONS GRID -->
-  <main class="grid-workstations">
+  <!-- HERO SECTION -->
+  <section class="hero-wrap">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-dot"></span>
+      Analytical Chemistry Simulation Suite
+    </div>
 
-    <!-- HPLC WORKSTATION -->
-    <a class="workstation-card" href="instruments/hplc/index.html">
+    <h1 class="hero-headline">
+      Master analytical chemistry through real-time physics
+    </h1>
+
+    <p class="hero-subtext">
+      Zero-install, browser-native instrument simulators with authentic chromatographic fluid dynamics, optical benches, and Fourier transform mathematical models.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="#workstations" class="btn-primary">
+        Launch Workstations ↓
+      </a>
+      <a href="docs/STUDENT_GUIDE.md" class="btn-secondary">
+        Student Manual
+      </a>
+      <a href="docs/INSTRUCTOR_GUIDE.md" class="btn-secondary">
+        Faculty Guide
+      </a>
+    </div>
+
+    <div class="hero-proof-strip">
+      <div class="hero-proof-badge"><span class="icon">⚡</span> Real-Time Physics Engine</div>
+      <div class="hero-proof-badge"><span class="icon">🔬</span> 4 Analytical Workstations</div>
+      <div class="hero-proof-badge"><span class="icon">🌐</span> 100% Client-Side WebGL/Canvas</div>
+      <div class="hero-proof-badge"><span class="icon">🎓</span> USP &amp; BP Validated Assays</div>
+    </div>
+  </section>
+
+  <!-- BENTO WORKSTATION SECTION -->
+  <main class="workstations-section" id="workstations">
+    <div class="section-header">
       <div>
-        <div class="card-icon">🧪</div>
-        <h2 class="card-title">HPLC Simulator</h2>
-        <p class="card-desc">Reversed-phase HPLC with $C_{18}$ column, Van Deemter kinetics, EMG tailing, and real-time chromatogram acquisition.</p>
-        <div class="card-tags">
-          <span class="tag">USP &lt;621&gt;</span>
-          <span class="tag">Isocratic & Gradient</span>
-          <span class="tag">Van Deemter</span>
+        <h2 class="section-title">Core instrument workstations</h2>
+      </div>
+      <div class="section-subtitle">PLATFORM V1.0 • 4 ACTIVE WORKSTATIONS</div>
+    </div>
+
+    <div class="bento-grid">
+
+      <!-- 1. HPLC CHROMATOGRAPH -->
+      <a class="workstation-card bento-card reveal-on-scroll" href="instruments/hplc/index.html" aria-label="Launch HPLC Workstation">
+        <div class="bento-card-inner">
+          <div>
+            <div class="card-head">
+              <h3 class="card-instrument-title">HPLC Chromatograph</h3>
+              <span class="card-status-badge">● READY</span>
+            </div>
+            <p class="card-description">
+              Reversed-phase isocratic and gradient separation on C18 stationary phase with Darcy-Poiseuille backpressure kinetics and Van Deemter plate height equations.
+            </p>
+            <div class="card-spec-grid tabular-nums">
+              <div class="card-spec-row">USP &lt;621&gt; Suitability (N, Rs, T)</div>
+              <div class="card-spec-row">Runtime (3, 5, 7, 10, 15 min)</div>
+              <div class="card-spec-row">Flow Rate: 0.1-5.0 mL/min</div>
+              <div class="card-spec-row">Dark Theme &amp; Lab Paper</div>
+            </div>
+            <div class="card-tags">
+              <span class="tag-item">C18 Column</span>
+              <span class="tag-item">Quaternary Pump</span>
+              <span class="tag-item">UV Detection</span>
+            </div>
+          </div>
+          <div class="btn-nested-action">
+            <span>Launch HPLC Workstation</span>
+            <div class="btn-nested-icon">↗</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- 2. UV-VIS SPECTROPHOTOMETER -->
+      <a class="workstation-card bento-card reveal-on-scroll" href="instruments/uvvis/index.html" aria-label="Launch UV-Vis Spectrophotometer">
+        <div class="bento-card-inner">
+          <div>
+            <div class="card-head">
+              <h3 class="card-instrument-title">UV-Vis Spectrophotometer</h3>
+              <span class="card-status-badge">● READY</span>
+            </div>
+            <p class="card-description">
+              Dual-beam Czerny-Turner monochromator sweep (190-900 nm) with Beer-Lambert linear regression, Henderson-Hasselbalch ionization, and derivative spectroscopy.
+            </p>
+            <div class="card-spec-grid tabular-nums">
+              <div class="card-spec-row">Linear Fit (R&sup2; &ge; 0.999)</div>
+              <div class="card-spec-row">Derivatives (dA/d&lambda;, d&sup2;A/d&lambda;&sup2;)</div>
+              <div class="card-spec-row">Optical Bench Ray-Tracing</div>
+              <div class="card-spec-row">High-Res PNG Export</div>
+            </div>
+            <div class="card-tags">
+              <span class="tag-item">USP &lt;857&gt;</span>
+              <span class="tag-item">Beer-Lambert</span>
+              <span class="tag-item">Gaussian Deconvolution</span>
+            </div>
+          </div>
+          <div class="btn-nested-action">
+            <span>Launch UV-Vis Workstation</span>
+            <div class="btn-nested-icon">↗</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- 3. FTIR SPECTROMETER -->
+      <a class="workstation-card bento-card reveal-on-scroll" href="instruments/ftir/index.html" aria-label="Launch FTIR Spectrometer">
+        <div class="bento-card-inner">
+          <div>
+            <div class="card-head">
+              <h3 class="card-instrument-title">FTIR Spectrometer</h3>
+              <span class="card-status-badge">● READY</span>
+            </div>
+            <p class="card-description">
+              ATR-FTIR vibrational spectroscopy (4000 to 400 cm&sup1;) simulating Michelson interferogram centerburst and Cooley-Tukey FFT transmittance spectra.
+            </p>
+            <div class="card-spec-grid tabular-nums">
+              <div class="card-spec-row">Moving Mirror OPD I(&delta;)</div>
+              <div class="card-spec-row">Cooley-Tukey FFT &rarr; %T(&nu;)</div>
+              <div class="card-spec-row">Inverted Axis (4000-400 cm&sup1;)</div>
+              <div class="card-spec-row">Functional Group ID</div>
+            </div>
+            <div class="card-tags">
+              <span class="tag-item">ATR Diamond</span>
+              <span class="tag-item">KBr Pellet</span>
+              <span class="tag-item">Fingerprint Region</span>
+            </div>
+          </div>
+          <div class="btn-nested-action">
+            <span>Launch FTIR Workstation</span>
+            <div class="btn-nested-icon">↗</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- 4. GAS CHROMATOGRAPH (GC-FID) -->
+      <a class="workstation-card bento-card reveal-on-scroll" href="instruments/gc/index.html" aria-label="Launch Gas Chromatograph">
+        <div class="bento-card-inner">
+          <div>
+            <div class="card-head">
+              <h3 class="card-instrument-title">Gas Chromatograph (GC-FID)</h3>
+              <span class="card-status-badge">● READY</span>
+            </div>
+            <p class="card-description">
+              Capillary column chromatography with carrier gas linear velocity dynamics, oven thermal programming ramps, and Flame Ionization Detection.
+            </p>
+            <div class="card-spec-grid tabular-nums">
+              <div class="card-spec-row">Kovats Retention Index</div>
+              <div class="card-spec-row">Carrier Gas (H2, He, N2)</div>
+              <div class="card-spec-row">Split / Splitless Transfer</div>
+              <div class="card-spec-row">FID Current Readout (pA)</div>
+            </div>
+            <div class="card-tags">
+              <span class="tag-item">USP &lt;467&gt;</span>
+              <span class="tag-item">Capillary Column</span>
+              <span class="tag-item">FID Detector</span>
+            </div>
+          </div>
+          <div class="btn-nested-action">
+            <span>Launch GC Workstation</span>
+            <div class="btn-nested-icon">↗</div>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- COMING SOON EXPANSION ROW -->
+    <div class="teaser-card reveal-on-scroll">
+      <div class="teaser-head">
+        <h3 class="teaser-title">More Instruments Coming Soon</h3>
+        <span class="teaser-pill">IN ACTIVE DEVELOPMENT</span>
+      </div>
+      <div class="teaser-grid">
+        <div class="teaser-box">
+          <div class="teaser-name">LC-MS / Mass Spec</div>
+          <div class="teaser-desc">ESI ionization and quadrupole m/z mass spectra simulation.</div>
+        </div>
+        <div class="teaser-box">
+          <div class="teaser-name">NMR Spectrometer</div>
+          <div class="teaser-desc">&sup1;H and &sup1;&sup3;C chemical shifts and coupling multiplets.</div>
+        </div>
+        <div class="teaser-box">
+          <div class="teaser-name">Tablet Dissolution</div>
+          <div class="teaser-desc">USP &lt;711&gt; basket and paddle dissolution profiles.</div>
+        </div>
+        <div class="teaser-box">
+          <div class="teaser-name">Flame Photometry</div>
+          <div class="teaser-desc">Atomic emission line spectra for Sodium and Potassium.</div>
         </div>
       </div>
-      <div class="card-btn">Launch HPLC Workstation →</div>
-    </a>
-
-    <!-- UV-VIS WORKSTATION -->
-    <a class="workstation-card" href="instruments/uvvis/index.html">
-      <div>
-        <div class="card-icon">🔬</div>
-        <h2 class="card-title">UV-Vis Spectrophotometer</h2>
-        <p class="card-desc">Beer-Lambert law linear regression ($A = \varepsilon c l$), 200–800 nm spectrum scanning, and ChEMBL structure visualization.</p>
-        <div class="card-tags">
-          <span class="tag">USP &lt;857&gt;</span>
-          <span class="tag">Calibration Curve</span>
-          <span class="tag">ChEMBL 2D</span>
-        </div>
-      </div>
-      <div class="card-btn">Launch UV-Vis Workstation →</div>
-    </a>
-
-    <!-- FTIR WORKSTATION -->
-    <a class="workstation-card" href="instruments/ftir/index.html">
-      <div>
-        <div class="card-icon">📡</div>
-        <h2 class="card-title">FTIR Spectrometer</h2>
-        <p class="card-desc">ATR-FTIR spectroscopy ($4000 \to 400\text{ cm}^{-1}$), functional group band callouts, and fingerprint region analysis.</p>
-        <div class="card-tags">
-          <span class="tag">ATR Sampling</span>
-          <span class="tag">Functional Groups</span>
-          <span class="tag">Transmittance</span>
-        </div>
-      </div>
-      <div class="card-btn">Launch FTIR Workstation →</div>
-    </a>
-
-    <!-- GC WORKSTATION -->
-    <a class="workstation-card" href="instruments/gc/index.html">
-      <div>
-        <div class="card-icon">🔥</div>
-        <h2 class="card-title">Gas Chromatograph (GC-FID)</h2>
-        <p class="card-desc">Capillary gas chromatography with Kovats retention indices, thermal programming ramp rate, and flame ionization detector ($pA$).</p>
-        <div class="card-tags">
-          <span class="tag">USP &lt;467&gt;</span>
-          <span class="tag">Kovats Index</span>
-          <span class="tag">Split Injection</span>
-        </div>
-      </div>
-      <div class="card-btn">Launch GC Workstation →</div>
-    </a>
-
+    </div>
   </main>
 
-  <!-- FACULTY & CLASSROOM SECTION -->
-  <section class="faculty-section">
-    <div style="max-width:800px; margin:0 auto;">
-      <h3 style="margin:0 0 8px 0; color:#f8fafc; font-size:1.3rem;">👨‍🏫 Faculty & Classroom Deployment</h3>
-      <p style="color:var(--text-secondary); font-size:0.95rem; margin-bottom:20px;">
-        Designed for pharmacy college laboratories. Supports offline PWA installation, 20-foot classroom projection mode, and student lab report CSV exports.
-      </p>
-      <div style="display:flex; justify-content:center; gap:12px;">
-        <a href="docs/INSTRUCTOR_GUIDE.md" style="padding:10px 16px; background:#334155; color:white; border-radius:6px; font-size:0.88rem; font-weight:600; text-decoration:none;">
-          Instructor Guide
-        </a>
-        <a href="docs/CLASSROOM_DEPLOYMENT_GUIDE.md" style="padding:10px 16px; background:#334155; color:white; border-radius:6px; font-size:0.88rem; font-weight:600; text-decoration:none;">
-          Deployment Guide
-        </a>
+  <!-- FACULTY & CLASSROOM DEPLOYMENT -->
+  <section class="docs-section" aria-label="Faculty Resources">
+    <div class="docs-container">
+      <div class="docs-text">
+        <h3>Classroom &amp; Faculty Resources</h3>
+        <p>
+          Tailored for laboratory coursework with zero-install client-side architecture and 20-foot classroom projection mode.
+        </p>
+      </div>
+      <div class="docs-links">
+        <a href="docs/INSTRUCTOR_GUIDE.md" class="btn-secondary">Instructor Guide</a>
+        <a href="docs/STUDENT_GUIDE.md" class="btn-secondary">Student Guide</a>
+        <a href="docs/CLASSROOM_DEPLOYMENT_GUIDE.md" class="btn-secondary">Deployment Guide</a>
       </div>
     </div>
   </section>
 
   <!-- FOOTER -->
-  <footer style="text-align:center; padding:24px 16px; color:#94a3b8; font-size:0.85rem;">
-    <p>
-      Maintained by <strong>@himshim26</strong> • Open-source under MIT License on
-      <a href="https://github.com/himshim/virtual-analytical-lab" target="_blank" style="color:var(--brand-primary);">GitHub</a>
-    </p>
+  <footer class="site-footer">
+    <div>
+      Virtual Analytical Lab • Open-source under MIT License
+    </div>
+    <div>
+      <a href="https://github.com/himshim/virtual-analytical-lab" target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
   </footer>
 
+  <!-- CONTROLS & CHOREOGRAPHY SCRIPT -->
   <script type="module">
-    import { projectionModeInstance } from './platform/ui/ProjectionMode.js';
-    document.getElementById('toggleProjectionBtn').addEventListener('click', () => {
-      const isProj = projectionModeInstance.toggle();
-      document.getElementById('toggleProjectionBtn').innerText = isProj ? '☀️ Exit Projection Mode' : '📺 Toggle Projection Mode';
+    // 1. Projection Mode Toggle & LocalStorage Sync
+    const toggleProjBtn = document.getElementById('toggleProjectionBtn');
+    
+    function applyProjectionMode(isProj) {
+      document.body.classList.toggle('projection-mode', isProj);
+      if (toggleProjBtn) {
+        toggleProjBtn.textContent = isProj ? '☀️ Normal View' : '📺 Projection Mode';
+        toggleProjBtn.classList.toggle('active', isProj);
+      }
+      localStorage.setItem('val_projection_mode', isProj ? 'true' : 'false');
+    }
+
+    if (toggleProjBtn) {
+      toggleProjBtn.addEventListener('click', () => {
+        const isCurrent = document.body.classList.contains('projection-mode');
+        applyProjectionMode(!isCurrent);
+      });
+    }
+
+    // Auto-restore saved projection mode preference
+    if (localStorage.getItem('val_projection_mode') === 'true') {
+      applyProjectionMode(true);
+    }
+
+    // 2. IntersectionObserver Entry Reveal Choreography
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -40px 0px'
+    };
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, idx) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('revealed');
+          }, idx * 80);
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+      revealObserver.observe(el);
     });
 
+    // 3. PWA Service Worker Registration
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg error:', err));
     }

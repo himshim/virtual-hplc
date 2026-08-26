@@ -35,6 +35,13 @@ export class MethodReplay {
     this._playSpeed = 5;    // replay speed multiplier
 
     this._render();
+
+    window.addEventListener('expertise-mode-changed', (e) => {
+      const el = document.getElementById(this.containerId);
+      if (el) {
+        el.style.display = (e.detail.mode === 'advanced' && this._allPoints.length > 0) ? 'block' : 'none';
+      }
+    });
   }
 
   /* ── Public API ─────────────────────────────────────────────────────────── */
@@ -52,11 +59,14 @@ export class MethodReplay {
     cancelAnimationFrame(this._playRafId);
 
     this._render();
-    this._setSliderValue(0);
-    this._scrubTo(0);
+    this._setSliderValue(1000);
+    this._scrubTo(this._maxT);
 
     const el = document.getElementById(this.containerId);
-    if (el) el.style.display = 'block';
+    if (el) {
+      const mode = localStorage.getItem('val_expertise_mode') || 'beginner';
+      el.style.display = (mode === 'advanced') ? 'block' : 'none';
+    }
   }
 
   reset() {

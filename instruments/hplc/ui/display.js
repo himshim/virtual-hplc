@@ -17,11 +17,17 @@ export class DisplayView {
 
   setStatus(status) {
     if (this.statusEl) {
-      this.statusEl.textContent = status;
-      if (status === 'OVERPRESSURE' || status === 'DETECTOR_SATURATION') {
-        this.statusEl.className = 'status-badge error';
+      const mode = localStorage.getItem('val_expertise_mode') || 'beginner';
+      if (mode === 'beginner' && (status === 'OVERPRESSURE' || status === 'DETECTOR_SATURATION')) {
+        this.statusEl.textContent = 'RUN PAUSED';
+        this.statusEl.className = 'status-badge warning';
       } else {
-        this.statusEl.className = 'status-badge';
+        this.statusEl.textContent = status;
+        if (status === 'OVERPRESSURE' || status === 'DETECTOR_SATURATION') {
+          this.statusEl.className = 'status-badge error';
+        } else {
+          this.statusEl.className = 'status-badge';
+        }
       }
     }
   }
@@ -43,6 +49,13 @@ export class DisplayView {
   }
 
   setWarnings(warnings) {
+    const mode = localStorage.getItem('val_expertise_mode') || 'beginner';
+    if (mode === 'beginner') {
+      if (this.satWarning) this.satWarning.style.display = 'none';
+      if (this.pressureWarning) this.pressureWarning.style.display = 'none';
+      return;
+    }
+
     if (this.satWarning) {
       this.satWarning.style.display = warnings.some(w => w.includes('SATURATED')) ? 'inline-block' : 'none';
     }
@@ -86,21 +99,21 @@ export class DisplayView {
 
           <!-- Peak Metrics Table -->
           <div style="overflow-x:auto;">
-            <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
               <thead>
                 <tr style="border-bottom:2px solid var(--border-subtle); background:var(--bg-app);">
-                  <th style="padding:8px;">#</th>
-                  <th style="padding:8px;">Compound</th>
-                  <th style="padding:8px;">t<sub>R</sub> (min)</th>
-                  <th style="padding:8px;">Height</th>
-                  <th style="padding:8px;">k'</th>
-                  <th style="padding:8px;">Plates (N)</th>
-                  <th style="padding:8px;">R<sub>s</sub></th>
-                  <th style="padding:8px;">α</th>
-                  <th style="padding:8px;">T<sub>f</sub></th>
+                  <th style="padding:8px; text-align:left;">#</th>
+                  <th style="padding:8px; text-align:left;">Compound</th>
+                  <th style="padding:8px; text-align:right;">t<sub>R</sub> (min)</th>
+                  <th style="padding:8px; text-align:right;">Height</th>
+                  <th style="padding:8px; text-align:right;">k'</th>
+                  <th style="padding:8px; text-align:right;">Plates (N)</th>
+                  <th style="padding:8px; text-align:right;">R<sub>s</sub></th>
+                  <th style="padding:8px; text-align:right;">α</th>
+                  <th style="padding:8px; text-align:right;">T<sub>f</sub></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="tabular-nums">
       `;
 
       runResult.peaks.forEach((peak, index) => {
@@ -108,22 +121,22 @@ export class DisplayView {
         const heightVal = (peak.height !== undefined && peak.height !== null) ? peak.height.toFixed(3) : "0.000";
         const kVal = (peak.kPrime !== undefined && peak.kPrime !== null) ? peak.kPrime.toFixed(2) : "0.00";
         const platesVal = (peak.plates !== undefined && peak.plates !== null) ? Math.round(peak.plates) : 0;
-        const rsDisplay = (peak.resolution !== undefined && peak.resolution !== null) ? peak.resolution.toFixed(2) : "—";
-        const alphaDisplay = (peak.selectivity !== undefined && peak.selectivity !== null) ? peak.selectivity.toFixed(2) : "—";
+        const rsDisplay = (peak.resolution !== undefined && peak.resolution !== null) ? peak.resolution.toFixed(2) : "-";
+        const alphaDisplay = (peak.selectivity !== undefined && peak.selectivity !== null) ? peak.selectivity.toFixed(2) : "-";
 
         html += `
           <tr style="border-bottom:1px solid var(--border-subtle);">
-            <td style="padding:8px;">${index + 1}</td>
-            <td style="padding:8px; font-weight:600;">${peak.compound}</td>
-            <td style="padding:8px;">${tRVal}</td>
-            <td style="padding:8px;">${heightVal}</td>
-            <td style="padding:8px;">${kVal}</td>
-            <td style="padding:8px;">${platesVal}</td>
-            <td style="padding:8px; font-weight:${peak.resolution && peak.resolution < 1.5 ? 'bold' : 'normal'}; color:${peak.resolution && peak.resolution < 1.5 ? 'var(--brand-danger)' : 'inherit'};">
+            <td style="padding:8px; text-align:left;">${index + 1}</td>
+            <td style="padding:8px; text-align:left; font-weight:600;">${peak.compound}</td>
+            <td style="padding:8px; text-align:right;">${tRVal}</td>
+            <td style="padding:8px; text-align:right;">${heightVal}</td>
+            <td style="padding:8px; text-align:right;">${kVal}</td>
+            <td style="padding:8px; text-align:right;">${platesVal}</td>
+            <td style="padding:8px; text-align:right; font-weight:${peak.resolution && peak.resolution < 1.5 ? 'bold' : 'normal'}; color:${peak.resolution && peak.resolution < 1.5 ? 'var(--brand-danger)' : 'inherit'};">
               ${rsDisplay}
             </td>
-            <td style="padding:8px;">${alphaDisplay}</td>
-            <td style="padding:8px;">1.00</td>
+            <td style="padding:8px; text-align:right;">${alphaDisplay}</td>
+            <td style="padding:8px; text-align:right;">1.00</td>
           </tr>
         `;
       });
@@ -137,9 +150,9 @@ export class DisplayView {
       // Diagnostic Hints List inside Accordion
       if (sst.diagnostics && sst.diagnostics.length > 0) {
         html += `
-          <div style="margin-top:14px; padding:12px; background:#fff8e1; border-left:4px solid #ffa000; border-radius:4px;">
-            <h4 style="margin:0 0 8px 0; color:#b78103; font-size:0.9rem;">💡 Diagnostic Rule Analysis</h4>
-            <ul style="margin:0; padding-left:18px; font-size:0.82rem; color:#444;">
+          <div style="margin-top:14px; padding:12px; background:var(--status-warning-bg); border-left:4px solid var(--status-warning-border); border-radius:4px;">
+            <h4 style="margin:0 0 8px 0; color:var(--status-warning-fg); font-size:0.9rem;">💡 Diagnostic Rule Analysis</h4>
+            <ul style="margin:0; padding-left:18px; font-size:0.82rem; color:var(--text-secondary);">
         `;
 
         sst.diagnostics.forEach(diag => {

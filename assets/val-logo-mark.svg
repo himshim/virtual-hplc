@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+    <defs>
+      <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0b1120"/>
+        <stop offset="100%" stop-color="#020617"/>
+      </linearGradient>
+      <linearGradient id="prismGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#38bdf8"/>
+        <stop offset="100%" stop-color="#0284c7"/>
+      </linearGradient>
+    </defs>
+    <rect width="100" height="100" rx="22" fill="url(#bgGrad)"/>
+    <rect x="2" y="2" width="96" height="96" rx="20" fill="none" stroke="rgba(56,189,248,0.4)" stroke-width="2"/>
+    
+    <!-- Prism triangle -->
+    <path d="M50 14 L82 74 L18 74 Z" stroke="#38bdf8" stroke-width="4" stroke-linejoin="round" fill="rgba(2, 132, 199, 0.3)"/>
+    
+    <!-- Beams -->
+    <path d="M50 32 L72 74" stroke="#34d399" stroke-width="4" stroke-linecap="round"/>
+    <path d="M50 32 L84 62" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Central wave / peak -->
+    <path d="M34 74 L46 50 L56 74" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Focal dot -->
+    <circle cx="50" cy="32" r="5" fill="#ffffff"/>
+  </svg>

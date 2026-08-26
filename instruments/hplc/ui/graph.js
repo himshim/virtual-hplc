@@ -1,8 +1,9 @@
+import { ScientificChart } from '../../../ui/components/ScientificChart.js';
+
 /**
  * graph.js - Chart.js Chromatogram Canvas View
  *
  * v2.0: Authentic CDS-style axes — Response (mAU) Y-axis, Time (min) X-axis.
- *       Y-axis tick callback multiplies AU values ×1000 for mAU display.
  *       Engine always operates in native AU units; formatting is UI-only.
  */
 export class GraphView {
@@ -16,92 +17,79 @@ export class GraphView {
   initChart() {
     if (!this.canvas || typeof Chart === 'undefined') return;
 
-    const ctx = this.canvas.getContext('2d');
-    this.chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        datasets: [{
-          label: 'Response',
-          data: [],
-          borderColor: '#38bdf8',
-          borderWidth: 1.5,
-          pointRadius: 0,
-          tension: 0.15,
-          fill: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        scales: {
-          x: {
-            type: 'linear',
-            title: {
-              display: true,
-              text: 'Time (min)',
-              color: '#64748b',
-              font: { family: "'JetBrains Mono', monospace", size: 11 }
-            },
-            min: 0,
-            suggestedMax: 3,
-            ticks: {
-              color: '#475569',
-              font: { family: "'JetBrains Mono', monospace", size: 10 },
-              maxTicksLimit: 10
-            },
-            grid: { color: 'rgba(255,255,255,0.04)' }
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Response (mAU)',
-              color: '#64748b',
-              font: { family: "'JetBrains Mono', monospace", size: 11 }
-            },
-            min: -0.01,   // stored in AU; displayed as -10 mAU via callback
-            suggestedMax: 1.2,
-            ticks: {
-              color: '#475569',
-              font: { family: "'JetBrains Mono', monospace", size: 10 },
-              // UI-only conversion: AU → mAU  (engine never changes)
-              callback: (val) => (val * 1000).toFixed(0)
-            },
-            grid: { color: 'rgba(255,255,255,0.04)' }
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          zoom: {
-            pan: { enabled: true, mode: 'x' },
-            zoom: {
-              wheel: { enabled: true },
-              pinch: { enabled: true },
-              mode: 'x'
-            }
-          }
-        }
-
-      }
+    this.chart = ScientificChart.create(this.canvas, {
+      instrumentType: 'hplc',
+      xTitle: 'Time (min)',
+      yTitle: 'Response (AU)',
+      xMin: 0,
+      xMax: 3.0,
+      yMin: -0.01,
+      yMax: 1.2,
+      datasets: [{
+        label: 'Response',
+        data: [],
+        borderColor: '#38bdf8',
+        borderWidth: 1.8,
+        pointRadius: 0,
+        tension: 0.12,
+        fill: false
+      }]
     });
+  }
+
+  setPeaks(peaks) {
+    if (!this.chart || !Array.isArray(peaks)) return;
+    if (this.chart.setPeakCallouts) {
+      this.chart.setPeakCallouts(peaks.map(p => ({
+        x: p.tR,
+        y: p.height,
+        label: `${p.tR.toFixed(2)} min`,
+        sublabel: p.compound || 'Peak',
+        color: '#38bdf8'
+      })));
+    }
+    if (this.chart.setBaselineIntegrations) {
+      this.chart.setBaselineIntegrations(peaks.map(p => ({
+        startX: p.tR - (p.width || 0.1) / 2,
+        endX: p.tR + (p.width || 0.1) / 2,
+        apexX: p.tR,
+        apexY: p.height,
+        baselineY1: 0,
+        baselineY2: 0
+      })));
+    }
   }
 
   reset() {
     if (!this.chart) return;
     this.chart.data.datasets[0].data = [];
+    if (this.chart.clearPeakAnnotations) {
+      this.chart.clearPeakAnnotations();
+    } else {
+      this.chart._peakCallouts = [];
+      this.chart._baselineIntegrations = [];
+    }
     this.chart.options.scales.x.min = 0;
     delete this.chart.options.scales.x.max;
-    this.chart.options.scales.x.suggestedMax = 3;
+    this.chart.options.scales.x.suggestedMax = 5.0;
     this.chart.options.scales.y.min = -0.01;
     delete this.chart.options.scales.y.max;
     this.chart.options.scales.y.suggestedMax = 1.2;
     this.chart.update();
   }
 
+  setRunTime(maxT) {
+    if (!this.chart) return;
+    this.chart.options.scales.x.min = 0;
+    this.chart.options.scales.x.max = maxT;
+    this.chart.options.scales.x.suggestedMax = maxT;
+    this.chart.update('none');
+  }
+
   addPoint(t, y) {
     if (!this.chart) return;
     this.chart.data.datasets[0].data.push({ x: t, y });
-    if (t > (this.chart.options.scales.x.suggestedMax || 3)) {
+    if (t > (this.chart.options.scales.x.suggestedMax || 5)) {
       this.chart.options.scales.x.suggestedMax = Math.ceil(t + 1);
     }
     this.chart.update('none');

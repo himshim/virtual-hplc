@@ -9,12 +9,10 @@
  *  3. Stage 3: Transmittance Spectrum Rendered (4000 to 400 cm^-1)
  */
 
-import { EventBus } from '../../../core/EventBus.js';
 import { FtirEngine, FTIR_COMPOUND_DATABASE } from '../engine/ftirEngine.js';
 
-export class FtirController extends EventBus {
+export class FtirController {
   constructor() {
-    super();
     this.id           = 'ftir';
     this.capabilities = { playback: true, speedControl: true, step: true };
 
@@ -24,7 +22,6 @@ export class FtirController extends EventBus {
     this._numberOfScans   = 16;
     this._resolution      = 4; // cm^-1
     this._backgroundDone  = false;
-    this._cuvetteMaterial = 'quartz';
     this._expertiseMode   = 'beginner';
 
     // Scan bounds
@@ -39,6 +36,7 @@ export class FtirController extends EventBus {
     this._stage               = 'INTERFEROGRAM'; // 'INTERFEROGRAM' | 'TRANSFORM' | 'SPECTRUM'
     this._fullInterferogram   = [];
     this._fullSpectrum        = [];
+    this._backgroundSpectrum  = []; // Stored single-beam background I_bg(ν̃)
     this._revealedIndex       = 0;
     this._fftProgress         = 0.0;
     this._lifecyclePhase      = 'IDLE';
@@ -77,33 +75,26 @@ export class FtirController extends EventBus {
     this._lifecyclePhase = 'IDLE';
   }
 
-  startBackgroundScan() {
+  _startScan(phase) {
     this._stage              = 'INTERFEROGRAM';
     this._currentOpd         = this._opdStart;
     this._fullInterferogram  = [];
     this._fullSpectrum       = [];
     this._revealedIndex      = 0;
     this._fftProgress        = 0.0;
-    this._lifecyclePhase     = 'BACKGROUND_SCAN';
+    this._lifecyclePhase     = phase;
+  }
+
+  startBackgroundScan() {
+    this._startScan('BACKGROUND_SCAN');
   }
 
   startSampleScan() {
-    this._stage              = 'INTERFEROGRAM';
-    this._currentOpd         = this._opdStart;
-    this._fullInterferogram  = [];
-    this._fullSpectrum       = [];
-    this._revealedIndex      = 0;
-    this._fftProgress        = 0.0;
-    this._lifecyclePhase     = 'SAMPLE_SCAN';
+    this._startScan('SAMPLE_SCAN');
   }
 
   run() {
     this.startSampleScan();
-  }
-
-  setSample(sampleKey) {
-    if (typeof this.setSampleKey === 'function') this.setSampleKey(sampleKey);
-    else this._sampleKey = sampleKey;
   }
 
   // ── SimulationInstrument Contract ────────────────────────────────────────
@@ -208,29 +199,64 @@ export class FtirController extends EventBus {
   }
 
   _precomputeInterferogramAndSpectrum() {
-    // 1. Interferogram points (-0.25 to +0.25 cm, 501 points)
+    const isBackground = this._lifecyclePhase === 'BACKGROUND_SCAN';
+
+    // Stage 1: Interferogram (-0.25 to +0.25 cm, 501 points)
     const ifgPoints = [];
     for (let opd = this._opdStart; opd <= this._opdEnd; opd += 0.001) {
-      const pt = FtirEngine.computeInterferogramAtOpd(this._sampleKey, opd, this._samplingMode);
+      // Background: use 'ethanol' (pure solvent) for the single-beam reference
+      // Sample: use the selected compound
+      const key = isBackground ? 'ethanol' : this._sampleKey;
+      const pt = FtirEngine.computeInterferogramAtOpd(key, opd, this._samplingMode);
       ifgPoints.push({ x: Math.round(opd * 1000) / 1000, y: Math.round(pt.intensity * 100) / 100 });
     }
 
-    // 2. Transmittance spectrum points (4000 down to 400 cm^-1, 1801 points)
+    // Stage 2: Transmittance spectrum (4000 → 400 cm⁻¹, 1801 points)
     const specPoints = [];
     for (let nu = this._nuStart; nu >= this._nuEnd; nu -= 2) {
-      const pt = FtirEngine.computeTransmittanceAtWavenumber(this._sampleKey, nu, this._samplingMode);
-      specPoints.push({ x: nu, y: Math.round(pt.transmittance * 10) / 10 });
+      let transmittance;
+      if (isBackground) {
+        // Background scan: record single-beam air/solvent spectrum (near 100 %T)
+        const pt = FtirEngine.computeTransmittanceAtWavenumber('ethanol', nu, this._samplingMode);
+        transmittance = pt.transmittance;
+        // Store background reference for later ratioing
+        this._backgroundSpectrum.push({ nu, T: transmittance });
+      } else {
+        // Sample scan: ratio against stored background  %T = (I_sample / I_background) × 100
+        const ptSample = FtirEngine.computeTransmittanceAtWavenumber(this._sampleKey, nu, this._samplingMode);
+        const bgEntry = this._backgroundSpectrum.find(b => b.nu === nu);
+        if (bgEntry && bgEntry.T > 0) {
+          // True ratioed transmittance
+          transmittance = Math.max(2.0, Math.min(100.0, (ptSample.transmittance / bgEntry.T) * 100.0));
+        } else {
+          // No background stored: fall back to single-beam %T (graceful degradation)
+          transmittance = ptSample.transmittance;
+        }
+      }
+      specPoints.push({ x: nu, y: Math.round(transmittance * 10) / 10 });
     }
+
+    // Clear background store when recording new background
+    if (isBackground) this._backgroundSpectrum = specPoints.map((p, i) => ({
+      nu: this._nuStart - i * 2,
+      T: FtirEngine.computeTransmittanceAtWavenumber('ethanol', this._nuStart - i * 2, this._samplingMode).transmittance
+    }));
 
     this._fullInterferogram = ifgPoints;
     this._fullSpectrum     = specPoints;
   }
 
   // Setters
-  setSample(key)          { if (FTIR_COMPOUND_DATABASE[key]) this._sampleKey = key; }
-  setSamplingMode(mode)   { if (mode === 'atr' || mode === 'kbr') this._samplingMode = mode; }
+  setSample(key) {
+    if (FTIR_COMPOUND_DATABASE[key]) {
+      this._sampleKey = key;
+      // Clear precomputed data so next tick re-derives from new compound
+      this._fullInterferogram = [];
+      this._fullSpectrum = [];
+    }
+  }
+  setSamplingMode(mode)   { if (mode === 'atr' || mode === 'kbr') { this._samplingMode = mode; this._fullInterferogram = []; this._fullSpectrum = []; } }
   setNumberOfScans(n)     { this._numberOfScans = Number(n); }
   setResolution(r)        { this._resolution = Number(r); }
-  setCuvetteMaterial(m)   { this._cuvetteMaterial = m; }
   setExpertiseMode(m)     { this._expertiseMode = m; }
 }

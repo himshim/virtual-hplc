@@ -10,7 +10,7 @@ export class SimulationState {
     organicPercent = 40,
     sensitivity = 1.0,
     speedMultiplier = DEFAULT_SPEED,
-    sampleKey = 'caffeine',
+    sampleKey = 'paracetamol',
     time = 0,
     pressure = 0,
     detectorSignal = 0,

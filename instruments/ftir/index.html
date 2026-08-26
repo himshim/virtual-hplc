@@ -2,45 +2,140 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>FTIR Spectrometer — Virtual Analytical Lab</title>
+  <title>FTIR Spectrometer Simulator - Virtual Analytical Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Interactive FTIR spectrometer simulation featuring Michelson interferometer optical path difference (OPD), Fourier transform FFT, and ATR diamond crystal." />
+  <link rel="canonical" href="https://himshim.github.io/virtual-analytical-lab/instruments/ftir/index.html" />
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Virtual Analytical Lab" />
+  <meta property="og:title" content="FTIR Spectrometer Simulator - Virtual Analytical Lab" />
+  <meta property="og:description" content="Simulate Fourier Transform Infrared (FTIR) spectroscopy with real-time interferogram FFT computation and functional group identification." />
+  <meta property="og:url" content="https://himshim.github.io/virtual-analytical-lab/instruments/ftir/index.html" />
+  <meta property="og:image" content="https://himshim.github.io/virtual-analytical-lab/assets/icon-512.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="FTIR Spectrometer Simulator - Virtual Analytical Lab" />
+  <meta name="twitter:description" content="Simulate Fourier Transform Infrared (FTIR) spectroscopy with real-time interferogram FFT computation and functional group identification." />
+  <meta name="twitter:image" content="https://himshim.github.io/virtual-analytical-lab/assets/icon-512.png" />
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "FTIR Spectrometer Simulator",
+    "url": "https://himshim.github.io/virtual-analytical-lab/instruments/ftir/index.html",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires HTML5/JavaScript",
+    "description": "Interactive Fourier Transform Infrared Spectrometer simulation with Michelson interferometer beam splitting and Cooley-Tukey FFT.",
+    "educationalUse": "Chemistry Education, Infrared Spectroscopy, Functional Group Identification",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+
+  <link rel="icon" type="image/svg+xml" href="../../assets/val-logo-mark.svg" />
+  <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
   <link rel="stylesheet" href="../../css/global.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="../../ui/components/LabHeader.js"></script>
+  <script type="module" src="../../ui/components/LabTabs.js"></script>
+  <script type="module" src="../../ui/components/LabBottomSheet.js"></script>
+  <style>
+    :root {
+      --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+      --ease-tactile: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Range Slider Styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      transition: background 0.2s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #38bdf8;
+      border: 2px solid #ffffff;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: #0284c7;
+    }
+    input[type="range"]:focus {
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    /* Button Tactile Feedback */
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* Peak Table Formatting */
+    #peakTableContainer table {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Projection Mode High-Contrast Overrides for FTIR */
+    body.projection-mode .instrument-card,
+    body.projection-mode .readiness-card {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+    }
+    body.projection-mode .cds-timeline-wrap,
+    body.projection-mode .cds-telemetry-strip {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.projection-mode .cds-telemetry-label {
+      color: #475569 !important;
+    }
+    body.projection-mode .cds-telemetry-val {
+      color: #020617 !important;
+    }
+    body.projection-mode select {
+      background: #ffffff !important;
+      color: #020617 !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.projection-mode #diagText {
+      color: #1e293b !important;
+    }
+    body.projection-mode #peakTableContainer table tr {
+      border-bottom-color: #e2e8f0 !important;
+    }
+  </style>
 </head>
 
 <body>
 
 <!-- Header Bar -->
-<header class="app-header" role="banner">
-  <h1 class="app-title">
-    <a href="../../index.html" class="nav-home-link" aria-label="Virtual Analytical Lab Home">🏠 Home</a>
-    <span class="nav-separator">/</span>
-    <span class="instrument-title-name">FTIR Spectrometer</span>
-  </h1>
-  <div class="mode-selector" id="ftirModeSelector" role="radiogroup" aria-label="Expertise Mode">
-    <button class="mode-btn active" id="modeBtnBeginner" data-mode="beginner" title="Guided baseline & interferogram spectrum">🟢 Beginner</button>
-    <button class="mode-btn" id="modeBtnStandard" data-mode="standard" title="ATR vs KBr sampling modes & apodization functions">🟡 Standard</button>
-    <button class="mode-btn" id="modeBtnAdvanced" data-mode="advanced" title="Phase correction, OPD resolution & Fast Fourier Transform (FFT)">🔴 Advanced</button>
-  </div>
-</header>
+<lab-header title="FTIR Spectrometer"></lab-header>
 
 <!-- Universal 3-Tab Navigation Bar -->
-<nav class="nav-tab-bar" id="platformNav" aria-label="Main Navigation" role="navigation">
-  <button class="nav-tab-item active" id="tabBtn-scan" data-tab="tab-scan-view" role="tab" aria-selected="true">
-    <span class="tab-icon" aria-hidden="true">📈</span>
-    <span>Scan & Interferogram</span>
-  </button>
-  <button class="nav-tab-item" id="tabBtn-results" data-tab="tab-results-view" role="tab" aria-selected="false">
-    <span class="tab-icon" aria-hidden="true">📊</span>
-    <span>Results & Peak Table</span>
-  </button>
-  <button class="nav-tab-item" id="tabBtn-learn" data-tab="tab-learn-view" role="tab" aria-selected="false">
-    <span class="tab-icon" aria-hidden="true">🎓</span>
-    <span>Learn</span>
-  </button>
-</nav>
+<lab-tabs tabs='[{"id":"tab-scan-view","label":"📈 Scan & Interferogram"},{"id":"tab-results-view","label":"📊 Results & Peak Table"},{"id":"tab-learn-view","label":"🎓 Learn"}]'></lab-tabs>
 
 <main class="platform-container" id="main-content" role="main">
+  <h1 class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">FTIR Fourier Transform Infrared Spectrometer Simulation</h1>
 
   <!-- Laboratory Workflow Hero Timeline -->
   <div class="cds-timeline-wrap" id="labWorkflowStepper" style="margin-bottom:12px;">
@@ -82,11 +177,29 @@
       <!-- Primary Canvas Card -->
       <div>
         <div class="instrument-card" style="padding:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
             <h2 style="margin:0; font-size:1.05rem; color:var(--brand-primary); font-family:'JetBrains Mono',monospace;" id="canvasTitle">
               Stage 1: Michelson Interferogram I(δ)
             </h2>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <button id="btnToggleFtirTheme" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#e2e8f0; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Toggle between Authentic Lab White and OLED Dark Theme">
+                🌙 Dark
+              </button>
+              <button id="btnExportFtirPng" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#e2e8f0; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Export High-Resolution PNG Spectrum">
+                📷 PNG
+              </button>
+              <button id="btnToggleFtirLabels" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#fbbf24; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Toggle Peak Flags and Regional Shading">
+                🏷️ Labels
+              </button>
+              <button id="toolFitAllFtir" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#38bdf8; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Auto-Scale Spectrum">
+                Fit All
+              </button>
+              <button id="toolFitPeaksFtir" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#38bdf8; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Zoom into Functional Group & Fingerprint Region">
+                Fit Peaks
+              </button>
+              <button id="toolResetFtir" style="padding:4px 8px; font-size:0.72rem; border:1px solid var(--border-subtle); background:rgba(30,41,59,0.8); color:#94a3b8; border-radius:4px; font-weight:700; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Reset Zoom to 4000-400 cm⁻¹">
+                Reset
+              </button>
               <span id="zpdBadge" class="status-badge success" style="display:none;">● ZPD REACHED</span>
               <span id="fftBadge" class="status-badge warning" style="display:none;">⚙️ FFT COMPUTING</span>
             </div>
@@ -117,11 +230,27 @@
           </h3>
 
           <div style="margin-bottom:12px;">
-            <label style="display:block; font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:4px;">SELECT SAMPLE</label>
+            <label style="display:block; font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:4px;">SELECT SAMPLE ANALYTE</label>
             <select id="sampleSelect" style="width:100%; padding:8px; background:var(--bg-app); border:1px solid var(--border-subtle); color:var(--text-primary); border-radius:4px; font-family:'JetBrains Mono',monospace;">
-              <option value="ethanol">Ethanol (CH3CH2OH)</option>
-              <option value="acetone">Acetone (CH3COCH3)</option>
-              <option value="benzoic_acid">Benzoic Acid (C6H5COOH)</option>
+              <optgroup label="Standard Solvents & Reagents">
+                <option value="ethanol" selected>Ethanol (CH3CH2OH)</option>
+                <option value="acetone">Acetone (CH3COCH3)</option>
+                <option value="benzoic_acid">Benzoic Acid (C6H5COOH)</option>
+              </optgroup>
+              <optgroup label="Pharmaceutical APIs & Biomolecules">
+                <option value="paracetamol">Paracetamol (Acetaminophen)</option>
+                <option value="caffeine">Caffeine (1,3,7-Trimethylxanthine)</option>
+                <option value="aspirin">Aspirin (Acetylsalicylic Acid)</option>
+                <option value="ibuprofen">Ibuprofen</option>
+                <option value="ciprofloxacin">Ciprofloxacin HCl</option>
+                <option value="diclofenac_sodium">Diclofenac Sodium</option>
+                <option value="metronidazole">Metronidazole</option>
+                <option value="theophylline">Theophylline</option>
+                <option value="quinine">Quinine Sulfate</option>
+                <option value="tryptophan">L-Tryptophan</option>
+                <option value="vitamin_c">Ascorbic Acid (Vitamin C)</option>
+                <option value="riboflavin">Riboflavin (Vitamin B2)</option>
+              </optgroup>
             </select>
           </div>
 
@@ -133,12 +262,36 @@
             </select>
           </div>
 
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+            <div>
+              <label style="display:block; font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:4px;">RESOLUTION</label>
+              <select id="resolutionSelect" style="width:100%; padding:6px; background:var(--bg-app); border:1px solid var(--border-subtle); color:var(--text-primary); border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:0.8rem;">
+                <option value="2">2 cm⁻¹</option>
+                <option value="4" selected>4 cm⁻¹</option>
+                <option value="8">8 cm⁻¹</option>
+                <option value="16">16 cm⁻¹</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:4px;">NO. OF SCANS</label>
+              <select id="scansSelect" style="width:100%; padding:6px; background:var(--bg-app); border:1px solid var(--border-subtle); color:var(--text-primary); border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:0.8rem;">
+                <option value="4">4 Scans</option>
+                <option value="8">8 Scans</option>
+                <option value="16" selected>16 Scans</option>
+                <option value="32">32 Scans</option>
+                <option value="64">64 Scans</option>
+              </select>
+            </div>
+          </div>
+
           <div style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
-            <button id="btnBgScan" style="min-height:44px; padding:10px; border-radius:6px; border:1px solid #0284c7; background:rgba(2,132,199,0.2); color:#38bdf8; font-weight:700; cursor:pointer;">
-              1️⃣ Record Background Scan
+            <button id="btnBgScan" style="min-height:46px; padding:10px 16px; border-radius:9999px; border:1px solid #0284c7; background:rgba(2,132,199,0.15); color:#38bdf8; font-weight:700; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;">
+              <span>1️⃣ Record Background Scan</span>
+              <span style="width:28px; height:28px; border-radius:50%; background:rgba(56,189,248,0.2); display:flex; align-items:center; justify-content:center; font-size:0.8rem;">ATR</span>
             </button>
-            <button id="btnMeasure" style="min-height:44px; padding:10px; border-radius:6px; border:none; background:#22c55e; color:white; font-weight:700; cursor:pointer;" disabled>
-              2️⃣ Acquire FTIR Spectrum
+            <button id="btnMeasure" style="min-height:48px; padding:10px 14px 10px 20px; border-radius:9999px; border:1px solid rgba(255,255,255,0.2); background:linear-gradient(135deg, #16a34a 0%, #15803d 100%); color:white; font-size:0.95rem; font-weight:800; cursor:pointer; box-shadow:0 4px 16px rgba(22,163,74,0.35); display:flex; justify-content:space-between; align-items:center; transition:transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;" disabled>
+              <span>2️⃣ Acquire FTIR Spectrum</span>
+              <span style="width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:0.85rem;">⚡</span>
             </button>
           </div>
 
@@ -207,7 +360,7 @@
           <text x="285" y="0" fill="#94a3b8" font-size="10" text-anchor="middle">Fixed Mirror</text>
 
           <!-- Moving Mirror (OPD) -->
-          <rect x="520" y="90" width="15" height="60" rx="3" fill="#f59e0b" />
+          <rect id="svgMovingMirror" x="520" y="90" width="15" height="60" rx="3" fill="#f59e0b" />
           <text x="527" y="170" fill="#f59e0b" font-size="10" font-weight="700" text-anchor="middle">Moving Mirror (OPD δ)</text>
 
           <!-- Optical Beams -->
@@ -249,11 +402,22 @@
 
 </main>
 
+<!-- Mobile Sticky Action Dock -->
+<div id="mobileActionDock" class="mobile-action-dock">
+  <button id="mobileBtnBgScan" onclick="document.getElementById('btnBgScan')?.click()" style="flex:1; min-height:48px; border-radius:8px; border:1px solid #0284c7; background:rgba(2,132,199,0.3); color:#38bdf8; font-weight:800; font-size:0.85rem; cursor:pointer;">
+    1️⃣ Background
+  </button>
+  <button id="mobileBtnMeasure" onclick="document.getElementById('btnMeasure')?.click()" style="flex:1.5; min-height:48px; border-radius:8px; border:none; background:#22c55e; color:white; font-weight:800; font-size:0.85rem; cursor:pointer;">
+    2️⃣ Measure Spectrum
+  </button>
+</div>
+
 <script type="module">
   import { FtirController } from './controller/FtirController.js';
   import { FTIR_COMPOUND_DATABASE } from './engine/ftirEngine.js';
   import { SimulationRunner } from '../../platform/simulation/SimulationRunner.js';
   import { SimulationPlayback } from '../../platform/simulation/SimulationPlayback.js';
+  import { ScientificChart } from '../../ui/components/ScientificChart.js';
 
   const controller = new FtirController();
   const runner     = new SimulationRunner(controller);
@@ -263,51 +427,51 @@
   let currentBlankDone = false;
 
   function initChart(type = 'line', isReversed = false, xTitle = 'OPD (cm)') {
-    const ctx = document.getElementById('ftirCanvas').getContext('2d');
+    const canvas = document.getElementById('ftirCanvas');
     if (chart) chart.destroy();
 
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
+    if (isReversed) {
+      chart = ScientificChart.create(canvas, {
+        instrumentType: 'ftir',
+        isFtir: true,
+        xTitle: 'Wavenumber ν (cm⁻¹)',
+        yTitle: 'Transmittance (%T)',
+        xMin: 400,
+        xMax: 4000,
+        xInverted: true,
+        yMin: 0,
+        yMax: 105,
         datasets: [{
-          label: 'Signal',
+          label: 'Spectrum',
           data: [],
           borderColor: '#38bdf8',
-          borderWidth: 2,
+          borderWidth: 1.8,
+          pointRadius: 0,
+          fill: false,
+          tension: 0.1
+        }]
+      });
+    } else {
+      chart = ScientificChart.create(canvas, {
+        instrumentType: 'generic',
+        isFtir: false,
+        xTitle: xTitle,
+        yTitle: 'Centerburst Intensity I(δ)',
+        xMin: -0.25,
+        xMax: 0.25,
+        yMin: -20,
+        yMax: 110,
+        datasets: [{
+          label: 'Interferogram',
+          data: [],
+          borderColor: '#38bdf8',
+          borderWidth: 1.5,
           pointRadius: 0,
           fill: false
         }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        scales: {
-          x: isReversed ? {
-            type: 'linear',
-            min: 400,
-            max: 4000,
-            reverse: true,
-            title: { display: true, text: xTitle, color: '#64748b' },
-            ticks: { color: '#475569' },
-            grid: { color: 'rgba(255,255,255,0.04)' }
-          } : {
-            title: { display: true, text: xTitle, color: '#64748b' },
-            ticks: { color: '#475569' },
-            grid: { color: 'rgba(255,255,255,0.04)' }
-          },
-          y: {
-            title: { display: true, text: 'Intensity / %T', color: '#64748b' },
-            min: 0,
-            max: 105,
-            ticks: { color: '#475569' },
-            grid: { color: 'rgba(255,255,255,0.04)' }
-          }
-        },
-        plugins: { legend: { display: false } }
-      }
-    });
+      });
+    }
+    window._ftirChartInstance = chart;
   }
 
   initChart('line', false, 'Optical Path Difference OPD (cm)');
@@ -330,6 +494,63 @@
   document.getElementById('tabBtn-scan').onclick = () => switchTab('scan');
   document.getElementById('tabBtn-results').onclick = () => switchTab('results');
   document.getElementById('tabBtn-learn').onclick = () => switchTab('learn');
+
+  // Chart Toolbar Handlers
+  const btnToggleFtirTheme = document.getElementById('btnToggleFtirTheme');
+  if (btnToggleFtirTheme) {
+    btnToggleFtirTheme.onclick = () => {
+      if (!chart) return;
+      const next = chart.toggleTheme();
+      btnToggleFtirTheme.innerHTML = next === 'light' ? '🌙 Dark' : '☀️ Lab White';
+    };
+  }
+  const btnExportFtirPng = document.getElementById('btnExportFtirPng');
+  if (btnExportFtirPng) {
+    btnExportFtirPng.onclick = () => {
+      if (!chart) return;
+      chart.exportImage('ftir_spectrum.png');
+    };
+  }
+
+  const btnToggleFtirLabels = document.getElementById('btnToggleFtirLabels');
+  if (btnToggleFtirLabels) {
+    btnToggleFtirLabels.onclick = () => {
+      if (!chart) return;
+      const show = chart.togglePeakCallouts ? chart.togglePeakCallouts() : true;
+      btnToggleFtirLabels.innerHTML = show ? '🏷️ Labels' : '👁️ Raw Trace';
+    };
+  }
+
+  const toolFitAllFtir = document.getElementById('toolFitAllFtir');
+  if (toolFitAllFtir) {
+    toolFitAllFtir.onclick = () => {
+      if (chart && chart.fitAll) chart.fitAll();
+    };
+  }
+
+  const toolFitPeaksFtir = document.getElementById('toolFitPeaksFtir');
+  if (toolFitPeaksFtir) {
+    toolFitPeaksFtir.onclick = () => {
+      if (chart && chart.fitPeaks) chart.fitPeaks();
+    };
+  }
+
+  const toolResetFtir = document.getElementById('toolResetFtir');
+  if (toolResetFtir) {
+    toolResetFtir.onclick = () => {
+      if (chart && chart.resetZoom) chart.resetZoom();
+    };
+  }
+
+  const resolutionSelect = document.getElementById('resolutionSelect');
+  if (resolutionSelect) {
+    resolutionSelect.onchange = (e) => controller.setResolution(e.target.value);
+  }
+
+  const scansSelect = document.getElementById('scansSelect');
+  if (scansSelect) {
+    scansSelect.onchange = (e) => controller.setNumberOfScans(e.target.value);
+  }
 
   // Dynamic Stepper Controller
   function setWorkflowStep(stepNum, subtext = '') {
@@ -378,12 +599,12 @@
   const sampleSelect = document.getElementById('sampleSelect');
   if (sampleSelect) {
     sampleSelect.onchange = (e) => {
-      controller.setSample(e.target.value);
-      populatePeakTable(e.target.value);
-      currentBlankDone = false;
-      document.getElementById('chkBgBadge').className = 'readiness-badge pending';
-      document.getElementById('chkBgBadge').textContent = '○';
-      document.getElementById('btnMeasure').disabled = true;
+      const s = e.target.value;
+      controller.setSample(s);
+      populatePeakTable(s);
+      document.getElementById('chkSampleLabel').textContent = `Sample: ${s.charAt(0).toUpperCase() + s.slice(1)}`;
+      const sBadge = document.getElementById('chkSampleBadge');
+      if (sBadge) { sBadge.className = 'readiness-badge complete'; sBadge.textContent = '✓'; }
     };
   }
 
@@ -396,30 +617,26 @@
     };
   }
 
-  // Mode Buttons
-  ['Beginner', 'Standard', 'Advanced'].forEach(m => {
-    const btn = document.getElementById(`modeBtn${m}`);
-    if (btn) {
-      btn.onclick = () => {
-        ['Beginner', 'Standard', 'Advanced'].forEach(b => {
-          const el = document.getElementById(`modeBtn${b}`);
-          if (el) el.classList.toggle('active', b === m);
-        });
-        controller.setExpertiseMode(m.toLowerCase());
-        if (m === 'Beginner') {
-          currentBlankDone = true;
-          document.getElementById('chkBgBadge').className = 'readiness-badge complete';
-          document.getElementById('chkBgBadge').textContent = '✓';
-          document.getElementById('btnMeasure').disabled = false;
-        }
-      };
+  // Expertise Mode Listener from LabHeader
+  window.addEventListener('expertise-mode-changed', (e) => {
+    if (controller && typeof controller.setExpertiseMode === 'function') {
+      controller.setExpertiseMode(e.detail.mode);
+      if (e.detail.mode === 'beginner') {
+        currentBlankDone = true;
+        const b = document.getElementById('chkBgBadge');
+        if (b) { b.className = 'readiness-badge complete'; b.textContent = '✓'; }
+        const m = document.getElementById('btnMeasure');
+        if (m) m.disabled = false;
+        const mobScan = document.getElementById('mobileBtnScan');
+        if (mobScan) mobScan.disabled = false;
+      }
     }
   });
 
   // Runner Tick Handler
-  runner.eventBus.on('simulation:tick', (result) => {
-    const t = result.telemetry;
-    const status = result.status;
+  runner.eventBus.on('simulation:tick', ({ result }) => {
+    const t = result?.telemetry;
+    const status = result?.status;
 
     if (!t) return;
 
@@ -428,6 +645,14 @@
     document.getElementById('ftirOpdVal').textContent   = `${t.opdCm.toFixed(3)} cm`;
     document.getElementById('ftirNuVal').textContent    = `${Math.round(t.wavenumber)} cm⁻¹`;
     document.getElementById('ftirTransVal').textContent = `${t.transmittance.toFixed(1)} %`;
+
+    // Dynamic Michelson moving mirror SVG animation
+    const svgMirror = document.getElementById('svgMovingMirror');
+    if (svgMirror && t.opdCm !== undefined) {
+      const basePos = 520;
+      const offset = (t.opdCm / 0.25) * 15; // 15px physical travel
+      svgMirror.setAttribute('x', (basePos + offset).toFixed(1));
+    }
 
     const zpdBadge = document.getElementById('zpdBadge');
     if (zpdBadge) zpdBadge.style.display = t.isZpd ? 'inline-block' : 'none';
@@ -456,6 +681,17 @@
       }
       if (result.graphPoints && result.graphPoints.length) {
         chart.data.datasets[0].data = result.graphPoints;
+        const curSampleKey = (document.getElementById('sampleSelect') || document.getElementById('ftirSampleSelect'))?.value || 'paracetamol';
+        const compound = FTIR_COMPOUND_DATABASE[curSampleKey] || FTIR_COMPOUND_DATABASE.paracetamol;
+        if (compound && compound.bands && chart.setPeakCallouts) {
+          chart.setPeakCallouts(compound.bands.map(b => ({
+            x: b.wavenumber,
+            y: (1 - (b.depth || 0.5)) * 100,
+            label: `${b.wavenumber} cm⁻¹`,
+            sublabel: b.mode || b.group || '',
+            color: '#38bdf8'
+          })));
+        }
         chart.update('none');
       }
     }
