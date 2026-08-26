@@ -200,6 +200,40 @@
       align-items: center;
       gap: 10px;
     }
+    .nav-maintainer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.76rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .nav-maintainer-badge:hover {
+      color: #f8fafc;
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.35);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
+      transform: translateY(-1px);
+    }
+    .nav-maintainer-badge .maintainer-handle {
+      color: #38bdf8;
+      font-weight: 700;
+    }
+    .nav-maintainer-badge:hover .maintainer-handle {
+      text-decoration: underline;
+    }
+    @media (max-width: 640px) {
+      .nav-maintainer-badge {
+        display: none;
+      }
+    }
 
     /* HERO SECTION */
     .hero-wrap {
@@ -1001,12 +1035,15 @@
         </div>
       </a>
       <div class="nav-actions">
+        <a href="https://himshim.github.io/" target="_blank" rel="noopener" class="nav-maintainer-badge" title="Maintained by @himshim26 (himshim.github.io)">
+          maintained by <span class="maintainer-handle">@himshim26</span>
+        </a>
         <button id="toggleProjectionBtn" class="btn-secondary" aria-label="Toggle 20-foot classroom projection mode">
           📺 Projection Mode
         </button>
-        <a href="docs/STUDENT_GUIDE.md" class="btn-secondary">
-          Docs
-        </a>
+        <button type="button" class="btn-secondary btn-guide-trigger" onclick="window.openGuideModal('student')">
+          📖 Guides
+        </button>
       </div>
     </nav>
   </header>

@@ -32,6 +32,10 @@ export class LabHeader extends HTMLElement {
           </div>
           
           <div class="header-actions">
+            <a href="https://himshim.github.io/" target="_blank" rel="noopener" class="header-maintainer-badge" title="Maintained by @himshim26 (himshim.github.io)">
+              maintained by <span class="maintainer-handle">@himshim26</span>
+            </a>
+
             <button type="button" class="header-tool-btn" id="headerProjBtn" title="Toggle 20-foot Classroom Projection Mode" aria-label="Toggle Projection Mode">
               📺 Projection
             </button>
