@@ -91,6 +91,22 @@ export class UvVisController {
   }
 
   // ── Public Accessors ──────────────────────────────────────────────────────
+  getConcentration() {
+    return this._concUgMl;
+  }
+
+  getSampleKey() {
+    return this._sampleKey;
+  }
+
+  getSolventKey() {
+    return this._solventKey;
+  }
+
+  getPathLength() {
+    return this._pathCm;
+  }
+
   setMethod(methodConfig = {}) {
     this._method = { ...this._method, ...methodConfig };
   }
