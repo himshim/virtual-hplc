@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap Location
-Sitemap: https://himshim.github.io/virtual-analytical-lab/sitemap.xml
+Sitemap: https://virtual-analytical-lab.vercel.app/sitemap.xml
